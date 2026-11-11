@@ -44,6 +44,18 @@ regional default factors (the page says so).
 - `sources.py`: HTTP, SNOTEL, CDEC helpers
 - `web/`: static site (no build step)
 
+## Failures, retries & alerts
+- HTTP: exponential backoff with jitter; Open-Meteo hourly/daily quota stops a region cleanly
+  (previous data kept). Resorts that error get a second pass after 60 s. Data-branch pushes and
+  the Pages deploy retry.
+- `health.py` runs at the end of every refresh and fails the run when a favorite is > 9 h old
+  or another calibrated resort > 30 h old (one missed refresh doesn't trip it). A failed run
+  makes GitHub email you.
+- `watchdog.yml` checks the live site daily from the outside (catches a schedule that silently
+  stopped). `backfill.yml` runs nightly and is a no-op once every resort is calibrated.
+- Emails go to the account that last changed the workflow schedules (justinwei2). Check
+  github.com/settings/notifications → System → Actions → Email, "only failed workflows".
+
 ## Data & attribution
 Open-Meteo free API (non-commercial use; data CC BY 4.0, attribution in the site footer),
 api.weather.gov (US public domain; contact in User-Agent), NRCS AWDB / SNOTEL and California CDEC

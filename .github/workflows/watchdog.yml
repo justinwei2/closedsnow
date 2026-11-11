@@ -1,0 +1,23 @@
+# Daily outside-in check of the live site: fails (-> GitHub email) if the published
+# forecasts are stale, which also catches the refresh schedule silently not running.
+name: watchdog
+on:
+  schedule:
+    - cron: "5 15 * * *"   # ~7-8am Pacific
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check live site
+        run: |
+          for i in 1 2 3; do
+            python health.py --url "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" && exit 0
+            echo "attempt $i failed; retrying in 2 min"; sleep 120
+          done
+          exit 1

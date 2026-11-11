@@ -486,15 +486,29 @@ def main(keys=None, scheduled=False, group=None, index=True):
         stale = [k for k in others if (data_age_h(k) is None or data_age_h(k) > OTHERS_EVERY_H)]
         keys = [k for k in FAVORITES if k in pool] + sorted(stale, key=lambda k: -(data_age_h(k) or 1e9))
         print(f"group={group or 'all'}: refreshing {keys or 'nothing (all fresh)'}")
-    for key in (keys if scheduled else (keys or FAVORITES)):
-        try:
-            update_one(key)
-        except QuotaExceeded as e:
-            print(f"  quota reached ({e}); keeping existing data for the rest", file=sys.stderr)
+    todo = list(keys if scheduled else (keys or FAVORITES))
+    for attempt in (1, 2):  # second pass retries resorts that failed for non-quota reasons
+        failed = []
+        for key in todo:
+            if key not in RESORTS:
+                continue
+            try:
+                update_one(key)
+            except QuotaExceeded as e:
+                print(f"  quota reached ({e}); keeping existing data for the rest", file=sys.stderr)
+                failed = []
+                break
+            except KeyError as e:  # located but not calibrated yet: expected during backfill
+                print(f"  skip {e}", file=sys.stderr)
+            except Exception:
+                import traceback; traceback.print_exc()
+                failed.append(key)
+            time.sleep(2)
+        if not failed:
             break
-        except Exception:
-            import traceback; traceback.print_exc()
-        time.sleep(2)
+        print(f"  retrying {failed} in 60 s", file=sys.stderr)
+        time.sleep(60)
+        todo = failed
     if index:
         write_index()
 

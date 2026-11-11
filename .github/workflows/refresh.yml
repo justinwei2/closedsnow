@@ -84,7 +84,10 @@ jobs:
           tmp=$(mktemp -d); mkdir -p "$tmp/web"; cp -r web/data "$tmp/web/"
           cd "$tmp" && git init -q -b data && git add -A
           git -c user.name=opensnow-bot -c user.email=opensnow-bot@users.noreply.github.com commit -qm "data $(date -u +%Y-%m-%dT%H:%MZ)"
-          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
+          for i in 1 2 3; do
+            git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data && break
+            echo "push failed, retry $i"; sleep $((i * 15))
+          done
       - name: Keep schedule alive
         env:
           GH_TOKEN: ${{ github.token }}
@@ -101,3 +104,5 @@ jobs:
       - id: deploy_retry
         if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v4
+      - name: Health check   # last, so the site still deploys; fails the run (-> GitHub email) on stale data
+        run: python health.py
