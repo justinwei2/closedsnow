@@ -376,5 +376,285 @@
    "gem_seamless",
    "icon_seamless"
   ]
+ },
+ "alta": {
+  "name": "Alta",
+  "sub": "",
+  "region": "Utah",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 40.5885,
+   "lon": -111.638,
+   "ft": 8530,
+   "label": "Wildcat base"
+  },
+  "mid": {
+   "lat": 40.5808,
+   "lon": -111.6335,
+   "ft": 9600,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 40.568,
+   "lon": -111.6261,
+   "ft": 10550,
+   "label": "Upper mountain"
+  },
+  "dem_ft": {
+   "base": 8550,
+   "mid": 9590,
+   "summit": 10528
+  },
+  "obs": [
+   "snotel",
+   "11J61:UT:SNOW",
+   "Alta Central SNOTEL",
+   8750,
+   40.59115,
+   -111.63767
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "snowbasin": {
+  "name": "Snowbasin",
+  "sub": "",
+  "region": "Utah",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 41.2163,
+   "lon": -111.857,
+   "ft": 6400,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 41.2085,
+   "lon": -111.8727,
+   "ft": 8000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 41.203,
+   "lon": -111.884,
+   "ft": 9350,
+   "label": "Needles"
+  },
+  "dem_ft": {
+   "base": 6391,
+   "mid": 7995,
+   "summit": 9301
+  },
+  "obs": [
+   "snotel",
+   "10139000:UT:BOR",
+   "Pineview Reservoir SNOTEL",
+   4900,
+   41.2555,
+   -111.84105
+  ],
+  "models": [
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "parkcity": {
+  "name": "Park City",
+  "sub": "",
+  "region": "Utah",
+  "pass_": "Epic",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 40.6514,
+   "lon": -111.5038,
+   "ft": 6900,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 40.6351,
+   "lon": -111.5406,
+   "ft": 8700,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 40.6235,
+   "lon": -111.5669,
+   "ft": 10026,
+   "label": "Jupiter Peak"
+  },
+  "dem_ft": {
+   "base": 6913,
+   "mid": 8707,
+   "summit": 10069
+  },
+  "obs": [
+   "snotel",
+   "814:UT:SNTL",
+   "Thaynes Canyon SNOTEL",
+   9260,
+   40.6235,
+   -111.53322
+  ],
+  "models": [
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "jackson": {
+  "name": "Jackson Hole",
+  "sub": "",
+  "region": "Wyoming \u00b7 Montana \u00b7 Idaho",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 43.5877,
+   "lon": -110.8238,
+   "ft": 6311,
+   "label": "Teton Village"
+  },
+  "mid": {
+   "lat": 43.5935,
+   "lon": -110.8533,
+   "ft": 8600,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 43.597,
+   "lon": -110.871,
+   "ft": 10450,
+   "label": "Rendezvous"
+  },
+  "dem_ft": {
+   "base": 6302,
+   "mid": 8553,
+   "summit": 10394
+  },
+  "obs": [
+   "snotel",
+   "689:WY:SNTL",
+   "Phillips Bench SNOTEL",
+   8170,
+   43.51687,
+   -110.91258
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "bigsky": {
+  "name": "Big Sky",
+  "sub": "",
+  "region": "Wyoming \u00b7 Montana \u00b7 Idaho",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 45.2857,
+   "lon": -111.3927,
+   "ft": 7500,
+   "label": "Mountain Village"
+  },
+  "mid": {
+   "lat": 45.2796,
+   "lon": -111.4406,
+   "ft": 9500,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 45.2784,
+   "lon": -111.4502,
+   "ft": 11166,
+   "label": "Lone Peak"
+  },
+  "dem_ft": {
+   "base": 7510,
+   "mid": 9455,
+   "summit": 10981
+  },
+  "obs": [
+   "snotel",
+   "590:MT:SNTL",
+   "Lone Mountain SNOTEL",
+   8820,
+   45.27412,
+   -111.42692
+  ],
+  "models": [
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "vail": {
+  "name": "Vail",
+  "sub": "",
+  "region": "Colorado",
+  "pass_": "Epic",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 39.6405,
+   "lon": -106.3743,
+   "ft": 8120,
+   "label": "Vail Village"
+  },
+  "mid": {
+   "lat": 39.6183,
+   "lon": -106.3629,
+   "ft": 10000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 39.605,
+   "lon": -106.356,
+   "ft": 11570,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 8179,
+   "mid": 9954,
+   "summit": 11220
+  },
+  "obs": [
+   "snotel",
+   "842:CO:SNTL",
+   "Vail Mountain SNOTEL",
+   10290,
+   39.61765,
+   -106.38019
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
  }
 }
