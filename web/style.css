@@ -205,3 +205,6 @@ details[open] summary::before { content: "▾ "; }
 @media (max-width: 900px) { .totals { grid-template-columns: 1fr; } }
 .rday .amt .chip { align-self: flex-start; }
 .pass:empty { display: none; }
+
+.foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; max-width: 90ch; }
+.foot a { color: var(--text-secondary); }

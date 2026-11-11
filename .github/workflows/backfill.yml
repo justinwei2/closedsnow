@@ -27,6 +27,6 @@ jobs:
         run: |
           git config user.name "skisite-bot"
           git config user.email "skisite-bot@users.noreply.github.com"
-          git add data web/data
+          git add data
           git diff --cached --quiet || git commit -m "backfill: locate/calibrate"
           git pull --rebase --autostash && git push

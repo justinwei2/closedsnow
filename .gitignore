@@ -2,3 +2,4 @@ cache/
 *.log
 web/data/.*.json
 __pycache__/
+web/data/

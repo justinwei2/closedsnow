@@ -7,7 +7,6 @@ import sources
 sources.WAIT_ON_QUOTA = True
 import locate, calibrate, importlib, config, update
 
-update.main()                         # favorites first: keeps the main tabs fresh
 locate.main([])                       # resorts not yet in data/resorts.json
 importlib.reload(config)
 calibrate.RESORTS = config.RESORTS

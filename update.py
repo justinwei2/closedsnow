@@ -421,6 +421,8 @@ def process(key, r, cal):
 
     hourly = []
     for i, t in enumerate(times):
+        if not (now_i <= i < now_i + 24 * 7):  # charts only use the next 7 days hourly
+            continue
         hourly.append(dict(t=t, past=i < now_i, **{k: rnd(v) for k, v in levels[i].items()},
                            **{e: {k: rnd(v) for k, v in elev[e]["rows"][i].items() if k != "t"} for e in ELEVS}))
     return dict(

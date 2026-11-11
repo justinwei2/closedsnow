@@ -1,4 +1,9 @@
-# Snow Report: personal resort forecast
+# opensnow (unofficial)
+
+An open-source, personal take on OpenSnow-style mountain forecasts. **Not affiliated with or
+endorsed by OpenSnow.** Live: https://justinwei2.github.io/opensnow/
+
+## Snow Report: personal resort forecast
 
 On-mountain (base / mid / summit) snow forecasts for ~35 expert-worthy Ikon/Epic resorts in
 western North America. Shows a bias-corrected multi-model blend with 25–75% ranges, a weather
@@ -12,8 +17,9 @@ recent station observations, and the NWS Area Forecast Discussion.
 
 ## Hosted (GitHub Pages + Actions)
 `.github/workflows/refresh.yml` runs every 3 h on GitHub: favorites refresh every run, other
-resorts every ~12 h (inside Open-Meteo's free 10k/day). Each run commits `web/data` (forecast
-history; also keeps the schedule alive) and deploys `web/` to Pages. `backfill.yml` (manual) runs
+resorts every ~12 h (inside Open-Meteo's free 10k/day). Forecast JSON lives on a single-commit
+`data` branch (force-pushed each run, so the repo doesn't grow); each run restores it, refreshes,
+saves it and deploys `web/` to Pages. `backfill.yml` (manual) runs
 locate + calibrate in CI. Optional repo secret `SKISITE_CONTACT` (email) goes in the NWS User-Agent.
 Repo must be public for free Pages. The static site has no on-demand refresh.
 
@@ -33,3 +39,8 @@ regional default factors (the page says so).
 - `update.py`: live fetch + blend + ranges → JSON
 - `sources.py`: HTTP, SNOTEL, CDEC helpers
 - `web/`: static site (no build step)
+
+## Data & attribution
+Open-Meteo free API (non-commercial use; data CC BY 4.0, attribution in the site footer),
+api.weather.gov (US public domain; contact in User-Agent), NRCS AWDB / SNOTEL and California CDEC
+(public). All via documented APIs: no HTML scraping.

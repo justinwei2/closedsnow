@@ -9,6 +9,7 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  actions: write   # keepalive: re-enable this schedule (GitHub disables it after 60 idle days)
 concurrency:
   group: refresh
   cancel-in-progress: false
@@ -24,17 +25,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Restore previous data   # lives on the single-commit `data` branch, not in main's history
+        run: |
+          if git fetch --depth 1 origin data; then git checkout FETCH_HEAD -- web/data; fi
       - name: Update forecasts
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
         run: python update.py --scheduled
-      - name: Commit data   # keeps forecast history and keeps the schedule from auto-disabling
+      - name: Save data   # force-push one commit: the repo doesn't grow with every refresh
+        env:
+          TOKEN: ${{ github.token }}
         run: |
-          git config user.name "skisite-bot"
-          git config user.email "skisite-bot@users.noreply.github.com"
-          git add web/data
-          git diff --cached --quiet || git commit -m "data: refresh $(date -u +%Y-%m-%dT%H:%MZ)"
-          git pull --rebase --autostash && git push
+          tmp=$(mktemp -d); mkdir -p "$tmp/web"; cp -r web/data "$tmp/web/"
+          cd "$tmp" && git init -q -b data && git add -A
+          git -c user.name=opensnow-bot -c user.email=opensnow-bot@users.noreply.github.com commit -qm "data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data
+      - name: Keep schedule alive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable refresh.yml -R "$GITHUB_REPOSITORY" || true
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
