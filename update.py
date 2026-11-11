@@ -446,12 +446,30 @@ def _updated(path):
 
 
 def write_index():
+    try:
+        cal = json.load(open(os.path.join(HERE, "data", "calibration.json")))
+    except Exception:
+        cal = {}
     idx = []
     for key, r in RESORTS.items():
         p = os.path.join(OUT, f"{key}.json")
+        c = cal.get(key) or {}
+        status = ("calibrated" if c and not c.get("uncalibrated") else
+                  "pending" if r.get("obs") else "regional default")
         idx.append(dict(key=key, name=r["name"], sub=r["sub"], region=r["region"], pass_=r["pass_"],
-                        favorite=key in FAVORITES, calibrated=bool(r.get("obs")),
-                        updated=_updated(p)))
+                        favorite=key in FAVORITES, calibration=status,
+                        station=(r.get("obs") or [None, None, None])[2],
+                        station_ft=(r.get("obs") or [None] * 4)[3],
+                        blend_mae72_in=round(c["blend_mae72"] / 25.4, 2) if c.get("blend_mae72") else None,
+                        windows=c.get("n_windows"), updated=_updated(p), located=True))
+    from catalog import CATALOG
+    for key, c in CATALOG.items():  # not located yet: listed in the coverage appendix, hidden from search
+        if key not in RESORTS:
+            idx.append(dict(key=key, name=c[0], sub=c[6], region=c[2], pass_=c[1], favorite=key in FAVORITES,
+                            calibration="not set up yet", located=False, updated=None))
+    from catalog import CATALOG
+    order = {k: i for i, k in enumerate(CATALOG)}
+    idx.sort(key=lambda x: order.get(x["key"], 1e9))  # catalog order = grouped by region for search
     json.dump(dict(resorts=idx), open(os.path.join(OUT, "index.json"), "w"))
 
 

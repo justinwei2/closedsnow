@@ -568,6 +568,27 @@ function renderMethod(d) {
   sec("Data", "Open-Meteo (CC-BY 4.0; ECMWF, NOAA, ECCC, DWD models), NWS gridpoint forecasts, alerts and Area Forecast Discussions, NRCS SNOTEL and California CDEC observations.");
 }
 
+function renderCalCoverage() {
+  const tb = $("#calcov-table");
+  tb.replaceChildren();
+  const head = el("tr");
+  ["Resort", "Region", "Status", "Gauge", "Error (in / 72 h)", "Data updated"].forEach((h, i) => head.append(el("th", { class: i ? "" : "rowh" }, h)));
+  tb.append(head);
+  const LABEL = { calibrated: "✓ Calibrated", pending: "◐ Pending", "regional default": "Regional default", "not set up yet": "○ Setting up" };
+  for (const r of state.index) {
+    const tr = el("tr");
+    const name = el("td", { class: "rowh" });
+    name.append(r.located === false ? document.createTextNode(r.name) : el("a", { href: `#${r.key}` }, r.name));
+    tr.append(name);
+    [r.region, LABEL[r.calibration] || r.calibration || "–",
+      r.station ? `${r.station}${r.station_ft ? ` (${r.station_ft.toLocaleString()} ft)` : ""}` : "–",
+      r.blend_mae72_in != null ? `${r.blend_mae72_in.toFixed(2)}"` : "–",
+      r.updated ? new Date(r.updated).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "not yet"]
+      .forEach((v) => tr.append(el("td", {}, v)));
+    tb.append(tr);
+  }
+}
+
 // ---------------------------------------------------------------- shell
 function renderElevToggle(d) {
   const box = $("#elev-toggle");
@@ -601,6 +622,7 @@ function render() {
   renderWide(d, e);
   renderPoints(d);
   renderMethod(d);
+  renderCalCoverage();
 }
 
 async function fetchData(key) {
@@ -650,7 +672,7 @@ function setupSearch() {
   const close = () => { list.hidden = true; q.setAttribute("aria-expanded", "false"); active = -1; };
   const draw = () => {
     const term = q.value.trim().toLowerCase();
-    const hits = state.index.filter((r) => !term || [r.name, r.sub, r.region, r.pass_].join(" ").toLowerCase().includes(term));
+    const hits = state.index.filter((r) => r.located !== false).filter((r) => !term || [r.name, r.sub, r.region, r.pass_].join(" ").toLowerCase().includes(term));
     list.replaceChildren(); opts = [];
     let grp = null;
     for (const r of hits) {

@@ -1,34 +1,62 @@
-# One-time / occasional setup for new resorts (locate + calibrate), run manually from the
-# Actions tab. Sleeps through Open-Meteo rate limits, so it can run for hours.
+# Locate + calibrate catalog resorts, one parallel job per region (own runner each), then merge
+# and commit data/ + CALIBRATION.md. Sleeps through Open-Meteo rate limits; each job stops
+# before GitHub's 6 h limit and its progress is still merged. Nightly run is a no-op once done.
 name: backfill
 on:
   workflow_dispatch:
   schedule:
-    - cron: "41 9 * * *"   # nightly: finishes any unfinished locate/calibration, no-op once done
+    - cron: "41 9 * * *"
 permissions:
   contents: write
 concurrency:
   group: backfill   # separate from refresh: calibration can run for hours without blocking it
   cancel-in-progress: false
 jobs:
-  backfill:
+  region:
     runs-on: ubuntu-latest
-    timeout-minutes: 350
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [sierra, west, rockies, north]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Locate + calibrate
+      - name: Locate + calibrate ${{ matrix.group }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
-        # stop before the 6 h job limit so progress gets committed; rerun the workflow to continue
-        run: timeout 320m python -u backfill.py || echo "backfill stopped early; rerun to continue"
-      - name: Commit progress
+        run: timeout 320m python -u backfill.py --group ${{ matrix.group }} --out out || echo "stopped early; progress kept, next run continues"
+      - uses: actions/upload-artifact@v4
         if: always()
+        with:
+          name: bf-${{ matrix.group }}
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 3
+
+  merge:
+    needs: region
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          pattern: bf-*
+          path: parts
+      - name: Merge
+        run: python backfill.py --merge parts
+      - name: Commit
         run: |
-          git config user.name "skisite-bot"
-          git config user.email "skisite-bot@users.noreply.github.com"
-          git add data
-          git diff --cached --quiet || git commit -m "backfill: locate/calibrate"
+          git config user.name "opensnow-bot"
+          git config user.email "opensnow-bot@users.noreply.github.com"
+          git add data CALIBRATION.md
+          git diff --cached --quiet && exit 0
+          git commit -m "backfill: locate/calibrate $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do git pull --rebase --autostash && git push && break; sleep $((i * 15)); done

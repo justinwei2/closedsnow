@@ -23,11 +23,12 @@ def load(url):
 
 def main():
     url = sys.argv[sys.argv.index("--url") + 1] if "--url" in sys.argv else None
-    cal = json.load(open(os.path.join(HERE, "data", "calibration.json")))
+    # live check trusts the published index (local data/ may be ahead of the last refresh)
+    cal = None if url else json.load(open(os.path.join(HERE, "data", "calibration.json")))
     now = datetime.now(timezone.utc)
     rows, bad = [], []
     for r in load(url):
-        if r["key"] not in cal:
+        if r.get("located") is False or (cal is not None and r["key"] not in cal):
             rows.append((r["name"], "awaiting calibration (backfill)", "")); continue
         limit = FAV_MAX_H if r["key"] in FAVORITES else OTHER_MAX_H
         if not r.get("updated"):
