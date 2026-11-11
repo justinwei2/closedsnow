@@ -1,5 +1,5 @@
 """HTTP + data-source helpers (Open-Meteo, NRCS SNOTEL, CDEC, NWS)."""
-import json, os, sys, time, urllib.error, urllib.parse, urllib.request
+import json, os, random, sys, time, urllib.error, urllib.parse, urllib.request
 from datetime import date, datetime, timedelta
 from config import USER_AGENT
 
@@ -44,7 +44,7 @@ def get_json(url, params=None, retries=4):
         except Exception as e:
             print(f"  retry {attempt}: {e} {url[:120]}", file=sys.stderr)
         attempt += 1
-        time.sleep(5 * attempt)
+        time.sleep(min(60, 3 * 2 ** attempt) + random.uniform(0, 2))  # exponential backoff + jitter
     raise RuntimeError(f"failed: {url[:200]}")
 
 

@@ -16,8 +16,12 @@ recent station observations, and the NWS Area Forecast Discussion.
     python3 serve.py       # local: http://localhost:8765, favorites every 3 h, others on demand
 
 ## Hosted (GitHub Pages + Actions)
-`.github/workflows/refresh.yml` runs every 3 h on GitHub: favorites refresh every run, other
-resorts every ~12 h (inside Open-Meteo's free 10k/day). Forecast JSON lives on a single-commit
+`.github/workflows/refresh.yml` runs every 3 h on GitHub as four parallel, staggered region jobs
+(sierra / west / rockies / north; own runner each, so a rate limit in one region doesn't stall the
+others), then one publish job. Favorites refresh every run, other resorts every ~12 h (~7.5k of
+Open-Meteo's free 10k calls/day). Requests retry with exponential backoff; on a hard quota limit a
+region stops and keeps its previous data. Calibration is one-time (~200 calls per US resort); a
+refresh costs ~65-80 calls per resort. Forecast JSON lives on a single-commit
 `data` branch (force-pushed each run, so the repo doesn't grow); each run restores it, refreshes,
 saves it and deploys `web/` to Pages. `backfill.yml` (manual) runs
 locate + calibrate in CI. Optional repo secret `SKISITE_CONTACT` (email) goes in the NWS User-Agent.

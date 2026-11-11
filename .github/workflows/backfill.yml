@@ -6,7 +6,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: refresh
+  group: backfill   # separate from refresh: calibration can run for hours without blocking it
   cancel-in-progress: false
 jobs:
   backfill:

@@ -23,6 +23,10 @@ OM = "https://api.open-meteo.com/v1/forecast"
 ENS = "https://ensemble-api.open-meteo.com/v1/ensemble"
 DAYS = 16
 PAST = 7
+# Regions refresh as separate parallel CI jobs (own runner each), so a rate limit in one
+# doesn't stall the rest.
+GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Wyoming · Montana · Idaho"],
+          "rockies": ["Colorado", "New Mexico"], "north": ["British Columbia", "Alberta", "Alaska"]}
 OTHERS_EVERY_H = 11.5  # non-favorites: twice a day keeps ~35 resorts inside the free quota
 # per-resort context, set at the start of process()
 CTX = dict(tz="America/Los_Angeles", local=ZoneInfo("America/Los_Angeles"), models=[])
@@ -471,16 +475,18 @@ def data_age_h(key):
     return (datetime.now(timezone.utc) - datetime.fromisoformat(t)).total_seconds() / 3600
 
 
-def main(keys=None, scheduled=False):
+def main(keys=None, scheduled=False, group=None, index=True):
     """Default: refresh favorites. scheduled=True (GitHub Actions): favorites every run, every
     other resort once its data is older than OTHERS_EVERY_H, oldest first; stops cleanly on quota."""
     from sources import QuotaExceeded
     os.makedirs(OUT, exist_ok=True)
+    pool = [k for k in RESORTS if not group or RESORTS[k]["region"] in GROUPS[group]]
     if scheduled:
-        others = [k for k in RESORTS if k not in FAVORITES]
+        others = [k for k in pool if k not in FAVORITES]
         stale = [k for k in others if (data_age_h(k) is None or data_age_h(k) > OTHERS_EVERY_H)]
-        keys = [k for k in FAVORITES if k in RESORTS] + sorted(stale, key=lambda k: -(data_age_h(k) or 1e9))
-    for key in keys or FAVORITES:
+        keys = [k for k in FAVORITES if k in pool] + sorted(stale, key=lambda k: -(data_age_h(k) or 1e9))
+        print(f"group={group or 'all'}: refreshing {keys or 'nothing (all fresh)'}")
+    for key in (keys if scheduled else (keys or FAVORITES)):
         try:
             update_one(key)
         except QuotaExceeded as e:
@@ -489,9 +495,12 @@ def main(keys=None, scheduled=False):
         except Exception:
             import traceback; traceback.print_exc()
         time.sleep(2)
-    write_index()
+    if index:
+        write_index()
 
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    main([a for a in args if not a.startswith("--")] or None, scheduled="--scheduled" in args)
+    grp = args[args.index("--group") + 1] if "--group" in args else None
+    pos = [a for a in args if not a.startswith("--") and a != grp]
+    main(pos or None, scheduled="--scheduled" in args, group=grp, index="--no-index" not in args)
