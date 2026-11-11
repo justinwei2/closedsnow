@@ -43,7 +43,7 @@ jobs:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
         run: |
           touch /tmp/stamp
-          python update.py --scheduled --group ${{ matrix.group }} --no-index
+          python -u update.py --scheduled --group ${{ matrix.group }} --no-index
           mkdir -p out
           find web/data -name '*.json' -newer /tmp/stamp -exec cp {} out/ \;
           ls out
@@ -94,4 +94,10 @@ jobs:
         with:
           path: web
       - id: deploy
+        uses: actions/deploy-pages@v4
+        continue-on-error: true   # GitHub's Pages API flakes now and then; retry once below
+      - if: steps.deploy.outcome == 'failure'
+        run: sleep 60
+      - id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v4
