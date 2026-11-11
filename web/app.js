@@ -646,7 +646,7 @@ async function load(key) {
   state.key = key;
   clearInterval(state.poll);
   const info = state.index.find((r) => r.key === key);
-  document.querySelectorAll("#favs a").forEach((a) => a.classList.toggle("on", a.dataset.key === key));
+  localStorage.setItem("resort", key);
   $("#q").value = "";
   let d = await fetchData(key);
   if (d && !d.next) d = null;  // pre-v2 file: treat as missing so it refreshes
@@ -712,10 +712,10 @@ function setupSearch() {
 
 async function boot() {
   state.index = (await (await fetch(`data/index.json?ts=${Date.now()}`)).json()).resorts;
-  const favs = $("#favs");
-  for (const r of state.index.filter((x) => x.favorite)) favs.append(el("a", { href: `#${r.key}`, "data-key": r.key }, r.name));
   setupSearch();
-  const pick = () => load(location.hash.slice(1) || state.index.find((r) => r.favorite)?.key || state.index[0].key);
+  const ready = state.index.filter((r) => r.located !== false);
+  const last = localStorage.getItem("resort");
+  const pick = () => load(location.hash.slice(1) || (ready.some((r) => r.key === last) ? last : ready[0].key));
   addEventListener("hashchange", pick);
   let resizeT;
   addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(render, 150); });

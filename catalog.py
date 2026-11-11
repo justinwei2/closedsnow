@@ -67,4 +67,4 @@ MANUAL = {
     "mammoth": dict(mid=(37.6385, -119.0215, 9600, "McCoy Station"),
                     obs=("cdec", "MHP", "Mammoth Pass (CDEC)", 9400, 37.61, -119.033), afd_office="REV"),
 }
-FAVORITES = ["palisades", "alpine", "kirkwood", "mammoth"]  # refreshed on schedule; others on demand
+FAVORITES = []  # none: every resort refreshes on the same cadence (update.OTHERS_EVERY_H)

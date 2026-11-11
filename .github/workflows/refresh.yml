@@ -1,8 +1,8 @@
 # Refresh forecasts on GitHub's machines and publish web/ to GitHub Pages.
 #
 # Each region is its own parallel job (own runner), staggered a few minutes apart, so an
-# Open-Meteo rate limit in one region doesn't stall the others. Favorites refresh every run,
-# other resorts every ~12 h (update.py --scheduled): ~7.5k of the free 10k calls/day.
+# Open-Meteo rate limit in one region doesn't stall the others. Each resort refreshes when its
+# data is older than 7.5 h (~every 9 h; update.py --scheduled): ~7.5k of the free 10k calls/day.
 # Forecast JSON lives on a single-commit `data` branch so the repo doesn't grow.
 name: refresh
 on:

@@ -18,8 +18,8 @@ recent station observations, and the NWS Area Forecast Discussion.
 ## Hosted (GitHub Pages + Actions)
 `.github/workflows/refresh.yml` runs every 3 h on GitHub as four parallel, staggered region jobs
 (sierra / west / rockies / north; own runner each, so a rate limit in one region doesn't stall the
-others), then one publish job. Favorites refresh every run, other resorts every ~12 h (~7.5k of
-Open-Meteo's free 10k calls/day). Requests retry with exponential backoff; on a hard quota limit a
+others), then one publish job. Each resort refreshes when its data is older than 7.5 h (~every 9 h;
+~7.5k of Open-Meteo's free 10k calls/day). Requests retry with exponential backoff; on a hard quota limit a
 region stops and keeps its previous data. Calibration is one-time (~200 calls per US resort); a
 refresh costs ~65-80 calls per resort. Forecast JSON lives on a single-commit
 `data` branch (force-pushed each run, so the repo doesn't grow); each run restores it, refreshes,
@@ -48,8 +48,8 @@ regional default factors (the page says so).
 - HTTP: exponential backoff with jitter; Open-Meteo hourly/daily quota stops a region cleanly
   (previous data kept). Resorts that error get a second pass after 60 s. Data-branch pushes and
   the Pages deploy retry.
-- `health.py` runs at the end of every refresh and fails the run when a favorite is > 9 h old
-  or another calibrated resort > 30 h old (one missed refresh doesn't trip it). A failed run
+- `health.py` runs at the end of every refresh and fails the run when a forecast is missing or 3+ resorts are > 20 h old
+  (one missed refresh doesn't trip it). A failed run
   makes GitHub email you.
 - `watchdog.yml` checks the live site daily from the outside (catches a schedule that silently
   stopped). `backfill.yml` runs nightly and is a no-op once every resort is calibrated.

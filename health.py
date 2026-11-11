@@ -11,7 +11,7 @@ from catalog import FAVORITES
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FAV_MAX_H = 9      # favorites refresh every 3 h: ~2 missed runs
-OTHER_MAX_H = 30   # others every ~12 h: ~2 missed refreshes
+OTHER_MAX_H = 20   # resorts refresh ~every 9 h: ~2 missed refreshes
 
 
 def load(url):

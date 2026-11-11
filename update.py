@@ -28,7 +28,7 @@ NON_US = {"British Columbia", "Alberta"}  # no NWS products there
 # doesn't stall the rest.
 GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Wyoming · Montana · Idaho"],
           "rockies": ["Colorado", "New Mexico"], "north": ["British Columbia", "Alberta", "Alaska"]}
-OTHERS_EVERY_H = 11.5  # non-favorites: twice a day keeps ~35 resorts inside the free quota
+OTHERS_EVERY_H = 7.5  # refresh when older than this: ~every 9 h on the 3-hourly schedule, ~7.5k of 10k calls/day
 # per-resort context, set at the start of process()
 CTX = dict(tz="America/Los_Angeles", local=ZoneInfo("America/Los_Angeles"), models=[])
 KMH_MPH = 0.621371
