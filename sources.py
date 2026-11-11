@@ -14,6 +14,15 @@ class QuotaExceeded(RuntimeError):
     pass
 
 
+def write_json(path, obj, **kw):
+    """Atomic write: a killed job never leaves a truncated file behind."""
+    tmp = f"{path}.tmp"
+    with open(tmp, "w") as f:
+        json.dump(obj, f, **kw)
+    json.load(open(tmp))  # validate
+    os.replace(tmp, path)
+
+
 def cache_path(name):
     return os.path.join(CACHE, name)
 
@@ -40,6 +49,8 @@ def get_json(url, params=None, retries=4):
                 continue  # quota waits don't use up retries
             if e.code == 429 and ("Hourly" in reason or "Daily" in reason):
                 raise QuotaExceeded(reason)
+            if 400 <= e.code < 500 and e.code not in (408, 429):
+                raise RuntimeError(f"HTTP {e.code} {reason}: {url[:160]}")  # permanent: don't retry
             print(f"  retry {attempt}: {e} {reason} {url[:120]}", file=sys.stderr)
         except Exception as e:
             print(f"  retry {attempt}: {e} {url[:120]}", file=sys.stderr)

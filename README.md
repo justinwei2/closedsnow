@@ -56,6 +56,15 @@ regional default factors (the page says so).
 - Emails go to the account that last changed the workflow schedules (justinwei2). Check
   github.com/settings/notifications → System → Actions → Email, "only failed workflows".
 
+## Known limitations
+- Snow level / phase come from pressure-level profiles (1000-500 hPa). At high resorts (Colorado,
+  Utah, Taos) the lowest levels sit below the model terrain and are extrapolated by the model; the
+  reported snow level can then read "below base". Interpolation at lift heights uses levels above.
+- Calibration factors and the error shown are fit and scored on the same two winters (in-sample,
+  so slightly optimistic); ECMWF IFS 9 km and AIFS have one winter of history.
+- Canadian resorts have no SNOTEL gauge: factors are borrowed medians from US resorts.
+- Wind-hold, snow-density and powder-morning thresholds are rules of thumb, not fit to history.
+
 ## Data & attribution
 Open-Meteo free API (non-commercial use; data CC BY 4.0, attribution in the site footer),
 api.weather.gov (US public domain; contact in User-Agent), NRCS AWDB / SNOTEL and California CDEC

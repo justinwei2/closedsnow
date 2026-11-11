@@ -13,7 +13,7 @@ from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from config import RESORTS, FT, ELEVS, PROFILE_MODELS, LEVELS, ENSEMBLES
 from catalog import FAVORITES
-from sources import get_json, cache_path, obs_raw, IN
+from sources import get_json, cache_path, obs_raw, IN, QuotaExceeded
 import physics as ph
 import report
 
@@ -23,6 +23,7 @@ OM = "https://api.open-meteo.com/v1/forecast"
 ENS = "https://ensemble-api.open-meteo.com/v1/ensemble"
 DAYS = 16
 PAST = 7
+NON_US = {"British Columbia", "Alberta"}  # no NWS products there
 # Regions refresh as separate parallel CI jobs (own runner each), so a rate limit in one
 # doesn't stall the rest.
 GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Wyoming · Montana · Idaho"],
@@ -55,6 +56,8 @@ def fetch_profiles(pt):
 def fetch_ens(pt, model):
     try:
         return get_json(ENS, om_point(pt, hourly="precipitation", models=model))
+    except QuotaExceeded:
+        raise  # don't publish a "fresh" file with the ensembles silently missing
     except RuntimeError as e:
         print("  ensemble failed", model, e, file=sys.stderr)
         return None
@@ -65,7 +68,7 @@ def fetch_alerts(pt):
         j = get_json("https://api.weather.gov/alerts/active", dict(point=f"{pt['lat']},{pt['lon']}"))
     except Exception as e:
         print("  alerts failed", e, file=sys.stderr)
-        return []
+        return None  # unknown, not "no alerts": the page says so
     return [dict(event=p["event"], severity=p.get("severity"), headline=p.get("headline"),
                  onset=p.get("onset") or p.get("effective"), ends=p.get("ends") or p.get("expires"),
                  description=(p.get("description") or "")[:1500])
@@ -89,10 +92,10 @@ def nws_hourly(values, per_hour_split):
     for v in values:
         start, dur = v["validTime"].split("/")
         m = DUR.match(dur)
-        hours = int(m.group(1) or 0) * 24 + int(m.group(2) or 0)
-        t0 = datetime.fromisoformat(start).astimezone(CTX["local"])
-        for k in range(max(hours, 1)):
-            t = (t0 + timedelta(hours=k)).strftime("%Y-%m-%dT%H:00")
+        hours = max(1, int(m.group(1) or 0) * 24 + int(m.group(2) or 0))
+        t0 = datetime.fromisoformat(start).astimezone(timezone.utc)
+        for k in range(hours):  # step in UTC, then label in local time (DST-safe)
+            t = (t0 + timedelta(hours=k)).astimezone(CTX["local"]).strftime("%Y-%m-%dT%H:00")
             out[t] = (v["value"] or 0) / hours if per_hour_split else v["value"]
     return out
 
@@ -127,6 +130,8 @@ def fetch_afd(office):
 
 
 def fetch_obs(obs):
+    if not obs:
+        return None
     end = date.today() + timedelta(1)
     start = end - timedelta(15)
     try:
@@ -189,6 +194,14 @@ def build_profiles(pj):
     return times, cons, per_model
 
 
+def col(h, var, m):
+    """Hourly series for model m; Open-Meteo drops the _model suffix when one model is requested."""
+    v = h.get(f"{var}_{m}")
+    if v is None and len(CTX["models"]) == 1:
+        v = h.get(var)
+    return v
+
+
 def blend_precip(dj, cal):
     """Bias-corrected, weighted blend of hourly precip; renormalised over models present."""
     h = dj["hourly"]
@@ -197,7 +210,7 @@ def blend_precip(dj, cal):
     for i in range(len(h["time"])):
         num = den = 0.0
         for m in CTX["models"]:
-            v = (h.get(f"precipitation_{m}") or [None] * (i + 1))[i]
+            v = (col(h, "precipitation", m) or [None] * (i + 1))[i]
             if v is None or m not in models:
                 continue
             c = v * models[m]["factor"]
@@ -212,7 +225,7 @@ def blend_precip(dj, cal):
 
 
 def mean_of(h, var, i):
-    vs = [h[f"{var}_{m}"][i] for m in CTX["models"] if h.get(f"{var}_{m}") and h[f"{var}_{m}"][i] is not None]
+    vs = [s[i] for s in (col(h, var, m) for m in CTX["models"]) if s and s[i] is not None]
     return sum(vs) / len(vs) if vs else None
 
 
@@ -240,7 +253,7 @@ def mean_dir(h, i):
     sx = sy = 0.0
     n = 0
     for m in CTX["models"]:
-        d, s = (h.get(f"wind_direction_10m_{m}") or [None] * (i + 1))[i], (h.get(f"wind_speed_10m_{m}") or [None] * (i + 1))[i]
+        d, s = (col(h, "wind_direction_10m", m) or [None] * (i + 1))[i], (col(h, "wind_speed_10m", m) or [None] * (i + 1))[i]
         if d is None or s is None:
             continue
         sx += s * math.sin(math.radians(d)); sy += s * math.cos(math.radians(d)); n += 1
@@ -257,10 +270,11 @@ def process(key, r, cal):
     det = {e: fetch_det(r[e]) for e in ELEVS}
     times, cons, per_model_prof = build_profiles(fetch_profiles(r["summit"]))
     ens = {m: fetch_ens(r["summit"], m) for m in ENSEMBLES}
-    nws = {e: fetch_nws(r[e]) for e in ELEVS}
-    alerts = fetch_alerts(r["summit"])
+    us = r["region"] not in NON_US
+    nws = {e: fetch_nws(r[e]) if us else None for e in ELEVS}
+    alerts = fetch_alerts(r["summit"]) if us else []
     obs = fetch_obs(r["obs"])
-    office = r.get("afd_office") or (nws["summit"] or {}).get("office")
+    office = (r.get("afd_office") or (nws["summit"] or {}).get("office")) if us else None
     afd = fetch_afd(office) if office else None
     now = datetime.now(CTX["local"]).strftime("%Y-%m-%dT%H:00")
     now_i = next((i for i, t in enumerate(times) if t >= now), len(times) - 1)
@@ -286,6 +300,8 @@ def process(key, r, cal):
                 row.update(frac=frac, slr=slr, warm_nose=p.warm_nose(z), tw_c=at["tw"])
                 if e == "summit":  # exposed ridge: free-air wind at summit height, not smoothed 10 m wind
                     row["wind_mph"] = at["wind"] * KMH_MPH
+                if row["warm_nose"]:  # refrozen sleet/ice pellets, not fluffy snow (~2:1)
+                    slr = row["slr"] = 2.0
                 if precip[i] is not None:
                     row["snow_in"] = precip[i] * frac * slr / IN
                     row["rain_in"] = precip[i] * (1 - frac) / IN
@@ -347,7 +363,7 @@ def process(key, r, cal):
             got = [mm[t] for t in ts if t in mm]
             if got and len(got) >= 0.9 * len(ts):
                 vals.append((sum(got) * len(ts) / len(got) * scale, w))
-        eq = emp_q(s_liq)
+        eq = emp_q(s_liq * 72 / max(1, i1 - i0))  # bins were calibrated on 72 h totals
         ensq = wquantiles(vals, QS) if vals else None
         for q in QS:
             emp = snow * eq[q]
@@ -388,7 +404,7 @@ def process(key, r, cal):
             dirs = [x["wind_dir"] for x in lift if x.get("wind_dir") is not None]
             b.update(hi_f=max(temps) if temps else None, lo_f=min(temps) if temps else None,
                      wind_mph=max(winds) if winds else None, gust_mph=max(gusts) if gusts else None,
-                     wind_dir=report.compass(sum(dirs) / len(dirs)) if dirs else None,
+                     wind_dir=report.compass(report.circ_mean(dirs)) if dirs else None,
                      models={m: (sum(v for v in s[idx[0]:i1] if v is not None)
                                  if any(v is not None for v in s[idx[0]:i1]) else None)
                              for m, s in elev[e]["model_snow"].items()})
@@ -478,6 +494,10 @@ def update_one(key):
     if key not in RESORTS or key not in cal_all:
         raise KeyError(f"{key}: not located/calibrated (run locate.py, calibrate.py)")
     data = process(key, RESORTS[key], cal_all[key])
+    nxt = [h for h in data["hourly"][:72]]
+    ok = sum(1 for h in nxt if h["summit"].get("precip_mm") is not None and h["summit"].get("temp_f") is not None)
+    if len(nxt) < 48 or ok < 0.8 * len(nxt):  # mostly-blank forecast: keep the old file (health flags staleness)
+        raise RuntimeError(f"{key}: forecast mostly empty ({ok}/{len(nxt)} hours); not publishing")
     tmp = os.path.join(OUT, f".{key}.json")
     json.dump(data, open(tmp, "w"), separators=(",", ":"))
     os.replace(tmp, os.path.join(OUT, f"{key}.json"))  # atomic: the page never reads half a file

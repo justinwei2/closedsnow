@@ -149,6 +149,13 @@ function renderTotals(d, e) {
 function renderAlerts(d) {
   const box = $("#alerts");
   box.replaceChildren();
+  if (d.alerts === null) {  // fetch failed this refresh: unknown, not "no alerts"
+    const card = el("div", { class: "alert" });
+    const bar = el("span", { class: "bar" }); bar.style.background = "var(--muted)";
+    const body = el("div"); body.append(el("b", {}, "NWS alerts unavailable this refresh"), el("div", { class: "when" }, "Check weather.gov for active warnings."));
+    card.append(bar, body); box.append(card);
+    return;
+  }
   for (const a of d.alerts || []) {
     const sev = /warning/i.test(a.event) ? "--critical" : /watch/i.test(a.event) ? "--warning" : "--serious";
     const card = el("div", { class: "alert" });
@@ -301,6 +308,7 @@ function renderDailyTable(d, e) {
 }
 
 function timeChart(container, hours, opts) {
+  if (hours.length < 2) { container.replaceChildren(el("div", { class: "muted" }, "No hourly data.")); return; }
   const f = frame(container, opts.margin || { t: 10, r: 74, b: 24, l: 48 });
   const n = hours.length;
   const X = (i) => f.m.l + (i / (n - 1)) * f.iw;
@@ -446,8 +454,8 @@ function renderModels(d, e) {
   }
   const c = d.calibration;
   $("#cal-note").textContent = c.uncalibrated
-    ? `No nearby automated gauge, so this resort is not individually calibrated: model factors are the median of ${c.peers} calibrated resorts${c.peers ? " in the region" : ""} and models are weighted equally.`
-    : `Each model's precipitation is multiplied by a factor learned at ${c.station} (2024–26 as-issued forecasts) and weighted ∝ 1/error². Models drop out past their range (HRDPS 2 d, NBM 11 d, ICON 7 d, GEM 10 d).`;
+    ? `Not individually calibrated (${d.obs ? "calibration pending" : "no nearby automated gauge"}): model factors are the median of ${c.peers} calibrated ${c.peers_scope === "region" ? "resorts in the region" : "US resorts"} and models are weighted equally.${/British Columbia|Alberta/.test(d.region) ? " Canadian snow climates differ from the US resorts these factors come from, so treat amounts with extra caution." : ""}`
+    : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (HRDPS 2 d, NBM 11 d, ICON 7 d, GEM 10 d).`;
 }
 
 function renderObs(d) {
@@ -490,7 +498,11 @@ function renderObs(d) {
 function renderAfd(d) {
   const box = $("#afd");
   box.replaceChildren();
-  if (!d.afd) { $("#afd-meta").textContent = ""; box.textContent = "No NWS discussion for this location (outside the US)."; return; }
+  if (!d.afd) {
+    $("#afd-meta").textContent = "";
+    box.textContent = /British Columbia|Alberta/.test(d.region) ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
+    return;
+  }
   $("#afd-meta").textContent = `· NWS ${d.afd.office} · ${new Date(d.afd.issued).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
   let text = d.afd.text;
   const s = text.search(/Area Forecast Discussion/i);

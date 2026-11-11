@@ -8,6 +8,7 @@ hourly/daily limits instead of failing. Safe to rerun; skips finished work.
 """
 import glob, json, os, sys
 import sources
+from sources import write_json
 sources.WAIT_ON_QUOTA = True
 import calibrate, config, locate, update
 from catalog import CATALOG
@@ -48,13 +49,13 @@ def merge(d):
         resorts.update(load(os.path.join(part, "resorts.json")))
         cal.update(load(os.path.join(part, "calibration.json")))
     resorts = {k: v for k, v in resorts.items() if k in CATALOG}
-    json.dump(resorts, open(RES_PATH, "w"), indent=1)
+    write_json(RES_PATH, resorts, indent=1)
     config.RESORTS.clear(); config.RESORTS.update(resorts)
     cal = {k: v for k, v in cal.items() if k in resorts}
     for k, r in resorts.items():
         if k not in cal or cal[k].get("uncalibrated"):
             cal[k] = calibrate.regional_default(cal, r)
-    json.dump(cal, open(CAL_PATH, "w"), indent=1)
+    write_json(CAL_PATH, cal, indent=1)
     write_report(resorts, cal)
 
 

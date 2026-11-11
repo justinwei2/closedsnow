@@ -28,7 +28,8 @@ def main():
     now = datetime.now(timezone.utc)
     rows, bad = [], []
     for r in load(url):
-        if r.get("located") is False or (cal is not None and r["key"] not in cal):
+        not_ready = (r.get("calibration") in (None, "not set up yet")) if cal is None else (r["key"] not in cal)
+        if r.get("located") is False or not_ready:
             rows.append((r["name"], "awaiting calibration (backfill)", "")); continue
         limit = FAV_MAX_H if r["key"] in FAVORITES else OTHER_MAX_H
         if not r.get("updated"):
@@ -38,14 +39,19 @@ def main():
             status = "ok" if age <= limit else f"STALE (> {limit} h)"
         rows.append((r["name"], status, f"{age:.1f} h" if age is not None else "–"))
         if status != "ok":
-            bad.append(r["name"])
+            bad.append((r["name"], r["key"] in FAVORITES or status == "MISSING"))
     table = "| Resort | Status | Data age |\n|---|---|---|\n" + "\n".join(f"| {a} | {b} | {c} |" for a, b, c in rows)
-    head = f"### Forecast health: {'❌ ' + str(len(bad)) + ' problem(s)' if bad else '✅ all fresh'}\n\n"
+    # Email (fail the run) for a stale favorite, a missing forecast, or 3+ stale others; a single
+    # straggler is only a warning so one flaky resort doesn't send an email every 3 h.
+    alarm = [n for n, serious in bad if serious] or ([n for n, _ in bad] if len(bad) >= 3 else [])
+    head = f"### Forecast health: {'❌ ' if alarm else '⚠️ ' if bad else '✅ '}{len(bad)} problem(s)\n\n"
     print(head + table)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(head + table + "\n")
-    if bad:
-        print(f"::error::stale or missing forecasts: {', '.join(bad)}")
+    if bad and not alarm:
+        print(f"::warning::stale: {', '.join(n for n, _ in bad)}")
+    if alarm:
+        print(f"::error::stale or missing forecasts: {', '.join(alarm)}")
         sys.exit(1)
 
 

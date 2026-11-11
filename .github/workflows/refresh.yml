@@ -20,7 +20,7 @@ concurrency:
 jobs:
   fetch:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +35,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Restore previous data
-        run: if git fetch --depth 1 origin data; then git checkout FETCH_HEAD -- web/data; fi
+        run: |
+          if ! git ls-remote --exit-code --heads origin data >/dev/null; then echo "no data branch yet"; exit 0; fi
+          for i in 1 2 3; do git fetch --depth 1 origin data && git checkout FETCH_HEAD -- web/data && exit 0; sleep $((i * 10)); done
+          echo "::error::could not restore previous data"; exit 1
       - name: Stagger start
         run: sleep ${{ matrix.delay }}
       - name: Update ${{ matrix.group }}
@@ -43,11 +46,12 @@ jobs:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
         run: |
           touch /tmp/stamp
-          python -u update.py --scheduled --group ${{ matrix.group }} --no-index
+          python -u update.py --scheduled --group ${{ matrix.group }} --no-index || echo "::warning::update exited non-zero"
           mkdir -p out
           find web/data -name '*.json' -newer /tmp/stamp -exec cp {} out/ \;
           ls out
       - uses: actions/upload-artifact@v4
+        if: always()   # each resort file is written atomically, so partial progress is valid
         with:
           name: data-${{ matrix.group }}
           path: out/
@@ -67,7 +71,10 @@ jobs:
         with:
           python-version: "3.12"
       - name: Restore previous data
-        run: if git fetch --depth 1 origin data; then git checkout FETCH_HEAD -- web/data; fi
+        run: |
+          if ! git ls-remote --exit-code --heads origin data >/dev/null; then echo "no data branch yet"; exit 0; fi
+          for i in 1 2 3; do git fetch --depth 1 origin data && git checkout FETCH_HEAD -- web/data && exit 0; sleep $((i * 10)); done
+          echo "::error::could not restore previous data"; exit 1
       - name: Merge fresh region data
         uses: actions/download-artifact@v4
         continue-on-error: true   # a run where every region was already fresh uploads nothing
@@ -76,7 +83,12 @@ jobs:
           path: web/data
           merge-multiple: true
       - name: Rebuild index
-        run: python -c "import update; update.write_index()"
+        run: |
+          before=$(git show FETCH_HEAD:web/data/index.json 2>/dev/null | python -c "import json,sys; print(sum(1 for r in json.load(sys.stdin)['resorts'] if r.get('updated')))" 2>/dev/null || echo 0)
+          python -c "import update; update.write_index()"
+          after=$(python -c "import json; print(sum(1 for r in json.load(open('web/data/index.json'))['resorts'] if r.get('updated')))")
+          echo "resorts with data: before=$before after=$after"
+          if [ "$after" -lt "$before" ]; then echo "::error::resort count dropped ($before -> $after); not publishing"; exit 1; fi
       - name: Save data   # force-push one commit: the repo doesn't grow with every refresh
         env:
           TOKEN: ${{ github.token }}

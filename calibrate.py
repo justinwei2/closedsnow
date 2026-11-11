@@ -10,7 +10,7 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 from config import RESORTS, SEASONS
-from sources import get_json, cache_path, obs_daily
+from sources import get_json, cache_path, obs_daily, write_json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CAL_PATH = os.path.join(HERE, "data", "calibration.json")
@@ -127,7 +127,9 @@ def regional_default(cal, r):
     """For resorts without a usable gauge: median factors / error quantiles of calibrated resorts
     in the same region (else all), equal model weights. Marked uncalibrated."""
     peers = [c for k, c in cal.items() if not c.get("uncalibrated") and RESORTS.get(k, {}).get("region") == r["region"]]
-    peers = peers or [c for c in cal.values() if not c.get("uncalibrated")]
+    scope = "region"
+    if not peers:
+        peers, scope = [c for c in cal.values() if not c.get("uncalibrated")], "all"
     med = lambda xs: sorted(xs)[len(xs) // 2] if xs else 1.0
     models = {m: dict(factor=round(med([p["models"][m]["factor"] for p in peers if m in p["models"]]), 3),
                       weight=round(1 / len(r["models"]), 3), mae72=None, raw_mae72=None, n=0)
@@ -135,7 +137,7 @@ def regional_default(cal, r):
     qs = ("0.1", "0.25", "0.5", "0.75", "0.9")
     return dict(station=None, uncalibrated=True, models=models, blend_mae72=None, n_wet=0,
                 ratio_q={q: round(med([p["ratio_q"][q] for p in peers]), 3) for q in qs},
-                ratio_bins=[], peers=len(peers))
+                ratio_bins=[], peers=len(peers), peers_scope=scope)
 
 
 def main(keys):
@@ -150,11 +152,11 @@ def main(keys):
             print(key, "blend MAE72", cal[key]["blend_mae72"], {m: v["factor"] for m, v in cal[key]["models"].items()})
         except Exception as e:
             print("  calibration failed", key, e, file=sys.stderr)
-        json.dump(cal, open(CAL_PATH, "w"), indent=1)
+        write_json(CAL_PATH, cal, indent=1)
     for key, r in RESORTS.items():
         if key not in cal or cal[key].get("uncalibrated"):
             cal[key] = regional_default(cal, r)
-    json.dump(cal, open(CAL_PATH, "w"), indent=1)
+    write_json(CAL_PATH, cal, indent=1)
 
 
 if __name__ == "__main__":

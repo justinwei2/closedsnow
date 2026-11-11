@@ -4,9 +4,10 @@
     python3 locate.py alta taos  # (re)locate specific ones
 """
 import json, math, os, sys, time
+from datetime import date
 from catalog import CATALOG, MANUAL
 from config import FT, BASE_MODELS, EXTRA_MODELS
-from sources import get_json, QuotaExceeded
+from sources import get_json, QuotaExceeded, write_json
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PATH = os.path.join(HERE, "data", "resorts.json")
@@ -61,7 +62,8 @@ def snotel_near(lat, lon, lo_ft, hi_ft, state_codes):
     for st in state_codes:
         for s in _stations[st]:
             d = km(lat, lon, s["latitude"], s["longitude"])
-            if d <= 25 and lo_ft - 1500 <= s["elevation"] <= hi_ft + 500 and not s.get("endDate", "2100").startswith("19"):
+            active = (s.get("endDate") or "2100") >= date.today().isoformat()  # skip discontinued gauges
+            if d <= 25 and lo_ft - 1500 <= s["elevation"] <= hi_ft + 500 and active:
                 # prefer close and within the lift-served elevation band
                 pen = d + (0 if lo_ft <= s["elevation"] <= hi_ft else 4)
                 cands.append((pen, s))
@@ -80,14 +82,17 @@ def usable_models(lat, lon):
     for m in BASE_MODELS + EXTRA_MODELS:
         try:
             j = get_json("https://api.open-meteo.com/v1/forecast",
-                         dict(latitude=lat, longitude=lon, hourly="precipitation", models=m, forecast_days=2), retries=1)
+                         dict(latitude=lat, longitude=lon, hourly="precipitation", models=m, forecast_days=2))
             if any(v is not None for v in j.get("hourly", {}).get("precipitation", [])):
                 ok.append(m)
         except QuotaExceeded:
             raise  # never record a model as missing just because we were rate limited
-        except RuntimeError:
-            pass
+        except RuntimeError as e:
+            if "HTTP 4" not in str(e):  # only "no data here" (4xx) means the model is absent
+                raise
         time.sleep(0.4)
+    if len([m for m in ok if m in BASE_MODELS]) < 3:
+        raise RuntimeError(f"only {ok} usable at {lat},{lon}; refusing to record (rerun later)")
     return ok
 
 
@@ -131,7 +136,7 @@ def main(keys):
             data[k] = locate(k)
         except Exception as e:
             print("  failed", k, e, file=sys.stderr)
-        json.dump(data, open(PATH, "w"), indent=1)
+        write_json(PATH, data, indent=1)
 
 
 if __name__ == "__main__":

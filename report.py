@@ -16,6 +16,12 @@ LOW_VIS_CLOUD = 90                 # % cloud cover with precipitation during lif
 DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 
 
+def circ_mean(degs):
+    import math
+    x = sum(math.sin(math.radians(d)) for d in degs); y = sum(math.cos(math.radians(d)) for d in degs)
+    return math.degrees(math.atan2(x, y)) % 360
+
+
 def compass(deg):
     return None if deg is None else DIRS[int(((deg % 360) + 22.5) // 45) % 8]
 
@@ -38,7 +44,7 @@ def wind_hold(summit_rows, day):
         return None
     s, g = max(sus), max(gst)
     dirs = [x.get("wind_dir") for x in hrs if x.get("wind_dir") is not None]
-    d = compass(sum(dirs) / len(dirs)) if dirs else None  # crude mean; fine away from N
+    d = compass(circ_mean(dirs)) if dirs else None
     level = ("likely" if s >= HOLD_LIKELY["sustained"] or g >= HOLD_LIKELY["gust"] else
              "possible" if s >= HOLD_POSSIBLE["sustained"] or g >= HOLD_POSSIBLE["gust"] else "low")
     return dict(level=level, sustained_mph=round(s), gust_mph=round(g), dir=d)
