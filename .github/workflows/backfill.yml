@@ -1,0 +1,32 @@
+# One-time / occasional setup for new resorts (locate + calibrate), run manually from the
+# Actions tab. Sleeps through Open-Meteo rate limits, so it can run for hours.
+name: backfill
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Locate + calibrate
+        env:
+          SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
+        # stop before the 6 h job limit so progress gets committed; rerun the workflow to continue
+        run: timeout 320m python -u backfill.py || echo "backfill stopped early; rerun to continue"
+      - name: Commit progress
+        if: always()
+        run: |
+          git config user.name "skisite-bot"
+          git config user.email "skisite-bot@users.noreply.github.com"
+          git add data web/data
+          git diff --cached --quiet || git commit -m "backfill: locate/calibrate"
+          git pull --rebase --autostash && git push

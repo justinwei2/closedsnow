@@ -1,0 +1,43 @@
+# Refresh forecasts on GitHub's machines and publish web/ to GitHub Pages.
+# Favorites refresh every run; other resorts every ~12 h (update.py --scheduled).
+name: refresh
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # every 3 h, off the hour (GitHub may delay scheduled runs)
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Update forecasts
+        env:
+          SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
+        run: python update.py --scheduled
+      - name: Commit data   # keeps forecast history and keeps the schedule from auto-disabling
+        run: |
+          git config user.name "skisite-bot"
+          git config user.email "skisite-bot@users.noreply.github.com"
+          git add web/data
+          git diff --cached --quiet || git commit -m "data: refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase --autostash && git push
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web
+      - id: deploy
+        uses: actions/deploy-pages@v4

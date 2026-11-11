@@ -1,0 +1,380 @@
+{
+ "palisades": {
+  "name": "Palisades Tahoe",
+  "sub": "Olympic Valley side",
+  "region": "California",
+  "pass_": "Ikon",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 39.1969,
+   "lon": -120.2354,
+   "ft": 6200,
+   "label": "Village"
+  },
+  "mid": {
+   "lat": 39.1899,
+   "lon": -120.2658,
+   "ft": 8000,
+   "label": "High Camp"
+  },
+  "summit": {
+   "lat": 39.1985,
+   "lon": -120.2936,
+   "ft": 9006,
+   "label": "Granite Chief"
+  },
+  "dem_ft": {
+   "base": 6214,
+   "mid": 8015,
+   "summit": 8898
+  },
+  "obs": [
+   "snotel",
+   "784:CA:SNTL",
+   "Palisades Tahoe SNOTEL (High Camp area)",
+   8010,
+   39.18986,
+   -120.26576
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "alpine": {
+  "name": "Alpine Meadows",
+  "sub": "Palisades Tahoe \u2013 Alpine side",
+  "region": "California",
+  "pass_": "Ikon",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 39.1645,
+   "lon": -120.2386,
+   "ft": 6835,
+   "label": "Base lodge"
+  },
+  "mid": {
+   "lat": 39.1567,
+   "lon": -120.2431,
+   "ft": 7500,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 39.1489,
+   "lon": -120.2476,
+   "ft": 8637,
+   "label": "Ward Peak"
+  },
+  "dem_ft": {
+   "base": 6906,
+   "mid": 7487,
+   "summit": 8471
+  },
+  "obs": [
+   "snotel",
+   "848:CA:SNTL",
+   "Ward Creek #3 SNOTEL",
+   6750,
+   39.13545,
+   -120.21865
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "kirkwood": {
+  "name": "Kirkwood",
+  "sub": "",
+  "region": "California",
+  "pass_": "Epic",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 38.6847,
+   "lon": -120.0654,
+   "ft": 7800,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 38.675,
+   "lon": -120.063,
+   "ft": 8300,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 38.665,
+   "lon": -120.061,
+   "ft": 9876,
+   "label": "Thimble Peak ridge"
+  },
+  "dem_ft": {
+   "base": 7795,
+   "mid": 8310,
+   "summit": 9629
+  },
+  "obs": [
+   "snotel",
+   "1067:CA:SNTL",
+   "Carson Pass SNOTEL",
+   8360,
+   38.6927,
+   -120.0022
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "mammoth": {
+  "name": "Mammoth Mountain",
+  "sub": "",
+  "region": "California",
+  "pass_": "Ikon",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 37.651,
+   "lon": -119.027,
+   "ft": 8900,
+   "label": "Main Lodge"
+  },
+  "mid": {
+   "lat": 37.6385,
+   "lon": -119.0215,
+   "ft": 9600,
+   "label": "McCoy Station"
+  },
+  "summit": {
+   "lat": 37.628,
+   "lon": -119.0325,
+   "ft": 11053,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 8780,
+   "mid": 9521,
+   "summit": 10945
+  },
+  "obs": [
+   "cdec",
+   "MHP",
+   "Mammoth Pass (CDEC)",
+   9400,
+   37.61,
+   -119.033
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ],
+  "afd_office": "REV"
+ },
+ "bachelor": {
+  "name": "Mt. Bachelor",
+  "sub": "",
+  "region": "Pacific Northwest",
+  "pass_": "Ikon",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 44.0022,
+   "lon": -121.6675,
+   "ft": 6300,
+   "label": "West Village"
+  },
+  "mid": {
+   "lat": 43.9867,
+   "lon": -121.6816,
+   "ft": 7700,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 43.979,
+   "lon": -121.6886,
+   "ft": 9065,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 6322,
+   "mid": 7733,
+   "summit": 9022
+  },
+  "obs": [
+   "snotel",
+   "21E26:OR:SNOW",
+   "New Dutchman #3 SNOTEL",
+   6300,
+   44.01048,
+   -121.66385
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "snowbird": {
+  "name": "Snowbird",
+  "sub": "",
+  "region": "Utah",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 40.5772,
+   "lon": -111.6713,
+   "ft": 7760,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 40.5617,
+   "lon": -111.6602,
+   "ft": 9600,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 40.5485,
+   "lon": -111.6508,
+   "ft": 11000,
+   "label": "Hidden Peak"
+  },
+  "dem_ft": {
+   "base": 7861,
+   "mid": 9636,
+   "summit": 11017
+  },
+  "obs": [
+   "snotel",
+   "766:UT:SNTL",
+   "Snowbird SNOTEL",
+   9170,
+   40.56914,
+   -111.65852
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "brighton": {
+  "name": "Brighton",
+  "sub": "",
+  "region": "Utah",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 40.598,
+   "lon": -111.5858,
+   "ft": 8755,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 40.5938,
+   "lon": -111.5672,
+   "ft": 9700,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 40.592,
+   "lon": -111.5595,
+   "ft": 10500,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 8773,
+   "mid": 9678,
+   "summit": 10427
+  },
+  "obs": [
+   "snotel",
+   "366:UT:SNTL",
+   "Brighton SNOTEL",
+   8790,
+   40.59936,
+   -111.58167
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "solitude": {
+  "name": "Solitude",
+  "sub": "",
+  "region": "Utah",
+  "pass_": "Ikon",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 40.6277,
+   "lon": -111.5996,
+   "ft": 7988,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 40.601,
+   "lon": -111.5687,
+   "ft": 9300,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 40.594,
+   "lon": -111.5606,
+   "ft": 10488,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 7989,
+   "mid": 9331,
+   "summit": 10413
+  },
+  "obs": [
+   "snotel",
+   "366:UT:SNTL",
+   "Brighton SNOTEL",
+   8790,
+   40.59936,
+   -111.58167
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ }
+}

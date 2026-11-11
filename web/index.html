@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snow Report</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="viz-root">
+  <header class="top">
+    <div class="brand">Snow Report</div>
+    <div class="search" id="search">
+      <input id="q" type="search" placeholder="Search resorts — Alta, Whistler, Ikon, Colorado…" autocomplete="off"
+             role="combobox" aria-expanded="false" aria-controls="results" aria-label="Search resorts">
+      <ul id="results" class="results" role="listbox" hidden></ul>
+    </div>
+    <nav id="favs" aria-label="Favorite resorts"></nav>
+    <div class="top-right">
+      <span id="updated" class="muted"></span>
+      <button id="theme" type="button" aria-label="Toggle dark mode">◐</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <section class="title-row">
+      <div>
+        <h1><span id="r-name"></span> <span id="r-pass" class="pass"></span></h1>
+        <div id="r-sub" class="muted"></div>
+      </div>
+      <div class="seg big" role="tablist" id="elev-toggle" aria-label="Elevation"></div>
+    </section>
+
+    <div id="loading" class="card loading" hidden>Fetching forecast for this resort… (first load takes ~30 s)</div>
+
+    <div id="content">
+      <section id="alerts"></section>
+
+      <section class="card">
+        <div class="totals">
+          <div class="tgroup"><div class="tg-label">Past</div><div id="past" class="tiles"></div></div>
+          <div class="tgroup grow"><div class="tg-label">Forecast <span class="muted">· likely range = middle 50% of outcomes</span></div><div id="next" class="tiles"></div></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Weather report</h2><span class="muted" id="report-sub"></span></div>
+        <div id="report" class="report"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Snowfall</h2><span class="muted" id="snow-sub"></span></div>
+        <div id="daily-chart" class="chart"></div>
+        <div class="legend" id="daily-legend"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Daily forecast</h2><span class="muted" id="daily-sub"></span></div>
+        <div class="table-wrap"><table id="daily-table" class="grid"></table></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Snow level &amp; freezing level</h2><span class="muted">next 7 days, hourly</span></div>
+        <div id="level-chart" class="chart"></div>
+        <div class="legend" id="level-legend"></div>
+        <div id="precip-chart" class="chart short"></div>
+        <div class="legend" id="precip-legend"></div>
+      </section>
+
+      <section class="appendix">
+        <h2 class="app-h">Details</h2>
+        <details class="card"><summary><h2>Models</h2></summary>
+          <div class="table-wrap"><table id="models-table" class="grid models"></table></div>
+          <p class="fine" id="cal-note"></p>
+        </details>
+        <details class="card"><summary><h2>Station observations</h2> <span class="muted" id="obs-station"></span></summary>
+          <div id="obs-tiles" class="tiles small"></div>
+          <div id="obs-chart" class="chart short"></div>
+          <div class="legend" id="obs-legend"></div>
+        </details>
+        <details class="card"><summary><h2>NWS forecast discussion</h2> <span class="muted" id="afd-meta"></span></summary>
+          <div id="afd" class="afd"></div>
+        </details>
+        <details class="card"><summary><h2>Wide range (10–90%)</h2></summary>
+          <div class="table-wrap"><table id="wide-table" class="grid"></table></div>
+          <p class="fine">10–90% captures 8 of 10 outcomes. The top end matters: models historically under-forecast the biggest storms.</p>
+        </details>
+        <details class="card"><summary><h2>Forecast points &amp; calibration</h2></summary>
+          <div class="table-wrap"><table id="points-table" class="grid"></table></div>
+          <div class="table-wrap"><table id="cal-table" class="grid"></table></div>
+        </details>
+        <details class="card"><summary><h2>How this forecast is made</h2></summary>
+          <div class="method" id="method"></div>
+        </details>
+      </section>
+    </div>
+  </main>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
