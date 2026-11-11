@@ -25,7 +25,9 @@ def load(p):
 def run(group=None, out=None):
     keys = [k for k, c in CATALOG.items() if not group or c[2] in update.GROUPS[group]]
     resorts = load(RES_PATH)
-    locate.main([k for k in keys if k not in resorts])
+    missing = [k for k in keys if k not in resorts]
+    if missing:  # locate.main([]) means "all missing", so only call it with real work
+        locate.main(missing)
     resorts = load(RES_PATH)
     config.RESORTS.clear(); config.RESORTS.update(resorts)  # modules share this dict
     cal = load(CAL_PATH)
