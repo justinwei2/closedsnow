@@ -7,10 +7,9 @@ as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate lim
     python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, regional defaults, CALIBRATION.md
 """
 import glob, json, math, os, sys, time
-from datetime import date, datetime, timedelta
-from zoneinfo import ZoneInfo
+from datetime import date, timedelta
 import sources as src
-from resorts import (BASE_MODELS, CATALOG, DATA, ELEVS, EXTRA_MODELS, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
+from resorts import (BASE_MODELS, BC_REGIONS, CATALOG, DATA, ELEVS, EXTRA_MODELS, FT, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
                      Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
 
 STEP = 0.003                        # deg, ~300 m DEM search grid
@@ -68,6 +67,26 @@ def nearest_snotel(lat, lon, lo_ft, hi_ft, states):
     return Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]), s["latitude"], s["longitude"])
 
 
+def nearest_bcasws(lat, lon, lo_ft, hi_ft):
+    """Closest active BC snow pillow with a precipitation gauge, same rules as nearest_snotel."""
+    if "bc" not in _stations:
+        j = src.get_json("https://openmaps.gov.bc.ca/geo/pub/wfs", dict(
+            service="WFS", version="2.0.0", request="GetFeature", outputFormat="json", srsName="EPSG:4326",
+            typeName="WHSE_WATER_MANAGEMENT.SSL_SNOW_ASWS_STNS_SP"))
+        with_pc = set(src.get_json(src.BC_ASWS + "PC.csv", parse=lambda fh: [c.split(" ")[0] for c in fh.readline().decode().split(",")]))
+        _stations["bc"] = [f["properties"] for f in j["features"]
+                           if f["properties"]["STATUS"] == "Active" and f["properties"]["LOCATION_ID"] in with_pc]
+    cands = []
+    for s in _stations["bc"]:
+        d, ft = km(lat, lon, s["LATITUDE"], s["LONGITUDE"]), s["ELEVATION"] / FT
+        if d <= 25 and lo_ft - 1500 <= ft <= hi_ft + 500:
+            cands.append((d + (0 if lo_ft <= ft <= hi_ft else 4), s, ft))
+    if not cands:
+        return None
+    _, s, ft = min(cands, key=lambda c: c[0])
+    return Gauge("bcasws", s["LOCATION_ID"], f"{s['LOCATION_NAME']} (BC snow pillow)", round(ft), s["LATITUDE"], s["LONGITUDE"])
+
+
 def usable_models(lat, lon):
     ok = []
     for m in BASE_MODELS + EXTRA_MODELS:
@@ -88,7 +107,7 @@ def usable_models(lat, lon):
 def locate(key):
     name, region, tz, b, s = CATALOG[key]
     man = MANUAL.get(key, {})
-    if man:  # hand-verified points
+    if "mid" in man:  # hand-verified points
         base, summit, mid = b[:3], s[:3], man["mid"][:3]
         mlabel = man["mid"][3]
         dem = dict(zip(ELEVS, src.elevations([base[:2], mid[:2], summit[:2]])))
@@ -103,7 +122,8 @@ def locate(key):
         dem = dict(base=bb[2], mid=mp[2], summit=sb[2])
     pt = lambda p, label: Point(round(p[0], 4), round(p[1], 4), p[2], label)
     gauge = (Gauge(*man["gauge"]) if man.get("gauge") else
-             nearest_snotel(mid[0], mid[1], b[2], s[2], SNOTEL_STATES[region]) if region in SNOTEL_STATES else None)
+             nearest_snotel(mid[0], mid[1], b[2], s[2], SNOTEL_STATES[region]) if region in SNOTEL_STATES else
+             nearest_bcasws(mid[0], mid[1], b[2], s[2]) if region in BC_REGIONS else None)
     r = Resort(key, name, region, tz, pt(base, b[3]), pt(mid, mlabel), pt(summit, s[3]), gauge,
                usable_models(summit[0], summit[1]), {k: round(v) for k, v in dem.items()}, man.get("afd_office"))
     warn = [f"{e} DEM {r.dem_ft[e]} vs {r.point(e).ft}" for e in ("base", "summit") if abs(r.dem_ft[e] - r.point(e).ft) > 600]
@@ -115,8 +135,8 @@ def locate(key):
 # ---------------------------------------------------------------- calibrate
 
 def std_tz(tz):
-    """Fixed-offset zone for the resort's standard time (SNOTEL days ignore DST)."""
-    return f"Etc/GMT{-int(datetime(2025, 1, 15, tzinfo=ZoneInfo(tz)).utcoffset().total_seconds() / 3600):+d}"
+    """Fixed-offset zone for the resort's standard time (station days ignore DST)."""
+    return f"Etc/GMT{-int(src.std_offset_h(tz)):+d}"
 
 
 def hindcast(r, model, start, end):
@@ -163,7 +183,7 @@ def quantile(xs, q):
 def calibrate_one(r):
     obs, obs_t = {}, {}  # gauge precip (mm) and mean temperature (C) by day
     for s, e in SEASONS:
-        st = src.StationSeries.fetch(r.gauge, s, (date.fromisoformat(e) + timedelta(3)).isoformat())
+        st = src.StationSeries.fetch(r.gauge, s, (date.fromisoformat(e) + timedelta(3)).isoformat(), r.tz)
         obs.update({date.fromisoformat(k): v for k, v in st.precip_mm().items()})
         obs_t.update({date.fromisoformat(d.date): (d.temp_f - 32) / 1.8 for d in st.days if d.temp_f is not None})
     cal, pairs_by, ext, temps = {}, {}, {}, {}

@@ -14,9 +14,10 @@
   --seq-100: #cde2fb; --seq-200: #9ec5f4; --seq-300: #6da7ec; --seq-400: #3987e5;
   --seq-500: #256abf; --seq-600: #184f95; --seq-700: #0d366b;
   --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
-  /* precipitation quality: orange = snow (deeper = drier), purple = mixed / rain;
+  /* precipitation type: orange = snow, purple = mixed / sleet, blue = rain (reference categorical
+     steps; mixed vs rain is a weak CVD pair, so both always carry a text label);
      yellow (--warning) is reserved for warnings */
-  --q-powder: #d4561f; --q-medium: #f29a6e; --q-heavy: #f7c3a6; --q-mixed: #a99cf0; --q-rain: #6250d6;
+  --q-snow: #eb6834; --q-mixed: #6250d6; --q-rain: #2a78d6;
 }
 /* dark: OS setting unless the toggle says light; toggle wins both ways */
 @media (prefers-color-scheme: dark) {
@@ -25,7 +26,7 @@
     --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-    --q-powder: #e0622c; --q-medium: #f6a985; --q-heavy: #f9cfb6; --q-mixed: #b1a6f2; --q-rain: #7466e0;
+    --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -33,7 +34,7 @@
   --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-  --q-powder: #e0622c; --q-medium: #f6a985; --q-heavy: #f9cfb6; --q-mixed: #b1a6f2; --q-rain: #7466e0;
+  --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
 }
 
 /* ---- base */
@@ -247,7 +248,7 @@ table.hourly th .muted { font-weight: 400; font-size: 11px; }
 table.hourly td.rowh { min-width: 150px; color: var(--muted); font-size: 11px; white-space: nowrap; }
 table.hourly td.rowh b { color: var(--text-primary); font-size: 12px; font-weight: 600; }
 table.hourly .past { opacity: .5; }
-table.hourly .now { background: color-mix(in srgb, var(--q-powder) 10%, transparent); }
+table.hourly .now { background: color-mix(in srgb, var(--q-snow) 10%, transparent); }
 .tabs-seg { margin-bottom: 10px; }
 .tabs-seg button { padding: 5px 14px; }
 .asq { cursor: default; outline: none; }

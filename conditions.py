@@ -121,15 +121,12 @@ def slr_at(profile, z):
     return min(SLR_MAX, max(SLR_MIN, slr))
 
 
-def quality(slr, frac, warm_nose=False):
-    """Skier-facing label for precipitation at an elevation (first match wins):
-    rain | mixed (rain/snow or sleet) | powder | medium | heavy (by new-snow density)."""
+def quality(frac, warm_nose=False):
+    """Skier-facing label for precipitation at an elevation: rain | mixed (rain/snow or sleet) | snow.
+    How dry the snow is shows as its snow ratio."""
     if frac < 0.2:
         return "rain"
-    if warm_nose or frac < 0.8:
-        return "mixed"
-    dens = 100.0 / slr
-    return "powder" if dens < 8 else "medium" if dens < 12 else "heavy"
+    return "mixed" if warm_nose or frac < 0.8 else "snow"
 
 
 # ---------------------------------------------------------------- weather report
@@ -174,7 +171,6 @@ def powder_morning(summit, day):
 
 
 POWDER_12H_IN = 4  # powder alert: 12 h snowfall with good quality
-GOOD = {"powder", "medium"}
 BAD = {"mixed", "rain"}
 
 
@@ -182,8 +178,8 @@ def half_alerts(row, hrs, day, name, summit_hrs):
     """Alert squares for a 12 h row: powder and wet/icy precip (this elevation), plus warnings.
     Wind holds are mountain-wide: always judged from the summit ridge wind."""
     out = []
-    if row["snow_in"] >= POWDER_12H_IN and row.get("quality") in GOOD:
-        out.append(dict(kind="powder", text=f"Powder: {round(row['snow_in'])}\" of {row['quality']} snow" if row["quality"] != "powder" else f"Powder: {round(row['snow_in'])}\""))
+    if row["snow_in"] >= POWDER_12H_IN and row.get("quality") == "snow":
+        out.append(dict(kind="powder", text=f"Powder: {round(row['snow_in'])}\" of snow"))
     if row["liquid_in"] >= 0.05 and row.get("quality") in BAD:
         out.append(dict(kind="wet", text="Sleet / freezing rain risk" if row.get("sleet") else row["quality"].capitalize()))
     w = wind_hold(summit_hrs, day) if name == "day" else None

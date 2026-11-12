@@ -24,7 +24,7 @@
     <nav class="toc card">
       <a href="#points">1. Forecast Points</a><a href="#blend">2. Precipitation Blend</a><a href="#calibration">3. Calibration</a>
       <a href="#ranges">4. Likely Range</a><a href="#phase">5. Rain vs Snow &amp; Snow Level</a><a href="#slr">6. Snow Ratio</a>
-      <a href="#quality">7. Snow-Quality Labels</a><a href="#report">8. Weather Report</a><a href="#past">9. Days &amp; Spread Charts</a>
+      <a href="#quality">7. Precipitation Type</a><a href="#report">8. Weather Report</a><a href="#past">9. Days &amp; Spread Charts</a>
       <a href="#refresh">10. Refresh &amp; Reliability</a><a href="#limits">11. Limitations</a><a href="#data">12. Data Sources</a>
     </nav>
 
@@ -101,15 +101,13 @@
     </section>
 
     <section class="card" id="quality">
-      <h2>7. Snow-Quality Labels</h2>
+      <h2>7. Precipitation Type</h2>
       <p>One label per elevation per day, only when there's more than 1 mm of liquid. Checks run top to bottom; the first match wins. Snow fraction is precipitation-weighted.</p>
       <table class="grid"><tr><th>Label</th><th>Rule</th><th>Meaning</th></tr>
         <tr><td>Rain</td><td>snow fraction &lt; 20%</td><td>Mostly rain at this elevation</td></tr>
         <tr><td>Mixed / sleet</td><td>snow fraction 20–80%, or any wet hour with a warm-nose sounding</td><td>Snow level near this elevation (wet snow and rain), or sleet / freezing rain: snow forms aloft (a layer &lt; −5 °C above), melts in a layer &gt; +2 °C, then falls into air with T<sub>w</sub> ≤ 0 °C. Sleet raises its own alert.</td></tr>
-        <tr><td>Powder</td><td>density &lt; 8% (SLR &gt; 12.5)</td><td>Light, dry snow</td></tr>
-        <tr><td>Medium</td><td>8–12% (SLR 8.3–12.5)</td><td>Supportive powder</td></tr>
-        <tr><td>Heavy</td><td>≥ 12% (SLR ≤ 8.3)</td><td>Dense to wet "Sierra cement"</td></tr></table>
-      <p>Colours: orange = snow (deeper = drier), purple = mixed / sleet and rain. Yellow is reserved for warnings such as wind holds. <span class="tag">rule of thumb</span> The density cutoffs aren't yet calibrated against measured new-snow density (e.g. Central Sierra Snow Lab). Heavy/wet comes from warmth near the surface, physically closer to rain. Sleet needs warm air <i>above</i> cold air.</p>
+        <tr><td>Snow</td><td>snow fraction ≥ 80%</td><td>How dry it is shows as the snow ratio: above ~12:1 is light and dry, below ~8:1 is dense or wet</td></tr></table>
+      <p>Colours: orange = snow, purple = mixed / sleet, blue = rain. Yellow is reserved for warnings such as wind holds. <span class="tag">rule of thumb</span> The 20% / 80% snow-fraction cutoffs. Sleet needs warm air <i>above</i> cold air; wet snow comes from warmth near the surface.</p>
     </section>
 
     <section class="card" id="report">
@@ -130,7 +128,7 @@
     <section class="card" id="past">
       <h2>9. Days, Past Snowfall &amp; Spread Charts</h2>
       <ul>
-        <li><b>Ski day</b> = 6am to 6am the next morning, split into morning (6–12), afternoon (12–6pm) and night (6pm–6am). Each part's powder-quality bar uses the same quality rules (§7) on that part's hours.</li>
+        <li><b>Ski day</b> = 6am to 6am the next morning, split into morning (6–12), afternoon (12–6pm) and night (6pm–6am). Each part's bar is coloured by the precipitation type (§7) of that part's hours.</li>
         <li><b>Summary</b>: last 7 ski days, last 24 hours, next 1–5 days (the rest of today plus 4 days) and next 6–10 days.</li>
         <li><b>Snow &amp; rain chart</b>: amounts per 12-hour period (daytime 6am–6pm, nighttime 6pm–6am), matching the daily overview, for the last 7 days (model estimate) and the next 10. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. Whiskers show the members' weighted middle 50% (thick) and middle 90% (thin) per period, widened if needed to include the forecast.</li>
         <li><b>Model estimate</b>: the same blend and phase/ratio maths applied to the last 7 days of the models' short-range forecasts. An estimate, not a measurement.</li>

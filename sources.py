@@ -1,15 +1,17 @@
 """Data sources, each mapped onto a small typed record:
 
 - Open-Meteo forecast / ensemble / previous-runs  -> ModelGrid (hourly series per model)
-- NRCS SNOTEL and California CDEC                 -> StationSeries of StationDay
+- NRCS SNOTEL, California CDEC, BC snow pillows (ASWS)
+  and Alberta Rivers stations                      -> StationSeries of StationDay
 - NWS alerts and forecast discussions            -> Alert, Discussion
 
 HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, optional replay.
 """
-import hashlib, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
+import csv, hashlib, io, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
-from resorts import FT, IN, LEVELS, PROFILE_MODELS, USER_AGENT, Gauge
+from datetime import date, datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+from resorts import FT, IN, LEVELS, PROFILE_MODELS, SEASONS, USER_AGENT, Gauge
 
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 WAIT_ON_QUOTA = False  # setup jobs set True: sleep through Open-Meteo hourly/daily limits
@@ -31,28 +33,28 @@ def write_json(path, obj, **kw):
     os.replace(tmp, path)
 
 
-def get_json(url, params=None, retries=6):
-    """GET JSON with retries. SKISITE_REPLAY=dir records responses on first use and replays them
-    afterwards (deterministic regression tests)."""
+def get_json(url, params=None, retries=6, parse=json.load):
+    """GET JSON (or whatever `parse` makes of the response) with retries. SKISITE_REPLAY=dir records
+    responses on first use and replays them afterwards (deterministic regression tests)."""
     if params:
         url += "?" + urllib.parse.urlencode(params)
     replay = os.environ.get("SKISITE_REPLAY")
     if not replay:
-        return _fetch(url, retries)
+        return _fetch(url, retries, parse)
     path = os.path.join(replay, hashlib.sha1(url.encode()).hexdigest() + ".json")
     if not os.path.exists(path):
         os.makedirs(replay, exist_ok=True)
-        write_json(path, _fetch(url, retries))
+        write_json(path, _fetch(url, retries, parse))
     return json.load(open(path))
 
 
-def _fetch(url, retries):
+def _fetch(url, retries, parse=json.load):
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
     attempt = 0
     while attempt < retries:
         try:
-            with urllib.request.urlopen(req, timeout=90) as r:
-                return json.load(r)
+            with urllib.request.urlopen(req, timeout=300) as r:
+                return parse(r)
         except urllib.error.HTTPError as e:
             try:
                 reason = json.load(e).get("reason", "")
@@ -177,7 +179,114 @@ def has_model(lat, lon, model):
     return any(v is not None for v in j.get("hourly", {}).get("precipitation", []))
 
 
-# ---------------------------------------------------------------- stations (SNOTEL, CDEC)
+# ---------------------------------------------------------------- stations
+
+def std_offset_h(tz):
+    """UTC offset (h) of the zone's standard time: station days ignore DST, like SNOTEL's."""
+    return datetime(2025, 1, 15, tzinfo=ZoneInfo(tz)).utcoffset().total_seconds() / 3600
+
+
+def _local_days(rows, tz, utc_offset_h=0.0):
+    """Group (time, value) rows (time at UTC+utc_offset_h) into the zone's standard-time days."""
+    shift = timedelta(hours=std_offset_h(tz) - utc_offset_h)
+    by = {}
+    for t, v in sorted(rows):
+        by.setdefault((datetime.fromisoformat(t) + shift).date().isoformat(), []).append(v)
+    return by
+
+
+def _mean(vs, per_day):
+    return sum(vs) / len(vs) if len(vs) >= 0.75 * per_day else None
+
+
+def _cumulative(daily_mm, start, end):
+    """Daily totals (mm) -> start-of-day running total (in), SNOTEL style. A day without a
+    total leaves the next reading out, so no daily amount is made up across the gap."""
+    out, cum, d = [], 0.0, date.fromisoformat(start)
+    gap = False
+    while d.isoformat() <= end:
+        k = d.isoformat()
+        if not gap:
+            out.append((k, cum / IN))
+        gap = daily_mm.get(k) is None
+        cum += daily_mm.get(k) or 0.0
+        d += timedelta(1)
+    return out
+
+
+BC_ASWS = "https://www.env.gov.bc.ca/wsd/data_searches/snow/asws/data/"
+
+
+def _bc_column(sid, since):
+    """Parser for a BC ASWS wide CSV (hourly UTC rows, one column per station): one station's rows."""
+    def parse(fh):
+        r = csv.reader(io.TextIOWrapper(fh, encoding="utf-8-sig"))
+        i = next((k for k, c in enumerate(next(r)) if c.split(" ")[0] == sid), None)
+        return [] if i is None else [(row[0], float(row[i])) for row in r
+                                     if row[0] >= since and i < len(row) and row[i] not in ("", "NaN")]
+    return parse
+
+
+BC_FILES = {"PC": ("PC.csv", "PC_Archive.csv"), "SD": ("SD.csv", "SD_Archive.csv"),  # (current, archive)
+            "TA": ("TA.csv", "TA_Archive.csv"), "SW": ("SWDaily.csv", "SW_DailyArchive.csv")}
+
+
+def bc_asws(element, sid, start):
+    """(UTC time, value) rows for one BC snow-pillow station since start. The current files cover
+    the water year (from Oct 1); older dates come from the archive (6-85 MB, extracted once)."""
+    today = date.today()
+    wy = f"{today.year - (today.month < 10)}-10-01"
+    current, archive = BC_FILES[element]
+    if start >= wy:
+        return get_json(BC_ASWS + current, parse=_bc_column(sid, start))
+    since = min(s for s, _ in SEASONS)
+    rows = cached(f"bcasws_{element}_{sid}_{since}.json", lambda: get_json(BC_ASWS + archive, parse=_bc_column(sid, since)))
+    return [r for r in rows if r[0] >= start] + bc_asws(element, sid, wy)
+
+
+AB_RIVERS = "https://rivers.alberta.ca/"
+AB_UTC_H = -7  # Alberta Rivers timestamps are MST all year
+
+
+def _wiski_csv(fh):
+    """Alberta WISKI download: '#' header lines, then 'Timestamp;Value' rows."""
+    return [(t, float(v)) for t, v in (line.strip().split(";") for line in io.TextIOWrapper(fh)
+                                       if line.strip() and not line.startswith("#")) if v not in ("", "NaN")]
+
+
+def _alberta(gauge, start, end, tz):
+    """Alberta Rivers station, id 'station:precip-TSID'. Precipitation history (15-min increments)
+    from the WISKI download; air temperature (hourly) only from the 5-day live table. Its snow depth
+    is skipped: readings jump between -25 and 290 cm."""
+    sid, tsid = gauge.id.split(":")
+    pc = get_json(AB_RIVERS + "WiskiLiveDataService/Download",
+                  dict(tsId=tsid, to=end, filename="pc", zip="false", json="false", **{"from": start}), parse=_wiski_csv)
+    daily = {d: sum(vs) for d, vs in _local_days(pc, tz, AB_UTC_H).items() if len(vs) >= 0.75 * 96}
+    raw = {"PREC": _cumulative(daily, start, end)}
+    if end >= (date.today() - timedelta(4)).isoformat():
+        j = get_json(AB_RIVERS + f"apps/Basins/data/figures/river/abrivers/envdata/envdata_{sid}_table.json")
+        cols = [m["parameter_name"] for m in j["ts_metadata"]]
+        for name, el, conv, agg in (("TA", "TAVG", lambda c: c * 1.8 + 32, lambda vs: _mean(vs, 24)),):
+            if name in cols:
+                k = cols.index(name) + 1
+                rows = [(r["values"][0], r["values"][k]) for r in j["data"] if r["values"][k] is not None]
+                raw[el] = [(d, conv(a)) for d, vs in _local_days(rows, tz, AB_UTC_H).items() if (a := agg(vs)) is not None]
+    return raw
+
+
+def _bc(gauge, start, end, tz):
+    """BC snow pillow: cumulative precip, SWE (daily, 8am PST), depth and air temp (hourly UTC)."""
+    raw = {}
+    for name, el, conv, agg in (("PC", "PREC", lambda mm: mm / IN, lambda vs: vs[0]),
+                                ("SW", "WTEQ", lambda mm: mm / IN, lambda vs: vs[0]),
+                                ("SD", "SNWD", lambda cm: cm / 2.54, lambda vs: vs[0]),
+                                ("TA", "TAVG", lambda c: c * 1.8 + 32, lambda vs: _mean(vs, 24))):
+        if name == "SD" and start < (date.today() - timedelta(30)).isoformat():
+            continue  # depth isn't used for calibration: skip its 43 MB archive
+        rows = [r for r in bc_asws(name, gauge.id, start) if r[0][:10] <= end]
+        raw[el] = [(d, conv(a)) for d, vs in _local_days(rows, tz).items() if (a := agg(vs)) is not None]
+    return raw
+
 
 @dataclass
 class StationDay:
@@ -191,14 +300,19 @@ class StationDay:
 
 
 class StationSeries:
-    """Daily readings from a SNOTEL or CDEC gauge, plus the daily amounts derived from them."""
+    """Daily readings from a gauge (SNOTEL, CDEC, BC ASWS, Alberta Rivers), plus the daily amounts derived from them."""
 
     def __init__(self, days):
         self.days = sorted(days, key=lambda d: d.date)
 
     @classmethod
-    def fetch(cls, gauge, start, end):
-        if gauge.kind == "snotel":
+    def fetch(cls, gauge, start, end, tz="UTC"):
+        """Readings from start to end; tz: the resort's zone, for gauges that report hourly in UTC."""
+        if gauge.kind == "bcasws":
+            raw = _bc(gauge, start, end, tz)
+        elif gauge.kind == "abrivers":
+            raw = _alberta(gauge, start, end, tz)
+        elif gauge.kind == "snotel":
             j = get_json("https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
                          dict(stationTriplets=gauge.id, elements="PREC,WTEQ,SNWD,TAVG", duration="DAILY",
                               beginDate=start, endDate=end))

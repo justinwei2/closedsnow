@@ -10,14 +10,13 @@ const MODEL_NAMES = {
   gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)",
   gem_hrdps_continental: "HRDPS 2.5 km",
 };
-const QUALITY = {  // one colour per label everywhere: orange = snow (deeper = drier), purple = mixed / rain
-  "powder": { sw: "--q-powder", text: "Powder" },
-  "medium": { sw: "--q-medium", text: "Medium" },
-  "heavy": { sw: "--q-heavy", text: "Heavy" },
+const QUALITY = {  // one colour per label everywhere: orange = snow, purple = mixed / sleet, blue = rain
+  "snow": { sw: "--q-snow", text: "Snow" },
   "mixed": { sw: "--q-mixed", text: "Mixed / sleet" },
   "rain": { sw: "--q-rain", text: "Rain" },
 };
-const ALERT = { powder: "--q-powder", wet: "--q-mixed", warn: "--warning", info: "--muted" };  // daily-overview alert squares
+const qual = (q) => QUALITY[q] || { sw: "--muted", text: q || "–" };  // unknown labels (older data) stay grey
+const ALERT = { powder: "--q-snow", wet: "--q-mixed", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
 const NOTE_ALERT = { powder: "powder", rain: "wet", sleet: "wet", vis: "info" };  // weather-report note -> alert
 // weather-report note styling: status colours always ship with an icon + text
@@ -65,8 +64,8 @@ function niceMax(v, steps = 4) {
 
 const ratio = (slr) => slr ? `${slr.toFixed(0)}:1` : null;
 function snowRatio(quality, slr) {  // swatch in the quality colour + ratio; mixed / rain show the label
-  const q = QUALITY[quality];
-  if (!q) return el("span", { class: "muted" }, "–");
+  if (!quality) return el("span", { class: "muted" }, "–");
+  const q = qual(quality);
   const c = el("span", { class: "ratio", title: q.text });
   const sw = el("span", { class: "sw" });
   sw.style.background = `var(${q.sw})`;
@@ -169,6 +168,15 @@ function qualityKeys(box) {
   }
 }
 
+const amount = (snow, rain) =>  // e.g. 1" + 0.13" rain; snow or rain alone when the other is ~0
+  [snow >= 0.25 || !(rain >= 0.01) ? fmtIn(snow) : null, rain >= 0.01 ? `${rain.toFixed(2)}" rain` : null].filter(Boolean).join(" + ");
+
+function windowType(t) {  // overall type of a multi-day total, same snow-fraction cutoffs as §7
+  if (!t.liquid_in || t.liquid_in < 0.05) return null;
+  const frac = 1 - (t.rain_in || 0) / t.liquid_in;
+  return frac < 0.2 ? "rain" : frac < 0.8 ? "mixed" : "snow";
+}
+
 function renderSummary(d, e) {
   const t0 = d.today, s = d.summary[e];
   const past = d.daily.filter((x) => x.past).slice(-7);
@@ -196,9 +204,14 @@ function renderSummary(d, e) {
       continue;
     }
     const grp = el("div", { class: "sgroup" }); grp.style.flex = g.days.length;
-    grp.append(el("div", { class: "slabel" }, g.label),
-      el("div", { class: "stotal" + (g.past ? " past" : "") }, fmtIn(g.tot.p50)),
-      el("div", { class: "muted srange" }, g.past && g.tot.station_in != null ? `station ${fmtIn(g.tot.station_in)}` : "\u00a0"));
+    const tot = el("div", { class: "stotal" + (g.past ? " past" : "") }, fmtIn(g.tot.p50));
+    const sub = el("div", { class: "muted srange" }, g.past && g.tot.station_in != null ? `station ${fmtIn(g.tot.station_in)}` : "\u00a0");
+    const type = !g.past && windowType(g.tot);
+    if (type) {  // forecast totals take the window's precipitation-type colour, named underneath
+      tot.style.color = `var(${QUALITY[type].sw})`;
+      sub.replaceChildren(chip(type));
+    }
+    grp.append(el("div", { class: "slabel" }, g.label), tot, sub);
     const days = el("div", { class: "sdays" });
     for (const x of g.days) {
       const v = x[e], dl = dayLabel(x.date), weekend = /Sat|Sun/.test(dl.dow);
@@ -207,7 +220,7 @@ function renderSummary(d, e) {
       v.periods.forEach((p) => {  // morning, afternoon, night left to right
         const seg = el("span", { class: "sseg" });
         seg.style.height = p.snow_in >= 0.05 ? `${p.snow_in / vmax * 100}%` : "0";
-        seg.style.background = `var(${(QUALITY[p.quality] || QUALITY["medium"]).sw})`;
+        seg.style.background = `var(${qual(p.quality).sw})`;
         stack.append(seg);
       });
       const wrap = el("div", { class: "sbar-wrap" });
@@ -218,11 +231,11 @@ function renderSummary(d, e) {
       col.append(wrap, label);
       days.append(col);
       hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
-        { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(total(v)) + (rain >= 0.01 ? ` · rain ${rain.toFixed(2)}"` : "") },
+        { name: x.past ? "Model estimate" : "Forecast", value: amount(total(v), rain) },
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
         ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => {
           const p = v.periods[k];
-          return { name: nm, value: `${fmtIn(p.snow_in)}${p.quality && p.snow_in >= 0.05 ? " · " + QUALITY[p.quality].text : ""}${p.rain_in >= 0.01 ? ` · rain ${p.rain_in.toFixed(2)}"` : ""}` };
+          return { name: nm, value: amount(p.snow_in, p.rain_in) + (p.quality === "mixed" ? ` · ${qual("mixed").text}` : "") };
         }),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
       ]));
@@ -474,7 +487,7 @@ function plumeChart(d, e) {  // snow + rain per 12 h period (6a-6p, 6p-6a) with 
   const keep = all.t.map((t, i) => [t, i]).filter(([t, i]) => history ? (all.t[i + 1] || "9") <= d.now : (all.t[i + 1] || "9") > d.now).map(([, i]) => i);
   const pick = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, keep.map((i) => v[i])]));
   const p = { t: keep.map((i) => all.t[i]), snow: pick(all.snow), rain: pick(all.rain) };
-  const kinds = [["snow", "var(--q-powder)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
+  const kinds = [["snow", "var(--q-snow)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
   const n = p.t.length;
   const c = $("#plume");
   const f = frame(c, { t: 16, r: 12, b: 34, l: 40 });
@@ -518,7 +531,7 @@ function plumeChart(d, e) {  // snow + rain per 12 h period (6a-6p, 6p-6a) with 
   }
   $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h · ${history ? "last 7 days (model estimate)" : "next 10 days"}`;
   legend("#plume-legend", [
-    { label: "Snow (in)", color: "var(--q-powder)", kind: "key-rect" },
+    { label: "Snow (in)", color: "var(--q-snow)", kind: "key-rect" },
     { label: "Rain (in of water)", color: "var(--q-rain)", kind: "key-rect" },
     { label: "Past (model estimate)", color: "var(--muted)", kind: "key-rect" },
     { label: "Middle 50% (thick) · 90% (thin)", glyph: "┃" },

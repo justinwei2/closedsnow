@@ -29,6 +29,7 @@ USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')
 GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Northern Rockies"],
           "rockies": ["Colorado"], "north": ["Coastal BC", "Interior BC", "Canadian Rockies"]}
 NON_US = {"Coastal BC", "Interior BC", "Canadian Rockies"}  # no NWS products / SNOTEL
+BC_REGIONS = {"Coastal BC", "Interior BC"}  # gauge search: BC snow pillows (ASWS)
 SNOTEL_STATES = {"California": ["CA", "NV"], "Pacific Northwest": ["WA", "OR"], "Utah": ["UT"],
                  "Northern Rockies": ["WY", "MT", "ID"], "Colorado": ["CO"]}
 
@@ -58,7 +59,8 @@ CATALOG = {
     "kickinghorse": ("Kicking Horse", "Interior BC", EDM, (51.2975, -117.0480, 3900, "Base"), (51.2830, -117.0920, 8033, "Terminator Peak")),
     "lakelouise": ("Lake Louise", "Canadian Rockies", EDM, (51.4420, -116.1620, 5400, "Base"), (51.4615, -116.1290, 8650, "Top of the World")),
 }
-# Hand-verified mid points and gauges for the original four (kept as-is by locate).
+# Hand-verified mid points and gauges for the original four (kept as-is by locate), and gauges for
+# regions without a searchable station catalog (Alberta: id "station:precip-TSID").
 MANUAL = {
     "palisades": dict(mid=(39.1899, -120.2658, 8000, "High Camp"),
                       gauge=("snotel", "784:CA:SNTL", "Palisades Tahoe SNOTEL (High Camp area)", 8010, 39.18986, -120.26576)),
@@ -68,6 +70,7 @@ MANUAL = {
                      gauge=("snotel", "1067:CA:SNTL", "Carson Pass SNOTEL", 8360, 38.6927, -120.0022)),
     "mammoth": dict(mid=(37.6385, -119.0215, 9600, "McCoy Station"),
                     gauge=("cdec", "MHP", "Mammoth Pass (CDEC)", 9400, 37.61, -119.033), afd_office="REV"),
+    "lakelouise": dict(gauge=("abrivers", "05BA815:158817042", "Pika Run (Alberta Rivers)", 7382, 51.462944, -116.117833)),
 }
 
 
@@ -81,7 +84,7 @@ class Point:
 
 @dataclass
 class Gauge:
-    kind: str  # "snotel" | "cdec"
+    kind: str  # "snotel" | "cdec" | "bcasws" | "abrivers"
     id: str
     name: str
     ft: int
