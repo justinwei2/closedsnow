@@ -549,7 +549,7 @@ function renderModels(d, e) {
   }
   const c = d.calibration;
   $("#cal-note").textContent = c.uncalibrated
-    ? `Not individually calibrated (${d.obs ? "calibration pending" : "no nearby automated gauge"}): model factors are the median of ${c.peers} calibrated ${c.peers_scope === "region" ? "resorts in the region" : "US resorts"} and models are weighted equally.${/British Columbia|Alberta/.test(d.region) ? " Canadian snow climates differ from the US resorts these factors come from, so treat amounts with extra caution." : ""}`
+    ? `Not individually calibrated (${d.obs ? "calibration pending" : "no nearby automated gauge"}): model factors are the median of ${c.peers} calibrated ${c.peers_scope === "region" ? "resorts in the region" : "US resorts"} and models are weighted equally.${/BC|Canadian Rockies/.test(d.region) ? " Canadian snow climates differ from the US resorts these factors come from, so treat amounts with extra caution." : ""}`
     : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (HRDPS 2 d, NBM 11 d, ICON 7 d, GEM 10 d).`;
 }
 
@@ -595,7 +595,7 @@ function renderAfd(d) {
   box.replaceChildren();
   if (!d.afd) {
     $("#afd-meta").textContent = "";
-    box.textContent = /British Columbia|Alberta/.test(d.region) ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
+    box.textContent = /BC|Canadian Rockies/.test(d.region) ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
     return;
   }
   $("#afd-meta").textContent = `· NWS ${d.afd.office} · ${new Date(d.afd.issued).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;

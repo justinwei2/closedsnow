@@ -15,7 +15,7 @@ ELEVS = ("base", "mid", "summit")
 # Deterministic models blended for the central forecast; each resort keeps those with data there.
 BASE_MODELS = ["ecmwf_ifs", "ecmwf_ifs025", "ecmwf_aifs025_single", "gfs_seamless",
                "ncep_nbm_conus", "gem_seamless", "icon_seamless"]
-EXTRA_MODELS = ["gem_hrdps_continental"]  # 2.5 km Canadian; BC/Alberta + northern US
+EXTRA_MODELS = ["gem_hrdps_continental"]  # 2.5 km Canadian; BC, Canadian Rockies + northern US
 PROFILE_MODELS = ["ecmwf_ifs025", "gfs_seamless", "gem_seamless", "icon_seamless"]  # pressure levels
 LEVELS = [1000, 925, 850, 800, 750, 700, 650, 600, 550, 500]
 # Ensemble -> deterministic sibling whose calibration factor applies to its members.
@@ -26,11 +26,11 @@ EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weig
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
 # Regions refresh/calibrate as separate parallel CI jobs (own runner each).
-GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Wyoming · Montana · Idaho"],
-          "rockies": ["Colorado"], "north": ["British Columbia", "Alberta"]}
-NON_US = {"British Columbia", "Alberta"}  # no NWS products / SNOTEL
+GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Northern Rockies"],
+          "rockies": ["Colorado"], "north": ["Coastal BC", "Interior BC", "Canadian Rockies"]}
+NON_US = {"Coastal BC", "Interior BC", "Canadian Rockies"}  # no NWS products / SNOTEL
 SNOTEL_STATES = {"California": ["CA", "NV"], "Pacific Northwest": ["WA", "OR"], "Utah": ["UT"],
-                 "Wyoming · Montana · Idaho": ["WY", "MT", "ID"], "Colorado": ["CO"]}
+                 "Northern Rockies": ["WY", "MT", "ID"], "Colorado": ["CO"]}
 
 PT, MT = "America/Los_Angeles", "America/Denver"
 VAN, EDM = "America/Vancouver", "America/Edmonton"
@@ -45,18 +45,18 @@ CATALOG = {
     "snowbird": ("Snowbird", "Utah", MT, (40.5812, -111.6555, 7760, "Base"), (40.5605, -111.6455, 11000, "Hidden Peak")),
     "solitude": ("Solitude", "Utah", MT, (40.6197, -111.5917, 7988, "Base"), (40.6020, -111.5790, 10488, "Summit")),
     "snowbasin": ("Snowbasin", "Utah", MT, (41.2163, -111.8570, 6400, "Base"), (41.2000, -111.8800, 9350, "Needles")),
-    "jackson": ("Jackson Hole", "Wyoming · Montana · Idaho", MT, (43.5877, -110.8279, 6311, "Teton Village"), (43.5970, -110.8710, 10450, "Rendezvous")),
-    "bigsky": ("Big Sky", "Wyoming · Montana · Idaho", MT, (45.2857, -111.4012, 7500, "Mountain Village"), (45.2784, -111.4502, 11166, "Lone Peak")),
+    "jackson": ("Jackson Hole", "Northern Rockies", MT, (43.5877, -110.8279, 6311, "Teton Village"), (43.5970, -110.8710, 10450, "Rendezvous")),
+    "bigsky": ("Big Sky", "Northern Rockies", MT, (45.2857, -111.4012, 7500, "Mountain Village"), (45.2784, -111.4502, 11166, "Lone Peak")),
     "abasin": ("Arapahoe Basin", "Colorado", MT, (39.6420, -105.8715, 10780, "Base"), (39.6300, -105.8650, 13050, "Summit")),
     "copper": ("Copper Mountain", "Colorado", MT, (39.5018, -106.1511, 9712, "Base"), (39.4720, -106.1660, 12313, "Tucker Mtn")),
     "steamboat": ("Steamboat", "Colorado", MT, (40.4572, -106.8045, 6900, "Base"), (40.4563, -106.7485, 10568, "Mt. Werner")),
     "telluride": ("Telluride", "Colorado", MT, (37.9369, -107.8467, 8725, "Mountain Village"), (37.9105, -107.8380, 12570, "Gold Hill")),
     "crestedbutte": ("Crested Butte", "Colorado", MT, (38.8991, -106.9650, 9375, "Base"), (38.8877, -106.9440, 12162, "North Face / High Lift")),
-    "whistler": ("Whistler", "British Columbia", VAN, (50.1150, -122.9548, 2214, "Village"), (50.0610, -122.9480, 7160, "Whistler Peak")),
-    "blackcomb": ("Blackcomb", "British Columbia", VAN, (50.1155, -122.9480, 2214, "Village"), (50.0950, -122.8880, 7494, "Glacier / 7th Heaven")),
-    "revelstoke": ("Revelstoke", "British Columbia", VAN, (50.9580, -118.1636, 1680, "Base"), (50.9390, -118.2310, 7300, "Summit")),
-    "kickinghorse": ("Kicking Horse", "British Columbia", EDM, (51.2975, -117.0480, 3900, "Base"), (51.2830, -117.0920, 8033, "Terminator Peak")),
-    "lakelouise": ("Lake Louise", "Alberta", EDM, (51.4420, -116.1620, 5400, "Base"), (51.4615, -116.1290, 8650, "Top of the World")),
+    "whistler": ("Whistler", "Coastal BC", VAN, (50.1150, -122.9548, 2214, "Village"), (50.0610, -122.9480, 7160, "Whistler Peak")),
+    "blackcomb": ("Blackcomb", "Coastal BC", VAN, (50.1155, -122.9480, 2214, "Village"), (50.0950, -122.8880, 7494, "Glacier / 7th Heaven")),
+    "revelstoke": ("Revelstoke", "Interior BC", VAN, (50.9580, -118.1636, 1680, "Base"), (50.9390, -118.2310, 7300, "Summit")),
+    "kickinghorse": ("Kicking Horse", "Interior BC", EDM, (51.2975, -117.0480, 3900, "Base"), (51.2830, -117.0920, 8033, "Terminator Peak")),
+    "lakelouise": ("Lake Louise", "Canadian Rockies", EDM, (51.4420, -116.1620, 5400, "Base"), (51.4615, -116.1290, 8650, "Top of the World")),
 }
 # Hand-verified mid points and gauges for the original four (kept as-is by locate).
 MANUAL = {
@@ -112,7 +112,8 @@ class Resort:
 
     @classmethod
     def from_json(cls, key, d):
-        return cls(key=key, name=d["name"], region=d["region"], tz=d["tz"],
+        name, region = CATALOG[key][:2] if key in CATALOG else (d["name"], d["region"])  # catalog wins
+        return cls(key=key, name=name, region=region, tz=d["tz"],
                    **{e: Point(**d[e]) for e in ELEVS}, gauge=Gauge(*d["obs"]) if d.get("obs") else None,
                    models=d["models"], dem_ft=d.get("dem_ft", {}), afd_office=d.get("afd_office"))
 
