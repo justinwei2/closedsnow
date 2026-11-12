@@ -298,7 +298,9 @@ def merge(d):
     resorts, cal = load_resorts(), load_calibration()
     for part in sorted(glob.glob(os.path.join(d, "*", ""))):
         for k, v in _load(os.path.join(part, "resorts.json")).items():
-            resorts[k] = Resort.from_json(k, v)
+            r = Resort.from_json(k, v)
+            if r.gauge or k not in resorts or not resorts[k].gauge:  # never trade a gauge for none
+                resorts[k] = r
         for k, v in _load(os.path.join(part, "calibration.json")).items():
             cal[k] = Calibration.from_json(v)
     resorts = {k: r for k, r in resorts.items() if k in CATALOG}
