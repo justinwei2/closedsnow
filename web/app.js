@@ -3,7 +3,7 @@ const $ = (s) => document.querySelector(s);
 const NS = "http://www.w3.org/2000/svg";
 const ELEVS = ["base", "mid", "summit"];
 const ELEV_NAME = { base: "Base", mid: "Mid-mountain", summit: "Summit" };
-const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "summit" };
+const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "base" };
 
 const MODEL_NAMES = {
   ecmwf_ifs: "ECMWF IFS 9 km", ecmwf_ifs025: "ECMWF IFS 0.25°", ecmwf_aifs025_single: "ECMWF AIFS",
@@ -575,7 +575,7 @@ function renderPoints(d) {
   const head = el("tr");
   ["Elevation", "Point", "Lat, lon", "Elevation used", "Model grid cell"].forEach((h) => head.append(el("th", { class: h === "Elevation" ? "rowh" : "" }, h)));
   tb.append(head);
-  for (const e of [...ELEVS].reverse()) {
+  for (const e of ELEVS) {
     const r = d.points[e].requested, g = d.points[e].grid;
     const tr = el("tr");
     [ELEV_NAME[e], r.label, `${r.lat.toFixed(4)}, ${r.lon.toFixed(4)}`, `${r.ft.toLocaleString()} ft`,
@@ -623,7 +623,7 @@ function renderCalCoverage() {
 function renderElevToggle(d) {
   const box = $("#elev-toggle");
   box.replaceChildren();
-  for (const e of [...ELEVS].reverse()) {
+  for (const e of ELEVS) {  // base -> mid -> summit
     const b = el("button", { type: "button", "data-elev": e, role: "tab", "aria-selected": String(e === state.elev), class: e === state.elev ? "on" : "" });
     b.append(document.createTextNode(ELEV_NAME[e]), el("span", { class: "ft" }, `${d.points[e].requested.ft.toLocaleString()} ft`));
     b.addEventListener("click", () => { state.elev = e; localStorage.setItem("elev", e); render(); });

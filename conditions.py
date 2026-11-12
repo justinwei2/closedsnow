@@ -182,14 +182,15 @@ GOOD = {"blower", "light & dry", "medium", "dense"}
 BAD = {"mixed rain/snow", "sleet / freezing rain risk", "rain", "heavy / wet (Sierra cement)"}
 
 
-def half_alerts(row, hrs, day, name):
-    """Alert squares for a 12 h row: powder (orange), wet/icy precip (purple), warning (yellow)."""
+def half_alerts(row, hrs, day, name, summit_hrs):
+    """Alert squares for a 12 h row: powder and wet/icy precip (this elevation), plus warnings.
+    Wind holds are mountain-wide: always judged from the summit ridge wind."""
     out = []
     if row["snow_in"] >= POWDER_12H_IN and row.get("quality") in GOOD:
         out.append(dict(kind="powder", text=f"Powder: {round(row['snow_in'])}\" of {row['quality']} snow"))
     if row["liquid_in"] >= 0.05 and row.get("quality") in BAD:
         out.append(dict(kind="wet", text=f"{row['quality'].split(' (')[0].capitalize()}"))
-    w = wind_hold(hrs, day) if name == "day" else None
+    w = wind_hold(summit_hrs, day) if name == "day" else None
     if w and w["level"] != "low":
         out.append(dict(kind="warn", text=f"Upper-lift wind holds {w['level']}: ridge {w['sustained_mph']} mph, gusts ~{w['gust_mph']}"))
     if row["feels_f"] is not None and row["feels_f"] <= WIND_CHILL_F:

@@ -276,7 +276,7 @@ def process(r, cal):
                    nws_snow_level_ft=mean([levels[i]["nws_snow_level_ft"] for i in span if levels[i]["nws_snow_level_ft"] is not None]),
                    nws_snow_in=sum(v or 0 for v in ns) / IN if any(v is not None for v in ns) else None,
                    **quality_of(hrs, 0.0, 0.0))
-        out["alerts"] = cx.half_alerts(out, hrs, d, name)
+        out["alerts"] = cx.half_alerts(out, hrs, d, name, [hours["summit"][i] for i in span])
         return out
 
     today = (datetime.fromisoformat(now) - timedelta(hours=6)).strftime("%Y-%m-%d")  # current ski day
