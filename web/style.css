@@ -131,7 +131,6 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .sday { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; outline: none; }
 .sday:hover .sstack, .sday:focus .sstack { filter: brightness(1.1); }
 .sday.past .sstack { opacity: .55; }
-.sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sbar-wrap { height: 110px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
 .sstack { width: 80%; height: 100%; display: flex; align-items: flex-end; gap: 1px; }
 .sseg { display: block; flex: 1; border-radius: 3px 3px 0 0; }
@@ -234,7 +233,6 @@ table.days tr.past td { opacity: .5; }
 .asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; }
 .ratio { display: inline-flex; align-items: center; gap: 5px; }
 .ratio .sw { width: 10px; height: 10px; border-radius: 3px; }
-.rainmark { display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--q-rain); margin-right: 3px; vertical-align: middle; }
 .depth { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
 .depth b { color: var(--text-primary); font-weight: 600; }
 .depth .dep { margin-left: 10px; }

@@ -218,19 +218,15 @@ function renderSummary(d, e) {
       const rain = v.periods.reduce((a, p) => a + (p.rain_in || 0), 0);
       const label = el("div", { class: "sday-l" + (weekend ? " wk" : "") + (x.date === t0 ? " today" : "") });
       label.append(el("span", {}, x.date === t0 ? "Today" : dl.dow.slice(0, 2)), el("span", {}, String(dl.dom)));
-      const val = el("div", { class: "sval" });
-      if (rain >= 0.1) val.append(el("span", { class: "rainmark", title: `${rain.toFixed(2)}" rain` }));
-      val.append(document.createTextNode(fmtSnow(total(v))));
-      col.append(val, wrap, label);
+      col.append(wrap, label);
       days.append(col);
       hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
-        { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(total(v)) },
+        { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(total(v)) + (rain >= 0.01 ? ` · rain ${rain.toFixed(2)}"` : "") },
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
         ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => {
           const p = v.periods[k];
           return { name: nm, value: `${fmtIn(p.snow_in)}${p.quality && p.snow_in >= 0.05 ? " · " + QUALITY[p.quality].text : ""}${p.rain_in >= 0.01 ? ` · rain ${p.rain_in.toFixed(2)}"` : ""}` };
         }),
-        ...(rain >= 0.01 ? [{ name: "Rain", value: `${rain.toFixed(2)}"` }] : []),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
       ]));
     }
