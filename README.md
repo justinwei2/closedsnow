@@ -63,8 +63,10 @@ SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, repl
 
 1. Add a line to `CATALOG` in `resorts.py`:
    `key: (name, country, tz, (base lat, lon, ft, label), (summit lat, lon, ft, label), (mid ft, label))`.
-   - Use the **published** base and top-lift elevations; rough coordinates are fine (within ~1 km).
-     Setup snaps each to the terrain-map spot nearest that elevation (summit within 2 km, base 1.2 km).
+   - **Summit** = the mountain's summit (highest in-bounds point, hike-to included) with its surveyed
+     coordinates and published elevation; setup only nudges it onto the terrain map (within 400 m).
+   - **Base** = the main base area at its published elevation; rough coordinates are fine: setup finds
+     the spot at that elevation within 1.2 km.
    - **Mid** is optional but worth setting: name a real mid-mountain spot (main gondola top or
      mid-mountain lodge) and its published elevation, e.g. `(6069, "Roundhouse")`. Setup puts it on
      the base-to-summit line at that elevation. Without it, mid is the point 55% of the way up.

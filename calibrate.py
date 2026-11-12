@@ -118,10 +118,8 @@ def locate(key):
         mlabel = man["mid"][3]
         dem = dict(zip(ELEVS, src.elevations([base[:2], mid[:2], summit[:2]])))
     else:
-        sb = snap(*s[:3], 2.0)
-        if abs(sb[2] - s[2]) > 600:  # rough guess too far off: search wider
-            sb = snap(*s[:3], 4.0)
-        bb = snap(*b[:3], 1.2)
+        sb = snap(*s[:3], 0.4)  # summits are surveyed peak coordinates: only nudge onto the terrain map
+        bb = snap(*b[:3], 1.2)  # bases are rough: find the spot at the published elevation
         base, summit = (bb[0], bb[1], b[2]), (sb[0], sb[1], s[2])
         if named:  # a real mid-mountain spot at its published elevation
             mp = mid_point(base, summit, named[0][0])

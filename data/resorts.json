@@ -16,15 +16,15 @@
    "label": "High Camp"
   },
   "summit": {
-   "lat": 39.1985,
-   "lon": -120.2936,
-   "ft": 9006,
+   "lat": 39.1983,
+   "lon": -120.2871,
+   "ft": 9010,
    "label": "Granite Chief"
   },
   "dem_ft": {
    "base": 6214,
    "mid": 8015,
-   "summit": 8898
+   "summit": 8953
   },
   "obs": [
    "snotel",
@@ -41,7 +41,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "alpine": {
@@ -100,21 +101,21 @@
    "label": "Village"
   },
   "mid": {
-   "lat": 50.0675,
-   "lon": -122.9569,
+   "lat": 50.0685,
+   "lon": -122.9566,
    "ft": 6069,
    "label": "Roundhouse"
   },
   "summit": {
-   "lat": 50.058,
-   "lon": -122.9573,
+   "lat": 50.0592,
+   "lon": -122.9569,
    "ft": 7160,
    "label": "Whistler Peak"
   },
   "dem_ft": {
    "base": 2228,
-   "mid": 6086,
-   "summit": 7087
+   "mid": 6063,
+   "summit": 6939
   },
   "obs": [
    "bcasws",
@@ -197,15 +198,15 @@
    "label": "McCoy Station"
   },
   "summit": {
-   "lat": 37.628,
-   "lon": -119.0325,
+   "lat": 37.6306,
+   "lon": -119.0326,
    "ft": 11053,
    "label": "Summit"
   },
   "dem_ft": {
    "base": 8780,
    "mid": 9521,
-   "summit": 10945
+   "summit": 11010
   },
   "obs": [
    "cdec",
@@ -222,7 +223,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ],
   "afd_office": "REV"
  },
@@ -237,21 +239,21 @@
    "label": "West Village"
   },
   "mid": {
-   "lat": 43.9883,
-   "lon": -121.6844,
+   "lat": 43.9876,
+   "lon": -121.6848,
    "ft": 7775,
    "label": "Pine Marten"
   },
   "summit": {
-   "lat": 43.979,
-   "lon": -121.6886,
-   "ft": 9065,
+   "lat": 43.9794,
+   "lon": -121.6885,
+   "ft": 9068,
    "label": "Summit"
   },
   "dem_ft": {
    "base": 6398,
    "mid": 7772,
-   "summit": 9022
+   "summit": 8973
   },
   "obs": [
    "snotel",
@@ -463,16 +465,16 @@
    "label": "Teton Village"
   },
   "mid": {
-   "lat": 43.5935,
-   "lon": -110.8533,
+   "lat": 43.5936,
+   "lon": -110.853,
    "ft": 8600,
    "label": "Mid-mountain"
   },
   "summit": {
-   "lat": 43.597,
-   "lon": -110.871,
+   "lat": 43.5972,
+   "lon": -110.8706,
    "ft": 10450,
-   "label": "Rendezvous"
+   "label": "Rendezvous Peak"
   },
   "dem_ft": {
    "base": 6302,
@@ -494,7 +496,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "bigsky": {
@@ -508,21 +511,21 @@
    "label": "Mountain Village"
   },
   "mid": {
-   "lat": 45.2796,
-   "lon": -111.4406,
+   "lat": 45.2794,
+   "lon": -111.4407,
    "ft": 9500,
    "label": "Mid-mountain"
   },
   "summit": {
-   "lat": 45.2784,
-   "lon": -111.4502,
+   "lat": 45.2781,
+   "lon": -111.4503,
    "ft": 11166,
    "label": "Lone Peak"
   },
   "dem_ft": {
    "base": 7510,
    "mid": 9455,
-   "summit": 10981
+   "summit": 11119
   },
   "obs": [
    "snotel",
@@ -539,7 +542,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "blackcomb": {
@@ -599,21 +603,21 @@
    "label": "Base"
   },
   "mid": {
-   "lat": 50.9422,
-   "lon": -118.2634,
-   "ft": 4700,
+   "lat": 50.961,
+   "lon": -118.1233,
+   "ft": 5400,
    "label": "Mid-mountain"
   },
   "summit": {
-   "lat": 50.939,
-   "lon": -118.2834,
-   "ft": 7300,
-   "label": "Summit"
+   "lat": 50.9636,
+   "lon": -118.0892,
+   "ft": 8074,
+   "label": "Mount Mackenzie"
   },
   "dem_ft": {
    "base": 1690,
-   "mid": 4688,
-   "summit": 7152
+   "mid": 5404,
+   "summit": 7664
   },
   "obs": [
    "bcasws",
@@ -631,7 +635,7 @@
    "ncep_nbm_conus",
    "gem_seamless",
    "icon_seamless",
-   "gem_hrdps_continental"
+   "jma_seamless"
   ]
  },
  "kickinghorse": {
@@ -691,21 +695,21 @@
    "label": "Base"
   },
   "mid": {
-   "lat": 51.4512,
-   "lon": -116.1448,
+   "lat": 51.4532,
+   "lon": -116.1488,
    "ft": 6700,
    "label": "Whitehorn Lodge"
   },
   "summit": {
-   "lat": 51.4765,
-   "lon": -116.1242,
+   "lat": 51.4678,
+   "lon": -116.1417,
    "ft": 8650,
    "label": "Top of the World"
   },
   "dem_ft": {
    "base": 5420,
-   "mid": 6696,
-   "summit": 8527
+   "mid": 6667,
+   "summit": 8645
   },
   "obs": [
    "abrivers",
@@ -827,14 +831,14 @@
    "label": "Base"
   },
   "mid": {
-   "lat": 40.4566,
-   "lon": -106.7619,
+   "lat": 40.4565,
+   "lon": -106.7617,
    "ft": 9080,
    "label": "Thunderhead"
   },
   "summit": {
-   "lat": 40.4563,
-   "lon": -106.7406,
+   "lat": 40.4561,
+   "lon": -106.7403,
    "ft": 10568,
    "label": "Mt. Werner"
   },
@@ -873,21 +877,21 @@
    "label": "Mountain Village"
   },
   "mid": {
-   "lat": 37.9097,
-   "lon": -107.8297,
-   "ft": 11200,
+   "lat": 37.8901,
+   "lon": -107.8322,
+   "ft": 11600,
    "label": "Mid-mountain"
   },
   "summit": {
-   "lat": 37.8985,
-   "lon": -107.8228,
-   "ft": 12570,
-   "label": "Gold Hill"
+   "lat": 37.8807,
+   "lon": -107.8293,
+   "ft": 13319,
+   "label": "Palmyra Peak"
   },
   "dem_ft": {
    "base": 9534,
-   "mid": 11171,
-   "summit": 12402
+   "mid": 11604,
+   "summit": 13038
   },
   "obs": [
    "snotel",

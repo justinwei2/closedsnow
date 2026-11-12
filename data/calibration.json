@@ -2101,172 +2101,6 @@
   "temp_n_wet": 0,
   "raw_reason": "gauge 2,022 ft below mid-mountain"
  },
- "bachelor": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gfs_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "icon_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "jma_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   }
-  },
-  "station": "Three Creeks Meadow SNOTEL",
-  "uncalibrated": true,
-  "n_wet": 0,
-  "ratio_q": {},
-  "ratio_bins": [],
-  "temp_n_wet": 0,
-  "raw_reason": "gauge 2,095 ft below mid-mountain"
- },
- "whistler": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gfs_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "icon_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "jma_seamless": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   }
-  },
-  "station": "Callaghan Creek (BC snow pillow)",
-  "uncalibrated": true,
-  "n_wet": 0,
-  "ratio_q": {},
-  "ratio_bins": [],
-  "temp_n_wet": 0,
-  "raw_reason": "gauge 2,732 ft below mid-mountain"
- },
  "blackcomb": {
   "models": {
    "ecmwf_ifs": {
@@ -2531,6 +2365,172 @@
    0.95,
    0.93
   ]
+ },
+ "bachelor": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gfs_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gem_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "icon_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "jma_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   }
+  },
+  "station": "Three Creeks Meadow SNOTEL",
+  "uncalibrated": true,
+  "n_wet": 0,
+  "ratio_q": {},
+  "ratio_bins": [],
+  "temp_n_wet": 0,
+  "raw_reason": "gauge 2,095 ft below mid-mountain"
+ },
+ "whistler": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gfs_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gem_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "icon_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "jma_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   }
+  },
+  "station": "Callaghan Creek (BC snow pillow)",
+  "uncalibrated": true,
+  "n_wet": 0,
+  "ratio_q": {},
+  "ratio_bins": [],
+  "temp_n_wet": 0,
+  "raw_reason": "gauge 2,732 ft below mid-mountain"
  },
  "redmountain": {
   "models": {
