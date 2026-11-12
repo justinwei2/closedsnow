@@ -516,5 +516,44 @@
    "icon_seamless",
    "gem_hrdps_continental"
   ]
+ },
+ "revelstoke": {
+  "name": "Revelstoke",
+  "region": "British Columbia",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.958,
+   "lon": -118.1636,
+   "ft": 1680,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 50.9422,
+   "lon": -118.2634,
+   "ft": 4700,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.939,
+   "lon": -118.2834,
+   "ft": 7300,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 1690,
+   "mid": 4688,
+   "summit": 7152
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
  }
 }

@@ -14,31 +14,17 @@ the median factors of calibrated resorts in their region.
 | Mt. Bachelor | Pacific Northwest | not located yet | | | | |
 | Alta | Utah | not located yet | | | | |
 | Snowbird | Utah | pending (regional default for now) | Snowbird SNOTEL | 9,170 ft |  |  |
-| Brighton | Utah | pending (regional default for now) | Brighton SNOTEL | 8,790 ft |  |  |
 | Solitude | Utah | pending (regional default for now) | Brighton SNOTEL | 8,790 ft |  |  |
 | Snowbasin | Utah | not located yet | | | | |
-| Park City | Utah | pending (regional default for now) | Thaynes Canyon SNOTEL | 9,260 ft |  |  |
 | Jackson Hole | Wyoming · Montana · Idaho | pending (regional default for now) | Phillips Bench SNOTEL | 8,170 ft |  |  |
 | Big Sky | Wyoming · Montana · Idaho | pending (regional default for now) | Lone Mountain SNOTEL | 8,820 ft |  |  |
-| Vail | Colorado | pending (regional default for now) | Vail Mountain SNOTEL | 10,290 ft |  |  |
-| Breckenridge | Colorado | not located yet | | | | |
 | Arapahoe Basin | Colorado | not located yet | | | | |
 | Copper Mountain | Colorado | not located yet | | | | |
 | Steamboat | Colorado | not located yet | | | | |
-| Aspen Highlands | Colorado | not located yet | | | | |
-| Snowmass | Colorado | not located yet | | | | |
-| Aspen Mountain | Colorado | not located yet | | | | |
 | Telluride | Colorado | not located yet | | | | |
 | Crested Butte | Colorado | not located yet | | | | |
-| Taos Ski Valley | New Mexico | not located yet | | | | |
-| Alyeska | Alaska | pending (regional default for now) | Mt. Alyeska SNOTEL | 1,500 ft |  |  |
 | Whistler | British Columbia | regional default (no gauge) | – | – |  |  |
 | Blackcomb | British Columbia | regional default (no gauge) | – | – |  |  |
-| Revelstoke | British Columbia | not located yet | | | | |
+| Revelstoke | British Columbia | regional default (no gauge) | – | – |  |  |
 | Kicking Horse | British Columbia | regional default (no gauge) | – | – |  |  |
-| RED Mountain | British Columbia | regional default (no gauge) | – | – |  |  |
-| Fernie | British Columbia | regional default (no gauge) | – | – |  |  |
-| Panorama | British Columbia | regional default (no gauge) | – | – |  |  |
-| Sun Peaks | British Columbia | not located yet | | | | |
-| Banff Sunshine | Alberta | regional default (no gauge) | – | – |  |  |
 | Lake Louise | Alberta | regional default (no gauge) | – | – |  |  |

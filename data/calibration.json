@@ -540,11 +540,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -621,11 +621,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -711,11 +711,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -792,11 +792,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -882,11 +882,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -972,11 +972,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -1062,11 +1062,11 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
@@ -1152,11 +1152,101 @@
   "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
-   "0.1": 0.116,
+   "0.05": 0.116,
    "0.25": 0.513,
    "0.5": 0.901,
    "0.75": 1.423,
-   "0.9": 2.11
+   "0.95": 2.11
+  },
+  "ratio_bins": [],
+  "peers": 4,
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
+ },
+ "revelstoke": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.467,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.459,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.296,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gfs_seamless": {
+    "factor": 0.954,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.027,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gem_seamless": {
+    "factor": 1.308,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "icon_seamless": {
+    "factor": 1.054,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gem_hrdps_continental": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   }
+  },
+  "uncalibrated": true,
+  "n_wet": 0,
+  "ratio_q": {
+   "0.05": 0.116,
+   "0.25": 0.513,
+   "0.5": 0.901,
+   "0.75": 1.423,
+   "0.95": 2.11
   },
   "ratio_bins": [],
   "peers": 4,
