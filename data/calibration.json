@@ -2,103 +2,103 @@
  "palisades": {
   "models": {
    "ecmwf_ifs": {
-    "factor": 1.467,
+    "factor": 1.471,
     "weight": 0.124,
-    "mae72": 13.94,
-    "raw_mae72": 12.55,
+    "mae72": 13.73,
+    "raw_mae72": 12.29,
     "n": 155,
     "weight_ext": 0.126,
-    "mae_ext": 7.85
+    "mae_ext": 7.79
    },
    "ecmwf_ifs025": {
-    "factor": 1.313,
-    "weight": 0.145,
-    "mae72": 12.91,
-    "raw_mae72": 12.11,
-    "n": 358,
-    "weight_ext": 0.134,
-    "mae_ext": 7.59
+    "factor": 1.314,
+    "weight": 0.144,
+    "mae72": 12.71,
+    "raw_mae72": 11.91,
+    "n": 356,
+    "weight_ext": 0.133,
+    "mae_ext": 7.56
    },
    "ecmwf_aifs025_single": {
-    "factor": 1.181,
-    "weight": 0.183,
-    "mae72": 11.46,
-    "raw_mae72": 11.02,
-    "n": 249,
-    "weight_ext": 0.15,
-    "mae_ext": 7.19
+    "factor": 1.183,
+    "weight": 0.186,
+    "mae72": 11.19,
+    "raw_mae72": 10.81,
+    "n": 247,
+    "weight_ext": 0.153,
+    "mae_ext": 7.05
    },
    "gfs_seamless": {
     "factor": 0.848,
-    "weight": 0.122,
-    "mae72": 14.04,
-    "raw_mae72": 15.61,
-    "n": 358,
-    "weight_ext": 0.166,
-    "mae_ext": 6.83
+    "weight": 0.121,
+    "mae72": 13.86,
+    "raw_mae72": 15.39,
+    "n": 356,
+    "weight_ext": 0.164,
+    "mae_ext": 6.82
    },
    "ncep_nbm_conus": {
-    "factor": 0.844,
+    "factor": 0.845,
     "weight": 0.127,
-    "mae72": 13.78,
-    "raw_mae72": 15.31,
-    "n": 358,
+    "mae72": 13.54,
+    "raw_mae72": 15.03,
+    "n": 356,
     "weight_ext": 0.157,
-    "mae_ext": 7.01
+    "mae_ext": 6.97
    },
    "gem_seamless": {
-    "factor": 1.034,
+    "factor": 1.035,
     "weight": 0.151,
-    "mae72": 12.61,
-    "raw_mae72": 12.43,
-    "n": 358,
-    "weight_ext": 0.118,
-    "mae_ext": 8.1
+    "mae72": 12.42,
+    "raw_mae72": 12.26,
+    "n": 356,
+    "weight_ext": 0.117,
+    "mae_ext": 8.07
    },
    "icon_seamless": {
-    "factor": 0.992,
-    "weight": 0.147,
-    "mae72": 12.78,
-    "raw_mae72": 12.84,
-    "n": 353,
+    "factor": 0.993,
+    "weight": 0.146,
+    "mae72": 12.62,
+    "raw_mae72": 12.67,
+    "n": 351,
     "weight_ext": 0.149,
-    "mae_ext": 7.21
+    "mae_ext": 7.15
    }
   },
   "station": "Palisades Tahoe SNOTEL (High Camp area)",
-  "blend_mae72": 12.57,
-  "n_windows": 358,
+  "blend_mae72": 12.34,
+  "n_windows": 356,
   "n_wet": 133,
   "ratio_q": {
    "0.05": 0.0,
-   "0.25": 0.521,
-   "0.5": 0.901,
-   "0.75": 1.423,
-   "0.95": 2.811
+   "0.25": 0.527,
+   "0.5": 0.887,
+   "0.75": 1.398,
+   "0.95": 2.873
   },
   "ratio_bins": [
    {
     "lo_mm": 10,
     "hi_mm": 25,
-    "n": 44,
+    "n": 43,
     "q": {
      "0.05": 0.0,
-     "0.25": 0.68,
-     "0.5": 1.112,
-     "0.75": 1.917,
-     "0.95": 4.295
+     "0.25": 0.651,
+     "0.5": 0.985,
+     "0.75": 1.734,
+     "0.95": 4.293
     }
    },
    {
     "lo_mm": 25,
     "hi_mm": 50,
-    "n": 40,
+    "n": 41,
     "q": {
      "0.05": 0.0,
-     "0.25": 0.292,
-     "0.5": 1.061,
-     "0.75": 1.613,
-     "0.95": 2.516
+     "0.25": 0.52,
+     "0.5": 1.08,
+     "0.75": 1.783,
+     "0.95": 2.526
     }
    },
    {
@@ -106,11 +106,11 @@
     "hi_mm": 1000000000.0,
     "n": 49,
     "q": {
-     "0.05": 0.3,
-     "0.25": 0.539,
-     "0.5": 0.767,
-     "0.75": 1.181,
-     "0.95": 1.566
+     "0.05": 0.303,
+     "0.25": 0.538,
+     "0.5": 0.757,
+     "0.75": 1.159,
+     "0.95": 1.516
     }
    }
   ],
@@ -125,91 +125,91 @@
  "alpine": {
   "models": {
    "ecmwf_ifs": {
-    "factor": 1.711,
-    "weight": 0.14,
-    "mae72": 15.41,
-    "raw_mae72": 15.05,
+    "factor": 1.714,
+    "weight": 0.142,
+    "mae72": 15.1,
+    "raw_mae72": 14.82,
     "n": 155,
     "weight_ext": 0.14,
-    "mae_ext": 8.74
+    "mae_ext": 8.7
    },
    "ecmwf_ifs025": {
     "factor": 1.544,
     "weight": 0.13,
-    "mae72": 16.03,
-    "raw_mae72": 14.76,
-    "n": 358,
-    "weight_ext": 0.122,
-    "mae_ext": 9.38
+    "mae72": 15.77,
+    "raw_mae72": 14.64,
+    "n": 356,
+    "weight_ext": 0.121,
+    "mae_ext": 9.37
    },
    "ecmwf_aifs025_single": {
     "factor": 1.366,
-    "weight": 0.199,
-    "mae72": 12.93,
-    "raw_mae72": 12.65,
-    "n": 249,
-    "weight_ext": 0.155,
-    "mae_ext": 8.33
+    "weight": 0.201,
+    "mae72": 12.69,
+    "raw_mae72": 12.49,
+    "n": 247,
+    "weight_ext": 0.159,
+    "mae_ext": 8.19
    },
    "gfs_seamless": {
     "factor": 1.047,
-    "weight": 0.124,
-    "mae72": 16.41,
-    "raw_mae72": 16.01,
-    "n": 358,
-    "weight_ext": 0.152,
-    "mae_ext": 8.4
+    "weight": 0.123,
+    "mae72": 16.21,
+    "raw_mae72": 15.79,
+    "n": 356,
+    "weight_ext": 0.15,
+    "mae_ext": 8.41
    },
    "ncep_nbm_conus": {
     "factor": 1.068,
     "weight": 0.129,
-    "mae72": 16.07,
-    "raw_mae72": 15.61,
-    "n": 358,
+    "mae72": 15.83,
+    "raw_mae72": 15.39,
+    "n": 356,
     "weight_ext": 0.138,
-    "mae_ext": 8.83
+    "mae_ext": 8.78
    },
    "gem_seamless": {
     "factor": 2.0,
-    "weight": 0.123,
-    "mae72": 16.44,
-    "raw_mae72": 19.02,
-    "n": 358,
-    "weight_ext": 0.156,
-    "mae_ext": 8.28
+    "weight": 0.121,
+    "mae72": 16.39,
+    "raw_mae72": 19.05,
+    "n": 356,
+    "weight_ext": 0.154,
+    "mae_ext": 8.3
    },
    "icon_seamless": {
-    "factor": 1.054,
-    "weight": 0.155,
-    "mae72": 14.65,
-    "raw_mae72": 14.32,
-    "n": 353,
-    "weight_ext": 0.137,
-    "mae_ext": 8.85
+    "factor": 1.055,
+    "weight": 0.154,
+    "mae72": 14.5,
+    "raw_mae72": 14.19,
+    "n": 351,
+    "weight_ext": 0.138,
+    "mae_ext": 8.79
    }
   },
   "station": "Ward Creek #3 SNOTEL",
-  "blend_mae72": 14.78,
-  "n_windows": 358,
-  "n_wet": 140,
+  "blend_mae72": 14.52,
+  "n_windows": 356,
+  "n_wet": 139,
   "ratio_q": {
    "0.05": 0.0,
-   "0.25": 0.513,
-   "0.5": 0.91,
-   "0.75": 1.539,
-   "0.95": 2.967
+   "0.25": 0.516,
+   "0.5": 0.936,
+   "0.75": 1.53,
+   "0.95": 2.897
   },
   "ratio_bins": [
    {
     "lo_mm": 10,
     "hi_mm": 25,
-    "n": 45,
+    "n": 43,
     "q": {
      "0.05": 0.0,
-     "0.25": 0.626,
-     "0.5": 0.934,
-     "0.75": 1.985,
-     "0.95": 4.997
+     "0.25": 0.613,
+     "0.5": 0.979,
+     "0.75": 2.051,
+     "0.95": 5.03
     }
    },
    {
@@ -220,20 +220,20 @@
      "0.05": 0.0,
      "0.25": 0.393,
      "0.5": 0.976,
-     "0.75": 1.787,
-     "0.95": 2.906
+     "0.75": 1.592,
+     "0.95": 2.81
     }
    },
    {
     "lo_mm": 50,
     "hi_mm": 1000000000.0,
-    "n": 59,
+    "n": 60,
     "q": {
-     "0.05": 0.24,
-     "0.25": 0.57,
-     "0.5": 0.849,
-     "0.75": 1.289,
-     "0.95": 1.848
+     "0.05": 0.251,
+     "0.25": 0.578,
+     "0.5": 0.846,
+     "0.75": 1.269,
+     "0.95": 2.023
     }
    }
   ],
@@ -249,114 +249,114 @@
   "models": {
    "ecmwf_ifs": {
     "factor": 0.951,
-    "weight": 0.19,
+    "weight": 0.188,
     "mae72": 10.07,
-    "raw_mae72": 10.46,
+    "raw_mae72": 10.47,
     "n": 155,
-    "weight_ext": 0.167,
-    "mae_ext": 6.7
+    "weight_ext": 0.168,
+    "mae_ext": 6.69
    },
    "ecmwf_ifs025": {
     "factor": 1.387,
-    "weight": 0.143,
-    "mae72": 11.61,
-    "raw_mae72": 11.46,
-    "n": 345,
-    "weight_ext": 0.139,
-    "mae_ext": 7.34
+    "weight": 0.142,
+    "mae72": 11.59,
+    "raw_mae72": 11.51,
+    "n": 343,
+    "weight_ext": 0.138,
+    "mae_ext": 7.39
    },
    "ecmwf_aifs025_single": {
-    "factor": 1.202,
-    "weight": 0.144,
-    "mae72": 11.54,
+    "factor": 1.203,
+    "weight": 0.143,
+    "mae72": 11.55,
     "raw_mae72": 10.29,
-    "n": 249,
+    "n": 247,
     "weight_ext": 0.155,
-    "mae_ext": 6.95
+    "mae_ext": 6.96
    },
    "gfs_seamless": {
-    "factor": 0.998,
-    "weight": 0.13,
-    "mae72": 12.18,
-    "raw_mae72": 12.2,
-    "n": 345,
+    "factor": 0.999,
+    "weight": 0.131,
+    "mae72": 12.07,
+    "raw_mae72": 12.08,
+    "n": 343,
     "weight_ext": 0.135,
-    "mae_ext": 7.46
+    "mae_ext": 7.47
    },
    "ncep_nbm_conus": {
     "factor": 1.212,
-    "weight": 0.157,
-    "mae72": 11.07,
-    "raw_mae72": 10.17,
-    "n": 345,
-    "weight_ext": 0.142,
-    "mae_ext": 7.28
+    "weight": 0.158,
+    "mae72": 10.99,
+    "raw_mae72": 10.18,
+    "n": 343,
+    "weight_ext": 0.143,
+    "mae_ext": 7.25
    },
    "gem_seamless": {
-    "factor": 1.202,
+    "factor": 1.201,
     "weight": 0.116,
-    "mae72": 12.87,
-    "raw_mae72": 11.65,
-    "n": 345,
-    "weight_ext": 0.129,
-    "mae_ext": 7.63
+    "mae72": 12.84,
+    "raw_mae72": 11.63,
+    "n": 343,
+    "weight_ext": 0.128,
+    "mae_ext": 7.66
    },
    "icon_seamless": {
-    "factor": 1.049,
+    "factor": 1.05,
     "weight": 0.121,
-    "mae72": 12.59,
-    "raw_mae72": 12.19,
-    "n": 340,
-    "weight_ext": 0.132,
-    "mae_ext": 7.53
+    "mae72": 12.57,
+    "raw_mae72": 12.16,
+    "n": 338,
+    "weight_ext": 0.134,
+    "mae_ext": 7.5
    }
   },
   "station": "Callaghan Creek (BC snow pillow)",
-  "blend_mae72": 10.17,
-  "n_windows": 345,
-  "n_wet": 201,
+  "blend_mae72": 10.14,
+  "n_windows": 343,
+  "n_wet": 202,
   "ratio_q": {
-   "0.05": 0.49,
-   "0.25": 0.712,
-   "0.5": 0.874,
-   "0.75": 1.125,
-   "0.95": 1.693
+   "0.05": 0.482,
+   "0.25": 0.706,
+   "0.5": 0.868,
+   "0.75": 1.122,
+   "0.95": 1.638
   },
   "ratio_bins": [
    {
     "lo_mm": 10,
     "hi_mm": 25,
-    "n": 54,
+    "n": 55,
     "q": {
-     "0.05": 0.388,
-     "0.25": 0.692,
-     "0.5": 0.899,
-     "0.75": 1.192,
-     "0.95": 1.791
+     "0.05": 0.413,
+     "0.25": 0.67,
+     "0.5": 0.868,
+     "0.75": 1.226,
+     "0.95": 1.838
     }
    },
    {
     "lo_mm": 25,
     "hi_mm": 50,
-    "n": 78,
+    "n": 76,
     "q": {
-     "0.05": 0.516,
-     "0.25": 0.703,
-     "0.5": 0.944,
-     "0.75": 1.158,
-     "0.95": 1.675
+     "0.05": 0.506,
+     "0.25": 0.697,
+     "0.5": 0.903,
+     "0.75": 1.124,
+     "0.95": 1.591
     }
    },
    {
     "lo_mm": 50,
     "hi_mm": 1000000000.0,
-    "n": 69,
+    "n": 71,
     "q": {
-     "0.05": 0.499,
-     "0.25": 0.753,
-     "0.5": 0.87,
-     "0.75": 1.017,
-     "0.95": 1.351
+     "0.05": 0.512,
+     "0.25": 0.736,
+     "0.5": 0.862,
+     "0.75": 1.05,
+     "0.95": 1.359
     }
    }
   ],
@@ -367,1927 +367,5 @@
    1.15,
    0.79
   ]
- },
- "abasin": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.127,
-    "weight": 0.178,
-    "mae72": 4.5,
-    "raw_mae72": 4.26,
-    "n": 155,
-    "weight_ext": 0.209,
-    "mae_ext": 2.27
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.508,
-    "weight": 0.141,
-    "mae72": 5.05,
-    "raw_mae72": 4.7,
-    "n": 358,
-    "weight_ext": 0.102,
-    "mae_ext": 3.25
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.297,
-    "weight": 0.197,
-    "mae72": 4.28,
-    "raw_mae72": 3.94,
-    "n": 249,
-    "weight_ext": 0.173,
-    "mae_ext": 2.5
-   },
-   "gfs_seamless": {
-    "factor": 1.245,
-    "weight": 0.107,
-    "mae72": 5.79,
-    "raw_mae72": 5.44,
-    "n": 358,
-    "weight_ext": 0.168,
-    "mae_ext": 2.54
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.019,
-    "weight": 0.11,
-    "mae72": 5.72,
-    "raw_mae72": 5.67,
-    "n": 358,
-    "weight_ext": 0.105,
-    "mae_ext": 3.21
-   },
-   "gem_seamless": {
-    "factor": 1.086,
-    "weight": 0.119,
-    "mae72": 5.5,
-    "raw_mae72": 5.3,
-    "n": 358,
-    "weight_ext": 0.141,
-    "mae_ext": 2.76
-   },
-   "icon_seamless": {
-    "factor": 1.513,
-    "weight": 0.148,
-    "mae72": 4.94,
-    "raw_mae72": 4.65,
-    "n": 353,
-    "weight_ext": 0.101,
-    "mae_ext": 3.27
-   }
-  },
-  "station": "Grizzly Peak SNOTEL",
-  "blend_mae72": 4.84,
-  "n_windows": 358,
-  "n_wet": 96,
-  "ratio_q": {
-   "0.05": 0.167,
-   "0.25": 0.377,
-   "0.5": 0.695,
-   "0.75": 1.208,
-   "0.95": 2.181
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 88,
-    "q": {
-     "0.05": 0.157,
-     "0.25": 0.409,
-     "0.5": 0.703,
-     "0.75": 1.227,
-     "0.95": 2.19
-    }
-   }
-  ],
-  "temp_bias_c": -0.47,
-  "temp_bias_wet_c": -0.66,
-  "temp_n_wet": 142,
-  "temp_mae_c": [
-   0.82,
-   0.78
-  ]
- },
- "copper": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.117,
-    "weight": 0.201,
-    "mae72": 3.56,
-    "raw_mae72": 3.35,
-    "n": 155,
-    "weight_ext": 0.195,
-    "mae_ext": 2.14
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.279,
-    "weight": 0.137,
-    "mae72": 4.31,
-    "raw_mae72": 4.1,
-    "n": 358,
-    "weight_ext": 0.116,
-    "mae_ext": 2.77
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.015,
-    "weight": 0.188,
-    "mae72": 3.68,
-    "raw_mae72": 3.66,
-    "n": 249,
-    "weight_ext": 0.177,
-    "mae_ext": 2.25
-   },
-   "gfs_seamless": {
-    "factor": 1.13,
-    "weight": 0.114,
-    "mae72": 4.73,
-    "raw_mae72": 4.52,
-    "n": 358,
-    "weight_ext": 0.171,
-    "mae_ext": 2.28
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.132,
-    "weight": 0.116,
-    "mae72": 4.69,
-    "raw_mae72": 4.46,
-    "n": 358,
-    "weight_ext": 0.12,
-    "mae_ext": 2.73
-   },
-   "gem_seamless": {
-    "factor": 1.16,
-    "weight": 0.103,
-    "mae72": 4.96,
-    "raw_mae72": 4.67,
-    "n": 358,
-    "weight_ext": 0.12,
-    "mae_ext": 2.73
-   },
-   "icon_seamless": {
-    "factor": 1.002,
-    "weight": 0.142,
-    "mae72": 4.24,
-    "raw_mae72": 4.24,
-    "n": 353,
-    "weight_ext": 0.1,
-    "mae_ext": 2.98
-   }
-  },
-  "station": "Copper Mountain SNOTEL",
-  "blend_mae72": 4.14,
-  "n_windows": 358,
-  "n_wet": 71,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.353,
-   "0.5": 0.691,
-   "0.75": 1.089,
-   "0.95": 1.73
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 67,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.353,
-     "0.5": 0.666,
-     "0.75": 1.075,
-     "0.95": 1.744
-    }
-   }
-  ],
-  "temp_bias_c": -0.0,
-  "temp_bias_wet_c": -0.08,
-  "temp_n_wet": 131,
-  "temp_mae_c": [
-   0.95,
-   0.95
-  ]
- },
- "steamboat": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.034,
-    "weight": 0.166,
-    "mae72": 5.61,
-    "raw_mae72": 5.53,
-    "n": 155,
-    "weight_ext": 0.166,
-    "mae_ext": 3.33
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.163,
-    "weight": 0.13,
-    "mae72": 6.33,
-    "raw_mae72": 6.06,
-    "n": 358,
-    "weight_ext": 0.122,
-    "mae_ext": 3.88
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.332,
-    "weight": 0.206,
-    "mae72": 5.03,
-    "raw_mae72": 4.93,
-    "n": 249,
-    "weight_ext": 0.168,
-    "mae_ext": 3.31
-   },
-   "gfs_seamless": {
-    "factor": 0.965,
-    "weight": 0.129,
-    "mae72": 6.35,
-    "raw_mae72": 6.45,
-    "n": 358,
-    "weight_ext": 0.16,
-    "mae_ext": 3.39
-   },
-   "ncep_nbm_conus": {
-    "factor": 0.985,
-    "weight": 0.124,
-    "mae72": 6.5,
-    "raw_mae72": 6.53,
-    "n": 358,
-    "weight_ext": 0.14,
-    "mae_ext": 3.62
-   },
-   "gem_seamless": {
-    "factor": 0.676,
-    "weight": 0.104,
-    "mae72": 7.09,
-    "raw_mae72": 9.22,
-    "n": 358,
-    "weight_ext": 0.135,
-    "mae_ext": 3.69
-   },
-   "icon_seamless": {
-    "factor": 1.068,
-    "weight": 0.141,
-    "mae72": 6.09,
-    "raw_mae72": 5.96,
-    "n": 353,
-    "weight_ext": 0.108,
-    "mae_ext": 4.13
-   }
-  },
-  "station": "Dry Lake SNOTEL",
-  "blend_mae72": 5.85,
-  "n_windows": 358,
-  "n_wet": 125,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.395,
-   "0.5": 0.854,
-   "0.75": 1.251,
-   "0.95": 2.09
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 99,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.392,
-     "0.5": 0.854,
-     "0.75": 1.241,
-     "0.95": 2.163
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 26,
-    "q": {
-     "0.05": 0.297,
-     "0.25": 0.497,
-     "0.5": 0.871,
-     "0.75": 1.306,
-     "0.95": 1.569
-    }
-   }
-  ],
-  "temp_bias_c": -0.89,
-  "temp_bias_wet_c": -0.79,
-  "temp_n_wet": 143,
-  "temp_mae_c": [
-   1.04,
-   0.81
-  ]
- },
- "telluride": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.207,
-    "weight": 0.185,
-    "mae72": 4.01,
-    "raw_mae72": 3.87,
-    "n": 155,
-    "weight_ext": 0.127,
-    "mae_ext": 2.85
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.381,
-    "weight": 0.133,
-    "mae72": 4.72,
-    "raw_mae72": 4.59,
-    "n": 179,
-    "weight_ext": 0.134,
-    "mae_ext": 2.78
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.459,
-    "weight": 0.153,
-    "mae72": 4.4,
-    "raw_mae72": 4.32,
-    "n": 179,
-    "weight_ext": 0.153,
-    "mae_ext": 2.6
-   },
-   "gfs_seamless": {
-    "factor": 0.907,
-    "weight": 0.138,
-    "mae72": 4.63,
-    "raw_mae72": 4.8,
-    "n": 179,
-    "weight_ext": 0.195,
-    "mae_ext": 2.3
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.281,
-    "weight": 0.125,
-    "mae72": 4.88,
-    "raw_mae72": 4.65,
-    "n": 179,
-    "weight_ext": 0.159,
-    "mae_ext": 2.55
-   },
-   "gem_seamless": {
-    "factor": 1.425,
-    "weight": 0.117,
-    "mae72": 5.03,
-    "raw_mae72": 4.71,
-    "n": 179,
-    "weight_ext": 0.104,
-    "mae_ext": 3.16
-   },
-   "icon_seamless": {
-    "factor": 0.892,
-    "weight": 0.149,
-    "mae72": 4.47,
-    "raw_mae72": 4.77,
-    "n": 174,
-    "weight_ext": 0.128,
-    "mae_ext": 2.84
-   }
-  },
-  "station": "Alta Lakes SNOTEL",
-  "blend_mae72": 4.38,
-  "n_windows": 179,
-  "n_wet": 51,
-  "ratio_q": {
-   "0.05": 0.031,
-   "0.25": 0.373,
-   "0.5": 0.914,
-   "0.75": 1.366,
-   "0.95": 1.977
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 43,
-    "q": {
-     "0.05": 0.015,
-     "0.25": 0.48,
-     "0.5": 0.932,
-     "0.75": 1.385,
-     "0.95": 2.047
-    }
-   }
-  ],
-  "temp_bias_c": 0.91,
-  "temp_bias_wet_c": 0.64,
-  "temp_n_wet": 47,
-  "temp_mae_c": [
-   1.07,
-   0.77
-  ]
- },
- "crestedbutte": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 0.703,
-    "weight": 0.228,
-    "mae72": 2.87,
-    "raw_mae72": 3.89,
-    "n": 155,
-    "weight_ext": 0.166,
-    "mae_ext": 2.14
-   },
-   "ecmwf_ifs025": {
-    "factor": 0.791,
-    "weight": 0.134,
-    "mae72": 3.74,
-    "raw_mae72": 4.33,
-    "n": 358,
-    "weight_ext": 0.123,
-    "mae_ext": 2.49
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 0.789,
-    "weight": 0.146,
-    "mae72": 3.59,
-    "raw_mae72": 4.08,
-    "n": 249,
-    "weight_ext": 0.178,
-    "mae_ext": 2.07
-   },
-   "gfs_seamless": {
-    "factor": 0.79,
-    "weight": 0.121,
-    "mae72": 3.93,
-    "raw_mae72": 4.64,
-    "n": 358,
-    "weight_ext": 0.174,
-    "mae_ext": 2.09
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.221,
-    "weight": 0.111,
-    "mae72": 4.12,
-    "raw_mae72": 3.9,
-    "n": 358,
-    "weight_ext": 0.15,
-    "mae_ext": 2.25
-   },
-   "gem_seamless": {
-    "factor": 1.225,
-    "weight": 0.121,
-    "mae72": 3.93,
-    "raw_mae72": 3.73,
-    "n": 358,
-    "weight_ext": 0.097,
-    "mae_ext": 2.8
-   },
-   "icon_seamless": {
-    "factor": 0.805,
-    "weight": 0.139,
-    "mae72": 3.67,
-    "raw_mae72": 4.19,
-    "n": 353,
-    "weight_ext": 0.111,
-    "mae_ext": 2.62
-   }
-  },
-  "station": "Butte SNOTEL",
-  "blend_mae72": 3.62,
-  "n_windows": 358,
-  "n_wet": 65,
-  "ratio_q": {
-   "0.05": 0.155,
-   "0.25": 0.505,
-   "0.5": 0.75,
-   "0.75": 1.147,
-   "0.95": 1.866
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 53,
-    "q": {
-     "0.05": 0.09,
-     "0.25": 0.505,
-     "0.5": 0.741,
-     "0.75": 1.125,
-     "0.95": 1.777
-    }
-   }
-  ],
-  "temp_bias_c": 0.85,
-  "temp_bias_wet_c": 0.43,
-  "temp_n_wet": 100,
-  "temp_mae_c": [
-   1.3,
-   0.92
-  ]
- },
- "kirkwood": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 0.801,
-    "weight": 0.146,
-    "mae72": 8.33,
-    "raw_mae72": 10.01,
-    "n": 155,
-    "weight_ext": 0.151,
-    "mae_ext": 4.69
-   },
-   "ecmwf_ifs025": {
-    "factor": 0.861,
-    "weight": 0.138,
-    "mae72": 8.56,
-    "raw_mae72": 9.47,
-    "n": 358,
-    "weight_ext": 0.133,
-    "mae_ext": 5.0
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 0.85,
-    "weight": 0.154,
-    "mae72": 8.1,
-    "raw_mae72": 9.05,
-    "n": 249,
-    "weight_ext": 0.154,
-    "mae_ext": 4.65
-   },
-   "gfs_seamless": {
-    "factor": 0.631,
-    "weight": 0.122,
-    "mae72": 9.11,
-    "raw_mae72": 13.49,
-    "n": 358,
-    "weight_ext": 0.171,
-    "mae_ext": 4.41
-   },
-   "ncep_nbm_conus": {
-    "factor": 0.636,
-    "weight": 0.12,
-    "mae72": 9.18,
-    "raw_mae72": 13.3,
-    "n": 358,
-    "weight_ext": 0.165,
-    "mae_ext": 4.48
-   },
-   "gem_seamless": {
-    "factor": 0.872,
-    "weight": 0.162,
-    "mae72": 7.91,
-    "raw_mae72": 8.66,
-    "n": 358,
-    "weight_ext": 0.095,
-    "mae_ext": 5.91
-   },
-   "icon_seamless": {
-    "factor": 0.762,
-    "weight": 0.158,
-    "mae72": 8.01,
-    "raw_mae72": 10.06,
-    "n": 353,
-    "weight_ext": 0.132,
-    "mae_ext": 5.01
-   }
-  },
-  "station": "Carson Pass SNOTEL",
-  "blend_mae72": 8.15,
-  "n_windows": 358,
-  "n_wet": 109,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.436,
-   "0.5": 0.816,
-   "0.75": 1.203,
-   "0.95": 2.714
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 44,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.459,
-     "0.5": 0.877,
-     "0.75": 1.319,
-     "0.95": 3.244
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 38,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.482,
-     "0.5": 0.876,
-     "0.75": 1.266,
-     "0.95": 2.226
-    }
-   },
-   {
-    "lo_mm": 50,
-    "hi_mm": 1000000000.0,
-    "n": 27,
-    "q": {
-     "0.05": 0.214,
-     "0.25": 0.413,
-     "0.5": 0.672,
-     "0.75": 1.013,
-     "0.95": 1.328
-    }
-   }
-  ],
-  "temp_bias_c": -0.27,
-  "temp_bias_wet_c": -0.32,
-  "temp_n_wet": 105,
-  "temp_mae_c": [
-   0.86,
-   0.87
-  ]
- },
- "mammoth": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.463,
-    "weight": 0.079,
-    "mae72": 15.19,
-    "raw_mae72": 11.84,
-    "n": 155,
-    "weight_ext": 0.11,
-    "mae_ext": 5.94
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.459,
-    "weight": 0.154,
-    "mae72": 10.86,
-    "raw_mae72": 9.24,
-    "n": 358,
-    "weight_ext": 0.146,
-    "mae_ext": 5.16
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.296,
-    "weight": 0.163,
-    "mae72": 10.58,
-    "raw_mae72": 9.09,
-    "n": 249,
-    "weight_ext": 0.192,
-    "mae_ext": 4.51
-   },
-   "gfs_seamless": {
-    "factor": 0.954,
-    "weight": 0.138,
-    "mae72": 11.48,
-    "raw_mae72": 11.94,
-    "n": 358,
-    "weight_ext": 0.149,
-    "mae_ext": 5.11
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.027,
-    "weight": 0.159,
-    "mae72": 10.7,
-    "raw_mae72": 10.5,
-    "n": 358,
-    "weight_ext": 0.139,
-    "mae_ext": 5.3
-   },
-   "gem_seamless": {
-    "factor": 1.308,
-    "weight": 0.128,
-    "mae72": 11.94,
-    "raw_mae72": 10.61,
-    "n": 358,
-    "weight_ext": 0.139,
-    "mae_ext": 5.29
-   },
-   "icon_seamless": {
-    "factor": 1.203,
-    "weight": 0.179,
-    "mae72": 10.07,
-    "raw_mae72": 9.09,
-    "n": 353,
-    "weight_ext": 0.123,
-    "mae_ext": 5.63
-   }
-  },
-  "station": "Mammoth Pass (CDEC)",
-  "blend_mae72": 10.44,
-  "n_windows": 358,
-  "n_wet": 110,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.429,
-   "0.5": 0.796,
-   "0.75": 1.042,
-   "0.95": 3.079
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 34,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.0,
-     "0.5": 0.624,
-     "0.75": 1.031,
-     "0.95": 4.296
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 36,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.69,
-     "0.5": 0.889,
-     "0.75": 1.351,
-     "0.95": 2.681
-    }
-   },
-   {
-    "lo_mm": 50,
-    "hi_mm": 1000000000.0,
-    "n": 40,
-    "q": {
-     "0.05": 0.346,
-     "0.25": 0.556,
-     "0.5": 0.727,
-     "0.75": 0.921,
-     "0.95": 1.263
-    }
-   }
-  ],
-  "temp_bias_c": 1.2,
-  "temp_bias_wet_c": 0.34,
-  "temp_n_wet": 68,
-  "temp_mae_c": [
-   1.56,
-   0.88
-  ]
- },
- "bachelor": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 0.773,
-    "weight": 0.163,
-    "mae72": 9.33,
-    "raw_mae72": 11.08,
-    "n": 155,
-    "weight_ext": 0.145,
-    "mae_ext": 4.97
-   },
-   "ecmwf_ifs025": {
-    "factor": 0.803,
-    "weight": 0.142,
-    "mae72": 9.98,
-    "raw_mae72": 11.27,
-    "n": 358,
-    "weight_ext": 0.121,
-    "mae_ext": 5.46
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 0.827,
-    "weight": 0.176,
-    "mae72": 8.97,
-    "raw_mae72": 10.11,
-    "n": 249,
-    "weight_ext": 0.156,
-    "mae_ext": 4.8
-   },
-   "gfs_seamless": {
-    "factor": 0.71,
-    "weight": 0.143,
-    "mae72": 9.96,
-    "raw_mae72": 12.82,
-    "n": 358,
-    "weight_ext": 0.168,
-    "mae_ext": 4.63
-   },
-   "ncep_nbm_conus": {
-    "factor": 0.844,
-    "weight": 0.136,
-    "mae72": 10.2,
-    "raw_mae72": 11.25,
-    "n": 358,
-    "weight_ext": 0.17,
-    "mae_ext": 4.59
-   },
-   "gem_seamless": {
-    "factor": 1.116,
-    "weight": 0.118,
-    "mae72": 10.96,
-    "raw_mae72": 10.49,
-    "n": 358,
-    "weight_ext": 0.141,
-    "mae_ext": 5.05
-   },
-   "icon_seamless": {
-    "factor": 0.808,
-    "weight": 0.122,
-    "mae72": 10.76,
-    "raw_mae72": 12.18,
-    "n": 353,
-    "weight_ext": 0.098,
-    "mae_ext": 6.05
-   }
-  },
-  "station": "Three Creeks Meadow SNOTEL",
-  "blend_mae72": 9.62,
-  "n_windows": 358,
-  "n_wet": 150,
-  "ratio_q": {
-   "0.05": 0.129,
-   "0.25": 0.357,
-   "0.5": 0.68,
-   "0.75": 1.241,
-   "0.95": 2.389
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 82,
-    "q": {
-     "0.05": 0.008,
-     "0.25": 0.34,
-     "0.5": 0.663,
-     "0.75": 1.327,
-     "0.95": 2.573
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 52,
-    "q": {
-     "0.05": 0.13,
-     "0.25": 0.359,
-     "0.5": 0.667,
-     "0.75": 1.04,
-     "0.95": 2.154
-    }
-   },
-   {
-    "lo_mm": 50,
-    "hi_mm": 1000000000.0,
-    "n": 16,
-    "q": {
-     "0.05": 0.247,
-     "0.25": 0.49,
-     "0.5": 0.79,
-     "0.75": 1.217,
-     "0.95": 1.541
-    }
-   }
-  ],
-  "temp_bias_c": 1.66,
-  "temp_bias_wet_c": 1.44,
-  "temp_n_wet": 161,
-  "temp_mae_c": [
-   1.83,
-   0.87
-  ]
- },
- "alta": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.653,
-    "weight": 0.132,
-    "mae72": 11.06,
-    "raw_mae72": 10.2,
-    "n": 155,
-    "weight_ext": 0.13,
-    "mae_ext": 6.4
-   },
-   "ecmwf_ifs025": {
-    "factor": 2.0,
-    "weight": 0.139,
-    "mae72": 10.8,
-    "raw_mae72": 12.05,
-    "n": 358,
-    "weight_ext": 0.139,
-    "mae_ext": 6.2
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 2.0,
-    "weight": 0.184,
-    "mae72": 9.37,
-    "raw_mae72": 10.35,
-    "n": 249,
-    "weight_ext": 0.152,
-    "mae_ext": 5.93
-   },
-   "gfs_seamless": {
-    "factor": 1.354,
-    "weight": 0.135,
-    "mae72": 10.93,
-    "raw_mae72": 10.5,
-    "n": 358,
-    "weight_ext": 0.171,
-    "mae_ext": 5.58
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.052,
-    "weight": 0.142,
-    "mae72": 10.66,
-    "raw_mae72": 10.54,
-    "n": 358,
-    "weight_ext": 0.136,
-    "mae_ext": 6.27
-   },
-   "gem_seamless": {
-    "factor": 1.211,
-    "weight": 0.121,
-    "mae72": 11.55,
-    "raw_mae72": 10.84,
-    "n": 358,
-    "weight_ext": 0.145,
-    "mae_ext": 6.07
-   },
-   "icon_seamless": {
-    "factor": 1.425,
-    "weight": 0.146,
-    "mae72": 10.53,
-    "raw_mae72": 9.85,
-    "n": 353,
-    "weight_ext": 0.128,
-    "mae_ext": 6.45
-   }
-  },
-  "station": "Atwater SNOTEL",
-  "blend_mae72": 9.98,
-  "n_windows": 358,
-  "n_wet": 165,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.424,
-   "0.5": 0.92,
-   "0.75": 1.4,
-   "0.95": 2.379
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 80,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.373,
-     "0.5": 1.053,
-     "0.75": 1.614,
-     "0.95": 2.482
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 64,
-    "q": {
-     "0.05": 0.077,
-     "0.25": 0.449,
-     "0.5": 0.937,
-     "0.75": 1.387,
-     "0.95": 2.275
-    }
-   },
-   {
-    "lo_mm": 50,
-    "hi_mm": 1000000000.0,
-    "n": 21,
-    "q": {
-     "0.05": 0.137,
-     "0.25": 0.555,
-     "0.5": 0.694,
-     "0.75": 1.009,
-     "0.95": 1.5
-    }
-   }
-  ],
-  "temp_bias_c": 0.17,
-  "temp_bias_wet_c": 0.09,
-  "temp_n_wet": 139,
-  "temp_mae_c": [
-   1.07,
-   1.07
-  ]
- },
- "snowbird": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.584,
-    "weight": 0.152,
-    "mae72": 9.72,
-    "raw_mae72": 9.02,
-    "n": 155,
-    "weight_ext": 0.126,
-    "mae_ext": 5.97
-   },
-   "ecmwf_ifs025": {
-    "factor": 2.0,
-    "weight": 0.146,
-    "mae72": 9.92,
-    "raw_mae72": 10.8,
-    "n": 358,
-    "weight_ext": 0.132,
-    "mae_ext": 5.84
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 2.0,
-    "weight": 0.17,
-    "mae72": 9.2,
-    "raw_mae72": 9.38,
-    "n": 249,
-    "weight_ext": 0.146,
-    "mae_ext": 5.55
-   },
-   "gfs_seamless": {
-    "factor": 1.181,
-    "weight": 0.127,
-    "mae72": 10.63,
-    "raw_mae72": 10.24,
-    "n": 358,
-    "weight_ext": 0.178,
-    "mae_ext": 5.02
-   },
-   "ncep_nbm_conus": {
-    "factor": 0.944,
-    "weight": 0.14,
-    "mae72": 10.12,
-    "raw_mae72": 10.42,
-    "n": 358,
-    "weight_ext": 0.144,
-    "mae_ext": 5.58
-   },
-   "gem_seamless": {
-    "factor": 1.06,
-    "weight": 0.124,
-    "mae72": 10.75,
-    "raw_mae72": 10.5,
-    "n": 358,
-    "weight_ext": 0.153,
-    "mae_ext": 5.42
-   },
-   "icon_seamless": {
-    "factor": 1.31,
-    "weight": 0.141,
-    "mae72": 10.11,
-    "raw_mae72": 9.48,
-    "n": 353,
-    "weight_ext": 0.123,
-    "mae_ext": 6.04
-   }
-  },
-  "station": "Snowbird SNOTEL",
-  "blend_mae72": 9.49,
-  "n_windows": 358,
-  "n_wet": 157,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.435,
-   "0.5": 0.848,
-   "0.75": 1.425,
-   "0.95": 2.399
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 82,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.418,
-     "0.5": 0.909,
-     "0.75": 1.483,
-     "0.95": 2.647
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 55,
-    "q": {
-     "0.05": 0.055,
-     "0.25": 0.377,
-     "0.5": 0.83,
-     "0.75": 1.377,
-     "0.95": 2.27
-    }
-   },
-   {
-    "lo_mm": 50,
-    "hi_mm": 1000000000.0,
-    "n": 20,
-    "q": {
-     "0.05": 0.04,
-     "0.25": 0.499,
-     "0.5": 0.734,
-     "0.75": 1.01,
-     "0.95": 1.66
-    }
-   }
-  ],
-  "temp_bias_c": 2.57,
-  "temp_bias_wet_c": 2.1,
-  "temp_n_wet": 144,
-  "temp_mae_c": [
-   2.69,
-   1.37
-  ]
- },
- "solitude": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.2,
-    "weight": 0.137,
-    "mae72": 7.57,
-    "raw_mae72": 7.26,
-    "n": 155,
-    "weight_ext": 0.132,
-    "mae_ext": 4.58
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.382,
-    "weight": 0.13,
-    "mae72": 7.77,
-    "raw_mae72": 7.04,
-    "n": 358,
-    "weight_ext": 0.13,
-    "mae_ext": 4.62
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.397,
-    "weight": 0.163,
-    "mae72": 6.94,
-    "raw_mae72": 6.51,
-    "n": 249,
-    "weight_ext": 0.153,
-    "mae_ext": 4.25
-   },
-   "gfs_seamless": {
-    "factor": 0.971,
-    "weight": 0.139,
-    "mae72": 7.52,
-    "raw_mae72": 7.64,
-    "n": 358,
-    "weight_ext": 0.195,
-    "mae_ext": 3.76
-   },
-   "ncep_nbm_conus": {
-    "factor": 0.808,
-    "weight": 0.144,
-    "mae72": 7.37,
-    "raw_mae72": 8.43,
-    "n": 358,
-    "weight_ext": 0.153,
-    "mae_ext": 4.25
-   },
-   "gem_seamless": {
-    "factor": 1.278,
-    "weight": 0.144,
-    "mae72": 7.37,
-    "raw_mae72": 7.01,
-    "n": 358,
-    "weight_ext": 0.102,
-    "mae_ext": 5.2
-   },
-   "icon_seamless": {
-    "factor": 0.966,
-    "weight": 0.143,
-    "mae72": 7.41,
-    "raw_mae72": 7.53,
-    "n": 353,
-    "weight_ext": 0.136,
-    "mae_ext": 4.52
-   }
-  },
-  "station": "Brighton SNOTEL",
-  "blend_mae72": 6.95,
-  "n_windows": 358,
-  "n_wet": 141,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.437,
-   "0.5": 0.765,
-   "0.75": 1.379,
-   "0.95": 2.173
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 91,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.37,
-     "0.5": 0.803,
-     "0.75": 1.393,
-     "0.95": 2.165
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 43,
-    "q": {
-     "0.05": 0.077,
-     "0.25": 0.503,
-     "0.5": 0.71,
-     "0.75": 1.207,
-     "0.95": 2.437
-    }
-   }
-  ],
-  "temp_bias_c": 0.52,
-  "temp_bias_wet_c": 0.7,
-  "temp_n_wet": 129,
-  "temp_mae_c": [
-   1.11,
-   0.99
-  ]
- },
- "snowbasin": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.871,
-    "weight": 0.119,
-    "mae72": 12.35,
-    "raw_mae72": 10.59,
-    "n": 155,
-    "weight_ext": 0.139,
-    "mae_ext": 5.8
-   },
-   "ecmwf_ifs025": {
-    "factor": 2.0,
-    "weight": 0.148,
-    "mae72": 11.1,
-    "raw_mae72": 10.66,
-    "n": 358,
-    "weight_ext": 0.141,
-    "mae_ext": 5.76
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 2.0,
-    "weight": 0.164,
-    "mae72": 10.53,
-    "raw_mae72": 9.46,
-    "n": 249,
-    "weight_ext": 0.141,
-    "mae_ext": 5.77
-   },
-   "gfs_seamless": {
-    "factor": 1.408,
-    "weight": 0.128,
-    "mae72": 11.93,
-    "raw_mae72": 10.41,
-    "n": 358,
-    "weight_ext": 0.173,
-    "mae_ext": 5.21
-   },
-   "ncep_nbm_conus": {
-    "factor": 0.988,
-    "weight": 0.157,
-    "mae72": 10.75,
-    "raw_mae72": 10.8,
-    "n": 358,
-    "weight_ext": 0.121,
-    "mae_ext": 6.23
-   },
-   "gem_seamless": {
-    "factor": 1.299,
-    "weight": 0.127,
-    "mae72": 11.98,
-    "raw_mae72": 10.74,
-    "n": 358,
-    "weight_ext": 0.15,
-    "mae_ext": 5.6
-   },
-   "icon_seamless": {
-    "factor": 2.0,
-    "weight": 0.157,
-    "mae72": 10.76,
-    "raw_mae72": 10.0,
-    "n": 353,
-    "weight_ext": 0.135,
-    "mae_ext": 5.88
-   }
-  },
-  "station": "Ben Lomond Peak SNOTEL",
-  "blend_mae72": 10.51,
-  "n_windows": 358,
-  "n_wet": 146,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.276,
-   "0.5": 0.715,
-   "0.75": 1.239,
-   "0.95": 2.956
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 83,
-    "q": {
-     "0.05": 0.0,
-     "0.25": 0.246,
-     "0.5": 0.717,
-     "0.75": 1.228,
-     "0.95": 4.441
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 42,
-    "q": {
-     "0.05": 0.003,
-     "0.25": 0.22,
-     "0.5": 0.689,
-     "0.75": 1.331,
-     "0.95": 2.463
-    }
-   },
-   {
-    "lo_mm": 50,
-    "hi_mm": 1000000000.0,
-    "n": 21,
-    "q": {
-     "0.05": 0.088,
-     "0.25": 0.493,
-     "0.5": 0.786,
-     "0.75": 1.017,
-     "0.95": 1.705
-    }
-   }
-  ],
-  "temp_bias_c": 1.52,
-  "temp_bias_wet_c": 0.77,
-  "temp_n_wet": 134,
-  "temp_mae_c": [
-   2.01,
-   1.71
-  ]
- },
- "jackson": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.35,
-    "weight": 0.123,
-    "mae72": 7.76,
-    "raw_mae72": 6.99,
-    "n": 155,
-    "weight_ext": 0.137,
-    "mae_ext": 4.2
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.257,
-    "weight": 0.152,
-    "mae72": 7.0,
-    "raw_mae72": 6.54,
-    "n": 358,
-    "weight_ext": 0.134,
-    "mae_ext": 4.26
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.228,
-    "weight": 0.189,
-    "mae72": 6.27,
-    "raw_mae72": 5.98,
-    "n": 249,
-    "weight_ext": 0.159,
-    "mae_ext": 3.91
-   },
-   "gfs_seamless": {
-    "factor": 1.011,
-    "weight": 0.141,
-    "mae72": 7.27,
-    "raw_mae72": 7.23,
-    "n": 358,
-    "weight_ext": 0.174,
-    "mae_ext": 3.73
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.01,
-    "weight": 0.147,
-    "mae72": 7.1,
-    "raw_mae72": 7.07,
-    "n": 358,
-    "weight_ext": 0.158,
-    "mae_ext": 3.91
-   },
-   "gem_seamless": {
-    "factor": 1.375,
-    "weight": 0.138,
-    "mae72": 7.33,
-    "raw_mae72": 6.78,
-    "n": 358,
-    "weight_ext": 0.121,
-    "mae_ext": 4.47
-   },
-   "icon_seamless": {
-    "factor": 1.276,
-    "weight": 0.109,
-    "mae72": 8.25,
-    "raw_mae72": 7.44,
-    "n": 353,
-    "weight_ext": 0.116,
-    "mae_ext": 4.56
-   }
-  },
-  "station": "Phillips Bench SNOTEL",
-  "blend_mae72": 6.67,
-  "n_windows": 358,
-  "n_wet": 146,
-  "ratio_q": {
-   "0.05": 0.164,
-   "0.25": 0.495,
-   "0.5": 0.784,
-   "0.75": 1.198,
-   "0.95": 2.229
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 87,
-    "q": {
-     "0.05": 0.131,
-     "0.25": 0.416,
-     "0.5": 0.819,
-     "0.75": 1.445,
-     "0.95": 2.321
-    }
-   },
-   {
-    "lo_mm": 25,
-    "hi_mm": 50,
-    "n": 51,
-    "q": {
-     "0.05": 0.351,
-     "0.25": 0.583,
-     "0.5": 0.746,
-     "0.75": 1.084,
-     "0.95": 1.82
-    }
-   }
-  ],
-  "temp_bias_c": 0.11,
-  "temp_bias_wet_c": -0.01,
-  "temp_n_wet": 173,
-  "temp_mae_c": [
-   0.91,
-   0.9
-  ]
- },
- "bigsky": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.102,
-    "weight": 0.168,
-    "mae72": 4.9,
-    "raw_mae72": 4.7,
-    "n": 155,
-    "weight_ext": 0.148,
-    "mae_ext": 2.99
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.27,
-    "weight": 0.128,
-    "mae72": 5.62,
-    "raw_mae72": 5.2,
-    "n": 358,
-    "weight_ext": 0.119,
-    "mae_ext": 3.33
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.06,
-    "weight": 0.188,
-    "mae72": 4.64,
-    "raw_mae72": 4.54,
-    "n": 249,
-    "weight_ext": 0.151,
-    "mae_ext": 2.96
-   },
-   "gfs_seamless": {
-    "factor": 1.0,
-    "weight": 0.114,
-    "mae72": 5.95,
-    "raw_mae72": 5.95,
-    "n": 358,
-    "weight_ext": 0.172,
-    "mae_ext": 2.78
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.036,
-    "weight": 0.135,
-    "mae72": 5.48,
-    "raw_mae72": 5.38,
-    "n": 358,
-    "weight_ext": 0.146,
-    "mae_ext": 3.01
-   },
-   "gem_seamless": {
-    "factor": 0.772,
-    "weight": 0.135,
-    "mae72": 5.47,
-    "raw_mae72": 6.59,
-    "n": 358,
-    "weight_ext": 0.125,
-    "mae_ext": 3.25
-   },
-   "icon_seamless": {
-    "factor": 0.802,
-    "weight": 0.132,
-    "mae72": 5.54,
-    "raw_mae72": 6.39,
-    "n": 353,
-    "weight_ext": 0.139,
-    "mae_ext": 3.08
-   }
-  },
-  "station": "Lone Mountain SNOTEL",
-  "blend_mae72": 5.07,
-  "n_windows": 358,
-  "n_wet": 115,
-  "ratio_q": {
-   "0.05": 0.204,
-   "0.25": 0.49,
-   "0.5": 0.757,
-   "0.75": 1.319,
-   "0.95": 1.923
-  },
-  "ratio_bins": [
-   {
-    "lo_mm": 10,
-    "hi_mm": 25,
-    "n": 103,
-    "q": {
-     "0.05": 0.208,
-     "0.25": 0.52,
-     "0.5": 0.773,
-     "0.75": 1.336,
-     "0.95": 2.047
-    }
-   }
-  ],
-  "temp_bias_c": 0.76,
-  "temp_bias_wet_c": 0.47,
-  "temp_n_wet": 170,
-  "temp_mae_c": [
-   1.24,
-   1.07
-  ]
- },
- "blackcomb": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 0.951,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.387,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.202,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gfs_seamless": {
-    "factor": 0.998,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.212,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_seamless": {
-    "factor": 1.202,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "icon_seamless": {
-    "factor": 1.049,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_hrdps_continental": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   }
-  },
-  "uncalibrated": true,
-  "n_wet": 0,
-  "ratio_q": {
-   "0.05": 0.49,
-   "0.25": 0.712,
-   "0.5": 0.874,
-   "0.75": 1.125,
-   "0.95": 1.693
-  },
-  "ratio_bins": [],
-  "peers": 1,
-  "peers_scope": "region",
-  "temp_n_wet": 0
- },
- "revelstoke": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.2,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.381,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.296,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gfs_seamless": {
-    "factor": 0.998,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.019,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_seamless": {
-    "factor": 1.202,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "icon_seamless": {
-    "factor": 1.049,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_hrdps_continental": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   }
-  },
-  "uncalibrated": true,
-  "n_wet": 0,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.435,
-   "0.5": 0.796,
-   "0.75": 1.241,
-   "0.95": 2.229
-  },
-  "ratio_bins": [],
-  "peers": 17,
-  "peers_scope": "all",
-  "temp_n_wet": 0
- },
- "kickinghorse": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.2,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.381,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.296,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gfs_seamless": {
-    "factor": 0.998,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.019,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_seamless": {
-    "factor": 1.202,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "icon_seamless": {
-    "factor": 1.049,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_hrdps_continental": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   }
-  },
-  "uncalibrated": true,
-  "n_wet": 0,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.435,
-   "0.5": 0.796,
-   "0.75": 1.241,
-   "0.95": 2.229
-  },
-  "ratio_bins": [],
-  "peers": 17,
-  "peers_scope": "all",
-  "temp_n_wet": 0
- },
- "lakelouise": {
-  "models": {
-   "ecmwf_ifs": {
-    "factor": 1.2,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_ifs025": {
-    "factor": 1.381,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ecmwf_aifs025_single": {
-    "factor": 1.296,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gfs_seamless": {
-    "factor": 0.998,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "ncep_nbm_conus": {
-    "factor": 1.019,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_seamless": {
-    "factor": 1.202,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "icon_seamless": {
-    "factor": 1.049,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   },
-   "gem_hrdps_continental": {
-    "factor": 1.0,
-    "weight": 0.125,
-    "mae72": null,
-    "raw_mae72": null,
-    "n": 0,
-    "weight_ext": null,
-    "mae_ext": null
-   }
-  },
-  "uncalibrated": true,
-  "n_wet": 0,
-  "ratio_q": {
-   "0.05": 0.0,
-   "0.25": 0.435,
-   "0.5": 0.796,
-   "0.75": 1.241,
-   "0.95": 2.229
-  },
-  "ratio_bins": [],
-  "peers": 17,
-  "peers_scope": "all",
-  "temp_n_wet": 0
  }
 }

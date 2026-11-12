@@ -7,24 +7,24 @@ the median factors of calibrated resorts in their region.
 
 | Resort | Region | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
 |---|---|---|---|---|---|---|
-| Palisades Tahoe | California | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 358 | 0.49 |
-| Alpine Meadows | California | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 358 | 0.58 |
-| Kirkwood | California | calibrated | Carson Pass SNOTEL | 8,360 ft | 358 | 0.32 |
-| Mammoth Mountain | California | calibrated | Mammoth Pass (CDEC) | 9,400 ft | 358 | 0.41 |
-| Mt. Bachelor | Pacific Northwest | calibrated | Three Creeks Meadow SNOTEL | 5,680 ft | 358 | 0.38 |
-| Alta | Utah | calibrated | Atwater SNOTEL | 8,750 ft | 358 | 0.39 |
-| Snowbird | Utah | calibrated | Snowbird SNOTEL | 9,170 ft | 358 | 0.37 |
-| Solitude | Utah | calibrated | Brighton SNOTEL | 8,790 ft | 358 | 0.27 |
-| Snowbasin | Utah | calibrated | Ben Lomond Peak SNOTEL | 7,690 ft | 358 | 0.41 |
-| Jackson Hole | Northern Rockies | calibrated | Phillips Bench SNOTEL | 8,170 ft | 358 | 0.26 |
-| Big Sky | Northern Rockies | calibrated | Lone Mountain SNOTEL | 8,820 ft | 358 | 0.20 |
-| Arapahoe Basin | Colorado | calibrated | Grizzly Peak SNOTEL | 11,110 ft | 358 | 0.19 |
-| Copper Mountain | Colorado | calibrated | Copper Mountain SNOTEL | 10,500 ft | 358 | 0.16 |
-| Steamboat | Colorado | calibrated | Dry Lake SNOTEL | 8,240 ft | 358 | 0.23 |
-| Telluride | Colorado | calibrated | Alta Lakes SNOTEL | 11,290 ft | 179 | 0.17 |
-| Crested Butte | Colorado | calibrated | Butte SNOTEL | 10,190 ft | 358 | 0.14 |
-| Whistler | Coastal BC | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 345 | 0.40 |
-| Blackcomb | Coastal BC | regional default (no gauge) | – | – |  |  |
-| Revelstoke | Interior BC | regional default (no gauge) | – | – |  |  |
-| Kicking Horse | Interior BC | regional default (no gauge) | – | – |  |  |
-| Lake Louise | Canadian Rockies | regional default (no gauge) | – | – |  |  |
+| Palisades Tahoe | California | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 356 | 0.49 |
+| Alpine Meadows | California | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 356 | 0.57 |
+| Kirkwood | California | not located yet | | | | |
+| Mammoth Mountain | California | not located yet | | | | |
+| Mt. Bachelor | Pacific Northwest | not located yet | | | | |
+| Alta | Utah | not located yet | | | | |
+| Snowbird | Utah | not located yet | | | | |
+| Solitude | Utah | not located yet | | | | |
+| Snowbasin | Utah | not located yet | | | | |
+| Jackson Hole | Northern Rockies | not located yet | | | | |
+| Big Sky | Northern Rockies | not located yet | | | | |
+| Arapahoe Basin | Colorado | not located yet | | | | |
+| Copper Mountain | Colorado | not located yet | | | | |
+| Steamboat | Colorado | not located yet | | | | |
+| Telluride | Colorado | not located yet | | | | |
+| Crested Butte | Colorado | not located yet | | | | |
+| Whistler | Coastal BC | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
+| Blackcomb | Coastal BC | not located yet | | | | |
+| Revelstoke | Interior BC | not located yet | | | | |
+| Kicking Horse | Interior BC | not located yet | | | | |
+| Lake Louise | Canadian Rockies | not located yet | | | | |
