@@ -5,7 +5,7 @@ as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate lim
     python3 calibrate.py [resort ...] [--force] # resorts not set up yet (--force: recalibrate them)
     python3 calibrate.py alta --out o           # CI: one resort -> o/{resorts,calibration}.json
     python3 calibrate.py --plan [resort ...] [--force]  # CI: resorts still to set up (job matrix)
-    python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, borrowed defaults, CALIBRATION.md
+    python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/ (raw models if uncalibrated), CALIBRATION.md
 """
 import glob, json, math, os, sys, time
 from datetime import date, datetime, timedelta

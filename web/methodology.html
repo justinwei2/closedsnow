@@ -39,7 +39,7 @@
 
     <section class="card" id="blend">
       <h2>2. Precipitation Blend</h2>
-      <p>Up to seven models: ECMWF IFS 9 km and 0.25°, ECMWF AIFS, GFS + HRRR, NBM 2.5 km, GEM and ICON. For each hour <i>t</i>:</p>
+      <p>Up to eight models: ECMWF IFS 9 km and 0.25°, ECMWF AIFS, GFS + HRRR, NBM 2.5 km (US), GEM, ICON and JMA. For each hour <i>t</i>:</p>
       <div class="eq">P<sub>blend</sub>(t) = Σ<sub>m</sub> w<sub>m</sub> · f<sub>m</sub> · P<sub>m</sub>(t) &nbsp;/&nbsp; Σ<sub>m</sub> w<sub>m</sub></div>
       <p><b>f<sub>m</sub></b> = the model's bias factor and <b>w<sub>m</sub></b> = its weight (§3). The weight depends on lead time: one set for the next 3.5 days, another (fit on lead days 4–7) beyond that. The sum covers only models with data at that hour, so the blend renormalises as short-range models drop out: HRDPS after 2 days, ICON after 7, GEM after 10, NBM after 11.</p>
     </section>
@@ -150,9 +150,9 @@
       <ul>
         <li>Precipitation is at model-grid resolution. Orographic peaks between grid cells aren't resolved.</li>
         <li>At high resorts the lowest pressure levels lie below the model terrain, so the snow level may read "below base".</li>
-        <li>Calibration is fit and scored on the same two winters, so the error shown is optimistic. ECMWF IFS 9 km and AIFS have one winter of history.</li>
+        <li>Calibration is fit and scored on the same two winters. Scored on a held-out winter instead (10 resorts, 1,484 storms), the 72 h error barely changes (9.4 → 9.8 mm) and is no smaller than the raw blend's: what calibration fixes is total bias (raw models ran 14% low; calibrated, 2%). The ranges held up: 47% of storms fell in the middle-50% range and 77% in the middle-80%. ECMWF IFS 9 km and AIFS have one winter of history.</li>
         <li>The temperature correction assumes the gauge's storm-day bias holds across the resort's elevations.</li>
-        <li>SNOTEL gauges under-catch snow in wind, so calibrated totals may run low. Canadian factors are borrowed from US resorts.</li>
+        <li>Gauges under-catch snow in wind, so calibrated totals may run low. Japan's gauges are valley stations (Hakuba 703 m, Kutchan 176 m), well below the lifts, so the upper mountain there may be under-forecast.</li>
         <li>Models historically under-forecast the biggest storms 1–3 days out. Watch the top of the range.</li>
         <li>Thin warm layers (&lt; ~1,500 ft) are missed by the sleet check.</li>
       </ul>

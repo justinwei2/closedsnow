@@ -545,7 +545,7 @@ function renderModels(d, e) {
   const c = d.calibration;
   $("#cal-note").textContent = c.uncalibrated
     ? `Not calibrated yet (${d.obs ? "calibration pending" : "no nearby automated gauge"}): raw model precipitation, models weighted equally, and ranges from the ensembles only.`
-    : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (NBM 11 d, ICON 7 d, GEM 10 d).`;
+    : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (NBM 11 d, JMA 11 d, ICON 7 d, GEM 10 d).`;
 }
 
 function renderObs(d) {

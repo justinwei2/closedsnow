@@ -67,7 +67,7 @@ resort runs on the raw models with equal weights, and the page says it isn't cal
 
 ## Data
 
-Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC and DWD models), api.weather.gov, NRCS SNOTEL, California
+Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC, DWD and JMA models), api.weather.gov, NRCS SNOTEL, California
 CDEC, BC River Forecast Centre automated snow weather stations (public data files), Alberta
 Rivers (AEP) and the Japan Meteorological Agency (daily AMeDAS tables). The Alberta endpoints are the ones the rivers.alberta.ca site itself uses: not a
 published API, and the data are provisional. Known limitations are listed on the methodology page.
