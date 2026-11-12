@@ -124,7 +124,7 @@ def rnd(v):
     return round(v, 2) if isinstance(v, float) else v
 
 
-DEPTH_KM, DEPTH_FT = 15, 800  # a gauge stands in for an elevation within this distance / height
+DEPTH_KM, DEPTH_FT = {True: 5, False: 10}, 800  # gauge stands in for an elevation within km (US: SNODAS covers the rest) / ft
 
 
 def depths(r):
@@ -133,7 +133,7 @@ def depths(r):
     import calibrate  # station search helpers
     cands = [r.gauge] if r.gauge else []
     for s in calibrate.snotel() if r.us else []:
-        if calibrate.km(r.mid.lat, r.mid.lon, s["latitude"], s["longitude"]) <= DEPTH_KM:
+        if calibrate.km(r.mid.lat, r.mid.lon, s["latitude"], s["longitude"]) <= DEPTH_KM[r.us]:
             cands.append(Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]),
                                s["latitude"], s["longitude"]))
     out, latest = {}, {}
@@ -400,6 +400,25 @@ def plan():
     print(json.dumps([k for k in RESORTS if due(k, run)]))
 
 
+def add_snodas():
+    """US resorts: NOAA SNODAS depth at each elevation without a nearby gauge (one ~5 MB download per run)."""
+    day, at = src.snodas()
+    if not day:
+        return
+    for key, r in RESORTS.items():
+        p = os.path.join(OUT, f"{key}.json")
+        if not r.us or not os.path.exists(p):
+            continue
+        d = json.load(open(p))
+        dep = d.get("depth") or {}
+        for e in ELEVS:
+            if dep.get(e) is None or dep[e].get("snodas"):  # gauges win; refresh last run's SNODAS
+                v = at(r.point(e).lat, r.point(e).lon)
+                dep[e] = None if v is None else dict(depth_in=round(v, 1), station=f"NOAA SNODAS {day}", ft=r.point(e).ft, snodas=True)
+        d["depth"] = dep
+        src.write_json(p, d, separators=(",", ":"))
+
+
 def snow5(key):
     """Mid-mountain snow over the next 5 days, for the resort list's snow pills and the map."""
     p = os.path.join(OUT, f"{key}.json")
@@ -474,6 +493,7 @@ def main(keys=None, scheduled=False, index=True):
         time.sleep(60)
         todo = failed
     if index:
+        add_snodas()
         write_index()
 
 

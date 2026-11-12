@@ -7,7 +7,7 @@
 
 HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, optional replay.
 """
-import csv, hashlib, http.client, io, json, math, os, random, re, sys, time, urllib.error, urllib.parse, urllib.request
+import csv, gzip, hashlib, http.client, io, json, math, os, random, re, sys, tarfile, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -350,6 +350,35 @@ def _amedas(gauge, start, end):
     return {"PREC": _cumulative({r[0]: r[1] for r in rows if r[1] is not None}, start, end),
             "TAVG": [(r[0], r[2] * 1.8 + 32) for r in rows if r[2] is not None],
             "SNWD": [(r[0], r[3] / 2.54) for r in rows if r[3] is not None]}
+
+
+SNODAS = "https://noaadata.apps.nsidc.org/NOAA/G02158/masked/"
+SNODAS_GRID = (-124.729166666662, 52.8708333333312, 1 / 120, 6935)  # cell (0, 0) centre lon, lat; step deg; columns
+
+
+def snodas():
+    """NOAA SNODAS snow depth (1 km, assimilates SNOTEL and other observations; contiguous US), latest
+    day available: (date, lookup(lat, lon) -> inches or None)."""
+    def parse(fh):
+        with tarfile.open(fileobj=io.BytesIO(fh.read())) as t:
+            m = next(x for x in t.getmembers() if "11036tS" in x.name and x.name.endswith(".dat.gz"))  # 1036 = depth
+            return gzip.decompress(t.extractfile(m).read())
+    for back in (1, 2, 3):  # each day's analysis is posted the next day
+        d = date.today() - timedelta(back)
+        try:
+            raw = _fetch(SNODAS + f"{d:%Y}/{d:%m_%b}/SNODAS_{d:%Y%m%d}.tar", 2, parse)
+            break
+        except RuntimeError:
+            continue
+    else:
+        return None, lambda lat, lon: None
+    x0, y0, step, ncol = SNODAS_GRID
+    def at(lat, lon):
+        i, j = round((y0 - lat) / step), round((lon - x0) / step)
+        k = (i * ncol + j) * 2
+        v = int.from_bytes(raw[k:k + 2], "big", signed=True) if 0 <= j < ncol and 0 <= k < len(raw) else -9999
+        return None if v == -9999 else v / 25.4  # mm -> in
+    return d.isoformat(), at
 
 
 class StationSeries:

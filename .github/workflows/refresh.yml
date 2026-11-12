@@ -76,7 +76,7 @@ jobs:
         run: |
           count() { python -c "import json,sys; print(sum(1 for r in json.load(open(sys.argv[1]))['resorts'] if r.get('updated')))" "$1" 2>/dev/null || echo 0; }
           before=$(count web/data/index.json)
-          python -c "import update; update.write_index()"
+          python -c "import update; update.add_snodas(); update.write_index()"
           after=$(count web/data/index.json)
           echo "resorts with data: $before -> $after"
           [ "$after" -ge "$before" ] || [ "$(python -c "import resorts; print(len(resorts.CATALOG))")" -lt "$before" ] \

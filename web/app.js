@@ -736,7 +736,7 @@ function draw() {
       s.append(document.createTextNode(`${ELEV_NAME[x].replace("-mountain", "")} `), el("b", {}, v ? `${Math.round(v.depth_in)}"` : "–"));
       dep.append(s);
     }
-    dep.append(el("span", { class: "muted" }, " · gauge measurements"));
+    dep.append(el("span", { class: "muted" }, ELEVS.some((x) => ds[x]?.snodas) ? " · gauges and NOAA SNODAS (1 km)" : " · gauge measurements"));
   }
   $("#updated").textContent = `updated ${new Date(d.updated).toLocaleString(undefined,  // resort time, like every other time shown
     { weekday: "short", hour: "numeric", minute: "2-digit", ...(d.tz ? { timeZone: d.tz, timeZoneName: "short" } : {}) })}`;
