@@ -1,7 +1,6 @@
 # closedsnow
 
 Snow forecasts for 21 western North America ski resorts, built from free weather data.
-Unofficial; not affiliated with OpenSnow.
 
 Site: https://justinwei2.github.io/closedsnow/ · Methodology: https://justinwei2.github.io/closedsnow/methodology.html
 
