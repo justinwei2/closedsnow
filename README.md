@@ -10,8 +10,8 @@ Each resort has base, mid and summit points. For each point the site shows:
 - snowfall for the past 7 days and next 10 days (6am–6am days, split into morning / afternoon / night)
 - likely ranges: middle 50% (25–75%) and middle 90% (5–95%) from ensembles plus the resort's historical forecast error
 - snow quality and snow ratio, rain/snow line, freezing level
-- cumulative snow and rain with forecast spread
-- a daily weather report: wind holds, powder mornings, rain line, visibility, wind chill
+- hourly forecast, and 12 h snow / rain bars with forecast spread (current and history views)
+- daily alerts: powder, wet / icy precipitation, wind holds, wind chill
 - NWS alerts and forecast discussion (US)
 
 ## How it works
@@ -21,7 +21,7 @@ Each resort has base, mid and summit points. For each point the site shows:
    as-issued forecasts (lead days 1–7) against the gauge to get, per model: a precipitation bias
    factor, blend weights for lead days 1–3 and 4+, and the resort's temperature bias on storm days.
 2. **Refresh (`update.py`).** Pull 7–8 deterministic models, pressure-level profiles, 5 ensembles
-   (~190 members), NWS grids/alerts and station data. Blend precipitation with the calibrated
+   (~190 members), NWS alerts and station data. Blend precipitation with the calibrated
    weights. Derive rain/snow, snow ratio and snow level from the bias-corrected profile.
 3. **Publish.** Write one JSON file per resort; the static page in `web/` renders it.
 
@@ -45,7 +45,7 @@ refresh costs ~65–85 calls per resort (~7k/day for 21 resorts); calibration ~2
 | File | Contents |
 |---|---|
 | `resorts.py` | catalog, constants, `Resort` / `Point` / `Gauge` / `Calibration` records |
-| `sources.py` | HTTP (retries, quota handling, record/replay) and adapters: `ModelGrid`, `StationSeries`, `NwsGrid`, `Alert` |
+| `sources.py` | HTTP (retries, quota handling, record/replay) and adapters: `ModelGrid`, `StationSeries`, `Alert` |
 | `conditions.py` | wet-bulb, snow fraction, snow level, Kuchera snow ratio, quality labels, weather report |
 | `calibrate.py` | locate + calibrate + merge region results |
 | `update.py` | forecast pipeline, index, `--check` |
@@ -60,6 +60,12 @@ SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, repl
 ```
 
 To add a resort, add a line to `CATALOG` in `resorts.py`; the next `backfill` run sets it up.
+
+A resort in a **new geographic region** also needs calibration support for that region: a gauge
+source (an adapter in `sources.py` mapping its data onto `StationSeries`, like SNOTEL/CDEC in the
+US or BC's snow-pillow network) and the station search in `calibrate.py`, plus the region in
+`GROUPS` (and `NON_US` / `SNOTEL_STATES` as appropriate). Until then the resort runs on regional
+default factors borrowed from calibrated resorts, and the page says it isn't calibrated.
 
 ## Data
 

@@ -3,7 +3,7 @@ const $ = (s) => document.querySelector(s);
 const NS = "http://www.w3.org/2000/svg";
 const ELEVS = ["base", "mid", "summit"];
 const ELEV_NAME = { base: "Base", mid: "Mid-mountain", summit: "Summit" };
-const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "base" };
+const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "base", tab: { hourly: "current", daily: "current", level: "current", plume: "current" } };
 
 const MODEL_NAMES = {
   ecmwf_ifs: "ECMWF IFS 9 km", ecmwf_ifs025: "ECMWF IFS 0.25°", ecmwf_aifs025_single: "ECMWF AIFS",
@@ -23,7 +23,6 @@ const QUALITY = {  // one colour per label everywhere: orange = good snow, purpl
 const ALERT = { powder: "--q-light", wet: "--q-sleet", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
 const NOTE_ALERT = { powder: "powder", rain: "wet", sleet: "wet", vis: "info" };  // weather-report note -> alert
-const ALERT_NAME_HEAD = (h) => `Alerts · ${h.name === "day" ? "6am–6pm" : "6pm–6am"}`;
 // weather-report note styling: status colours always ship with an icon + text
 
 // ---------------------------------------------------------------- formatting
@@ -38,6 +37,15 @@ const dayLabel = (d) => {
   return { dow: dt.toLocaleDateString(undefined, { weekday: "short" }), dom: dt.getDate(), mon: dt.toLocaleDateString(undefined, { month: "short" }) };
 };
 const today = () => state.data.today;  // current ski day (resort-local)
+function tabs(id, which) {  // Current / History toggle for a section
+  const box = $(id);
+  box.replaceChildren();
+  for (const [k, label] of [["current", "Current"], ["history", "History"]]) {
+    const b = el("button", { type: "button", class: state.tab[which] === k ? "on" : "" }, label);
+    b.addEventListener("click", () => { state.tab[which] = k; render(); });
+    box.append(b);
+  }
+}
 const window17 = (d) => [...d.daily.filter((x) => x.past).slice(-7), ...d.daily.filter((x) => !x.past).slice(0, 10)];  // last 7 + next 10 days
 const el = (tag, attrs = {}, text) => {
   const e = document.createElement(tag);
@@ -242,11 +250,13 @@ function conditions(h) {
 }
 
 function renderHourly(d, e) {
-  const tb = $("#hourly-table"), wrap = $("#hourly-wrap"), jump = $("#hourly-jump");
-  tb.replaceChildren(); jump.replaceChildren();
-  const hrs = d.hourly;
-  const ni = Math.max(0, hrs.findIndex((h) => h.t >= d.now));
-  $("#hourly-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · last 7 days (model estimate) and next 10`;
+  const tb = $("#hourly-table"), wrap = $("#hourly-wrap");
+  tb.replaceChildren();
+  tabs("#hourly-tabs", "hourly");
+  const history = state.tab.hourly === "history";
+  const hrs = d.hourly.filter((h) => history ? h.t < d.now : h.t >= d.now);
+  const ni = history ? -1 : 0;
+  $("#hourly-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · ${history ? "last 7 days (model estimate)" : "next 10 days"}`;
   const hl = (t) => { const h = +t.slice(11, 13); return `${h % 12 || 12}${h < 12 ? "a" : "p"}`; };
   const rows = [  // [label, unit, value(hour, elevation data)]
     ["Precip Chance", "%", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}`],
@@ -264,7 +274,7 @@ function renderHourly(d, e) {
   ];
   const head = el("tr"); head.append(el("th", { class: "rowh" }, ""));
   hrs.forEach((h, i) => {
-    const th = el("th", { class: (i === ni ? "now " : "") + (i < ni ? "past" : ""), "data-i": i });
+    const th = el("th", { class: (i === ni ? "now" : ""), "data-i": i });
     th.append(el("div", {}, hl(h.t)), el("div", { class: "muted" }, dayLabel(h.t.slice(0, 10)).dow));
     head.append(th);
   });
@@ -273,21 +283,10 @@ function renderHourly(d, e) {
     const tr = el("tr");
     const th = el("td", { class: "rowh" }); th.append(el("b", {}, label), document.createTextNode(unit ? ` ${unit}` : ""));
     tr.append(th);
-    hrs.forEach((h, i) => tr.append(el("td", { class: (i === ni ? "now " : "") + (i < ni ? "past" : "") }, String(fn(h, h[e])))));
+    hrs.forEach((h, i) => tr.append(el("td", { class: (i === ni ? "now" : "") }, String(fn(h, h[e])))));
     tb.append(tr);
   }
-  const go = (i) => { const c = head.children[i + 1]; if (c) wrap.scrollLeft = c.offsetLeft - head.children[0].offsetWidth; };
-  jump.append(el("span", { class: "muted" }, "Jump to: "));
-  const starts = hrs.map((h, i) => [h, i]).filter(([h]) => h.t.endsWith("T00:00"));
-  for (const [h, i] of starts) {
-    const b = el("button", { type: "button" }, dayLabel(h.t.slice(0, 10)).dow.slice(0, 3) + " " + dayLabel(h.t.slice(0, 10)).dom);
-    b.addEventListener("click", () => go(i));
-    jump.append(b);
-  }
-  const now = el("button", { type: "button", class: "on" }, "Now");
-  now.addEventListener("click", () => go(ni));
-  jump.append(now);
-  requestAnimationFrame(() => go(ni));
+  requestAnimationFrame(() => { wrap.scrollLeft = history ? wrap.scrollWidth : 0; });  // history: start at the latest hour
 }
 
 const DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
@@ -297,7 +296,8 @@ function renderDailyTable(d, e) {
   const tb = $("#daily-table");
   tb.replaceChildren();
   tb.className = "grid days";
-  const days = window17(d);
+  tabs("#daily-tabs", "daily");
+  const days = state.tab.daily === "history" ? d.daily.filter((x) => x.past).slice(-7) : d.daily.filter((x) => !x.past).slice(0, 10);
   $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft · rows: 6am–6pm, 6pm–6am`;
   // daytime rows also carry the day's report notes (powder morning, rain line, sleet, flat light);
   // wind-hold / wind-chill notes are already row alerts
@@ -308,10 +308,10 @@ function renderDailyTable(d, e) {
     for (const el_ of ELEVS) {
       for (const a of x[el_].halves[k]?.alerts || []) {
         const key = a.kind === "warn" ? a.text : `${a.kind}:${el_}`;
-        if (!seen.has(key)) seen.set(key, { kind: a.kind, text: a.kind === "warn" ? a.text : `${ELEV_NAME[el_].replace("-mountain", "")}: ${a.text}` });
+        if (!seen.has(key)) seen.set(key, { kind: a.kind, text: a.text, where: a.kind === "warn" ? "Mountain" : ELEV_NAME[el_].replace("-mountain", "") });
       }
     }
-    const notes = k ? [] : (x.report || []).filter((n) => NOTE_ALERT[n.kind]).map((n) => ({ kind: NOTE_ALERT[n.kind], text: n.text }));
+    const notes = k ? [] : (x.report || []).filter((n) => NOTE_ALERT[n.kind]).map((n) => ({ kind: NOTE_ALERT[n.kind], text: n.text, where: "Mountain" }));
     return [...seen.values(), ...notes];
   };
   const cols = [  // [header, cell(h, x, k), class, header group]
@@ -319,20 +319,30 @@ function renderDailyTable(d, e) {
     ["Alerts", (h, x, k) => {
       const al = rowAlerts(h, x, k);
       if (!al.length) return "";
-      const s = el("span", { class: "alerts", tabindex: 0, "aria-label": al.map((a) => a.text).join("; ") });
-      for (const a of al) { const q = el("span", { class: "asq" }); q.style.background = `var(${ALERT[a.kind]})`; s.append(q); }
-      hover(s, (ev) => showTip(ev, ALERT_NAME_HEAD(h), al.map((a) => ({ name: ALERT_NAME[a.kind], value: a.text, color: `var(${ALERT[a.kind]})` }))));
+      const s = el("span", { class: "alerts", "aria-label": al.map((a) => a.text).join("; ") });
+      for (const kind of Object.keys(ALERT)) {  // one square per colour; hover lists that colour's alerts
+        const items = al.filter((a) => a.kind === kind);
+        if (!items.length) continue;
+        const q = el("span", { class: "asq", tabindex: 0 });
+        q.style.background = `var(${ALERT[kind]})`;
+        hover(q, (ev) => showTip(ev, `${ALERT_NAME[kind]} · ${h.name === "day" ? "6am–6pm" : "6pm–6am"}`,
+          items.map((a) => ({ name: a.where || "", value: a.text, color: `var(${ALERT[kind]})` }))));
+        s.append(q);
+      }
       return s;
     }],
     ["Snow Ratio", (h) => (h.liquid_in > 0.02 ? snowRatio(h.quality, h.slr) : "–")],
-    ["12-Hr Snowfall", (h) => fmtIn(h.snow_in), "strong"],
-    ["Snow Level (ft)", (h) => el("span", { title: h.nws_snow_level_ft != null ? `NWS ${fmtFt(h.nws_snow_level_ft)}` : "" }, fmtFt(h.snow_level_ft))],
+    ["12-Hr Snowfall", (h) => {  // forecast with the middle-50% range, e.g. 5" (1–7")
+      const c = el("span"); c.append(el("b", {}, fmtIn(h.snow_in)));
+      const r = fmtRange(h.p25, h.p75);
+      if (r) c.append(el("span", { class: "muted" }, ` (${r})`));
+      return c;
+    }],
+    ["Snow Level (ft)", (h) => fmtFt(h.snow_level_ft)],
     ["Precip Chance", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}%`],
     ["Precip Amount", (h) => h.liquid_in >= 0.005 ? `${h.liquid_in.toFixed(2)}"` : "0\""],
     ["Speed", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`, "", "Wind (mph)"],
     ["Gust", (h) => fmtMph(h.gust_mph), "", "Wind (mph)"],
-    ["Middle 50%", (h) => fmtRange(h.p25, h.p75) || "–", "extra"],  // ours, not in OpenSnow
-    ["NWS Snowfall", (h) => h.nws_snow_in != null ? fmtIn(h.nws_snow_in) : "–", "extra"],
   ];
   const head1 = el("tr"), head2 = el("tr");
   head1.append(el("th", { class: "rowh", rowspan: 2 }, ""));
@@ -436,7 +446,8 @@ function timeChart(container, hours, opts) {
 }
 
 function levelCharts(d, e) {
-  const hours = d.hourly;  // already the next 10 days
+  tabs("#level-tabs", "level");
+  const hours = d.hourly.filter((h) => state.tab.level === "history" ? h.t < d.now : h.t >= d.now);
   const p = d.points;
   const vals = hours.flatMap((h) => [h.snow_level_ft, h.freezing_level_ft, h.snow_level_hi_ft, h.snow_level_lo_ft]).filter((v) => v != null);
   const lo = Math.max(0, Math.floor((Math.min(p.base.requested.ft, ...vals) - 500) / 2000) * 2000);
@@ -447,13 +458,11 @@ function levelCharts(d, e) {
     refs: ELEVS.map((x) => ({ v: p[x].requested.ft, label: `${ELEV_NAME[x].split("-")[0]} ${(p[x].requested.ft / 1000).toFixed(1)}k`, strong: x === e })),
     lines: [
       { get: (h) => h.freezing_level_ft, color: "var(--series-2)" },
-      { get: (h) => h.nws_snow_level_ft, color: "var(--series-3)" },
       { get: (h) => h.snow_level_ft, color: "var(--series-1)" },
     ],
     tip: (h) => [
       { name: "Snow level", value: fmtFt(h.snow_level_ft), color: "var(--series-1)" },
       { name: "Model range", value: `${fmtFt(h.snow_level_lo_ft)}–${fmtFt(h.snow_level_hi_ft)}` },
-      ...(h.nws_snow_level_ft != null ? [{ name: "NWS snow level", value: fmtFt(h.nws_snow_level_ft), color: "var(--series-3)" }] : []),
       { name: "Freezing level", value: fmtFt(h.freezing_level_ft), color: "var(--series-2)" },
       { name: `Temp (${ELEV_NAME[e].toLowerCase()})`, value: fmtF(h[e].temp_f) },
     ],
@@ -461,13 +470,17 @@ function levelCharts(d, e) {
   legend("#level-legend", [
     { label: "Snow level (≈50% snow)", color: "var(--series-1)" },
     { label: "Model spread", color: "var(--series-1)", kind: "key-band" },
-    ...(hours.some((h) => h.nws_snow_level_ft != null) ? [{ label: "NWS snow level", color: "var(--series-3)" }] : []),
     { label: "Freezing level", color: "var(--series-2)" },
   ]);
 }
 
-function plumeChart(d, e) {  // snow + rain per 12 h period (daytime 6a-6p, nighttime 6p-6a) with spread whiskers
-  const p = d.plume[e];
+function plumeChart(d, e) {  // snow + rain per 12 h period (6a-6p, 6p-6a) with spread whiskers
+  tabs("#plume-tabs", "plume");
+  const history = state.tab.plume === "history";
+  const all = d.plume[e];
+  const keep = all.t.map((t, i) => [t, i]).filter(([t, i]) => history ? (all.t[i + 1] || "9") <= d.now : (all.t[i + 1] || "9") > d.now).map(([, i]) => i);
+  const pick = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, keep.map((i) => v[i])]));
+  const p = { t: keep.map((i) => all.t[i]), snow: pick(all.snow), rain: pick(all.rain) };
   const kinds = [["snow", "var(--q-light)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
   const n = p.t.length;
   const c = $("#plume");
@@ -510,7 +523,7 @@ function plumeChart(d, e) {  // snow + rain per 12 h period (daytime 6a-6p, nigh
     f.svg.append(svgEl("line", { x1: xd, x2: xd, y1: f.m.t - 6, y2: f.m.t + f.ih, class: "divider" }),
       svgText({ x: xd - 6, y: f.m.t - 4, "text-anchor": "end" }, "past"), svgText({ x: xd + 6, y: f.m.t - 4 }, "forecast"));
   }
-  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h · last 7 days (model estimate) and next 10`;
+  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h · ${history ? "last 7 days (model estimate)" : "next 10 days"}`;
   legend("#plume-legend", [
     { label: "Snow (in)", color: "var(--q-light)", kind: "key-rect" },
     { label: "Rain (in of water)", color: "var(--q-rain)", kind: "key-rect" },
@@ -534,7 +547,6 @@ function renderModels(d, e) {
     ...models.map((m) => ({ name: MODEL_NAMES[m], vals: days.map((x) => x[e].models[m]), w: cal[m].weight })),
     { name: "Blend", vals: days.map((x) => x[e].p50), strong: true },
   ];
-  if (days.some((x) => x[e].nws_snow_in != null)) rows.push({ name: "NWS (forecaster)", vals: days.map((x) => x[e].nws_snow_in ?? null) });
   const vmax = Math.max(6, ...rows.flatMap((r) => r.vals.filter((v) => v != null)));
   for (const r of rows) {
     const tr = el("tr"); tr.append(el("td", { class: "rowh" + (r.strong ? " strong" : "") }, r.name));

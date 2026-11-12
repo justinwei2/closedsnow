@@ -2,11 +2,11 @@
 
 - Open-Meteo forecast / ensemble / previous-runs  -> ModelGrid (hourly series per model)
 - NRCS SNOTEL and California CDEC                 -> StationSeries of StationDay
-- NWS gridpoints, alerts, forecast discussions    -> NwsGrid, Alert, Discussion
+- NWS alerts and forecast discussions            -> Alert, Discussion
 
 HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, optional replay.
 """
-import hashlib, json, math, os, random, re, sys, time, urllib.error, urllib.parse, urllib.request
+import hashlib, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from resorts import FT, IN, LEVELS, PROFILE_MODELS, USER_AGENT, Gauge
@@ -264,14 +264,6 @@ def snotel_stations(state):
 # ---------------------------------------------------------------- NWS (US only)
 
 @dataclass
-class NwsGrid:
-    office: str
-    elev_m: float
-    snow: dict        # local hour -> mm
-    snow_level: dict  # local hour -> m
-
-
-@dataclass
 class Alert:
     event: str
     severity: str | None
@@ -288,30 +280,10 @@ class Discussion:
     text: str
 
 
-_DUR = re.compile(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?)?")
-
-
-def _nws_hourly(values, local, split):
-    """Expand NWS ISO8601 interval values to {local hour: value}; split=True spreads totals."""
-    out = {}
-    for v in values:
-        start, dur = v["validTime"].split("/")
-        m = _DUR.match(dur)
-        hours = max(1, int(m.group(1) or 0) * 24 + int(m.group(2) or 0))
-        t0 = datetime.fromisoformat(start).astimezone(timezone.utc)
-        for k in range(hours):  # step in UTC, then label in local time (DST-safe)
-            t = (t0 + timedelta(hours=k)).astimezone(local).strftime("%Y-%m-%dT%H:00")
-            out[t] = (v["value"] or 0) / hours if split else v["value"]
-    return out
-
-
-def nws_grid(pt, local):
-    g = cached(f"nws_grid_{pt.lat}_{pt.lon}.json", lambda: {
-        k: v for k, v in get_json(f"https://api.weather.gov/points/{pt.lat},{pt.lon}")["properties"].items()
-        if k in ("gridId", "gridX", "gridY")})
-    p = get_json(f"https://api.weather.gov/gridpoints/{g['gridId']}/{g['gridX']},{g['gridY']}")["properties"]
-    return NwsGrid(g["gridId"], p["elevation"]["value"], _nws_hourly(p["snowfallAmount"]["values"], local, True),
-                   _nws_hourly(p["snowLevel"]["values"], local, False))
+def nws_office(pt):
+    """NWS forecast office covering a point (cached: it never changes)."""
+    return cached(f"nws_office_{pt.lat}_{pt.lon}.json",
+                  lambda: get_json(f"https://api.weather.gov/points/{pt.lat},{pt.lon}")["properties"]["gridId"])
 
 
 def nws_alerts(pt):

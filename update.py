@@ -157,9 +157,8 @@ def process(r, cal):
     times = grids["summit"].times
     cons, per_model = soundings(src.profiles(r.summit, r.tz, PAST_DAYS), cal.profile_shift_c)
     ens = {m: attempt(f"ensemble {m}", lambda m=m: src.ensemble(r.summit, r.tz, m)) for m in ENSEMBLES}
-    nws = {e: attempt("NWS", lambda e=e: src.nws_grid(r.point(e), local)) if r.us else None for e in ELEVS}
     alerts = attempt("alerts", lambda: [asdict(a) for a in src.nws_alerts(r.summit)]) if r.us else []
-    office = (r.afd_office or (nws["summit"].office if nws["summit"] else None)) if r.us else None
+    office = (r.afd_office or attempt("NWS office", lambda: src.nws_office(r.summit))) if r.us else None
     if office and office not in _discussions:
         _discussions[office] = attempt("discussion", lambda: asdict(src.nws_discussion(office)))
     afd = _discussions.get(office) if office else None
@@ -182,14 +181,12 @@ def process(r, cal):
         hrs = hours[e] = hours_at(r, e, grids[e], cons, precip, cal.temp_bias_c or 0.0)
         model_snow[e] = {m: [None if c[i] is None or hrs[i].frac is None else c[i] * hrs[i].frac * hrs[i].slr / IN
                              for i in range(len(times))] for m, c in contrib.items()}
-    nws_sl = nws["summit"].snow_level if nws["summit"] else {}
     levels = []
     for i, p in enumerate(cons):
         sl = [x for x in (pm[i].snow_level() for pm in per_model.values() if pm[i] is not None) if x is not None]
-        lv, fz, n = (p.snow_level() if p else None), (p.freezing_level() if p else None), nws_sl.get(times[i])
+        lv, fz = (p.snow_level() if p else None), (p.freezing_level() if p else None)
         levels.append(dict(snow_level_ft=None if lv is None else lv / FT, freezing_level_ft=None if fz is None else fz / FT,
-                           snow_level_lo_ft=min(sl) / FT if sl else None, snow_level_hi_ft=max(sl) / FT if sl else None,
-                           nws_snow_level_ft=None if n is None else n / FT))
+                           snow_level_lo_ft=min(sl) / FT if sl else None, snow_level_hi_ft=max(sl) / FT if sl else None))
 
     # ---- ensembles (summit point), bias-corrected, each ensemble weighted equally
     members = []
@@ -264,7 +261,6 @@ def process(r, cal):
         wet = [levels[i]["snow_level_ft"] for i in span if (hours["summit"][i].precip_mm or 0) > 0.2 and levels[i]["snow_level_ft"] is not None]
         sls = [levels[i]["snow_level_ft"] for i in span if levels[i]["snow_level_ft"] is not None]
         fz = [levels[i]["freezing_level_ft"] for i in span if levels[i]["freezing_level_ft"] is not None]
-        ns = [nws[e].snow.get(times[i]) for i in span] if nws[e] else []
         out = dict(name=name, past=span.stop <= now_i, snow_in=w["p50"], p25=w.get("p25"), p75=w.get("p75"),
                    liquid_in=w["liquid_in"], rain_in=w["rain_in"], precip_chance=precip_chance(span),
                    temp_f=(max if name == "day" else min)(temps) if temps else None,
@@ -273,8 +269,6 @@ def process(r, cal):
                    wind_dir=cx.compass(cx.circ_mean(dirs)) if dirs else None,
                    cloud=mean([h.cloud for h in hrs if h.cloud is not None]),
                    snow_level_ft=mean(wet) or mean(sls), freezing_level_ft=mean(fz),
-                   nws_snow_level_ft=mean([levels[i]["nws_snow_level_ft"] for i in span if levels[i]["nws_snow_level_ft"] is not None]),
-                   nws_snow_in=sum(v or 0 for v in ns) / IN if any(v is not None for v in ns) else None,
                    **quality_of(hrs, 0.0, 0.0))
         out["alerts"] = cx.half_alerts(out, hrs, d, name, [hours["summit"][i] for i in span])
         return out
@@ -304,10 +298,6 @@ def process(r, cal):
                      gust_mph=max(gusts, default=None), wind_dir=cx.compass(cx.circ_mean(dirs)) if dirs else None,
                      models={m: (sum(v for v in s[first:i1] if v is not None) if any(v is not None for v in s[first:i1]) else None)
                              for m, s in model_snow[e].items()})
-            if nws[e] and d >= today:
-                ns = [nws[e].snow.get(times[i]) for i in range(i0, i1)]
-                if any(v is not None for v in ns):
-                    b["nws_snow_in"] = sum(v or 0 for v in ns) / IN
             entry[e] = b
         wet_i = [i for i in range(first, i1) if (hours["summit"][i].precip_mm or 0) > 0.2]
         sl_wet = [levels[i]["snow_level_ft"] for i in wet_i if levels[i]["snow_level_ft"] is not None]

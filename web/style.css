@@ -243,11 +243,6 @@ table.days tr.past td { opacity: .5; }
 .tip .t-row b { max-width: 340px; white-space: normal; text-align: right; }
 table.days td.extra, table.days th.extra { border-left: 1px solid var(--grid); color: var(--text-secondary); }
 /* ---- hourly forecast */
-.jump { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-bottom: 8px; font-size: 12px; }
-.jump button { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; color: var(--text-secondary); cursor: pointer; font: inherit; }
-.jump button:hover { background: var(--grid); }
-.jump button.on { color: var(--text-primary); font-weight: 600; }
-.hourly-wrap { scroll-behavior: smooth; }
 table.hourly { width: auto; }
 table.hourly th, table.hourly td { min-width: 52px; padding: 5px 6px; }
 table.hourly th { font-weight: 600; color: var(--text-primary); }
@@ -256,3 +251,7 @@ table.hourly td.rowh { min-width: 150px; color: var(--muted); font-size: 11px; w
 table.hourly td.rowh b { color: var(--text-primary); font-size: 12px; font-weight: 600; }
 table.hourly .past { opacity: .5; }
 table.hourly .now { background: color-mix(in srgb, var(--q-light) 10%, transparent); }
+.tabs-seg { margin-bottom: 10px; }
+.tabs-seg button { padding: 5px 14px; }
+.asq { cursor: default; outline: none; }
+.asq:hover, .asq:focus { outline: 2px solid var(--text-secondary); outline-offset: 1px; }
