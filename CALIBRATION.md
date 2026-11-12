@@ -24,6 +24,7 @@ the raw models with equal weights.
 | Snowbird | calibrated | Snowbird SNOTEL | 9,170 ft | 356 | 0.37 |
 | Solitude | calibrated | Brighton SNOTEL | 8,790 ft | 356 | 0.27 |
 | Steamboat | calibrated | Dry Lake SNOTEL | 8,240 ft | 356 | 0.23 |
+| Taos Ski Valley | calibrated | Taos Powderhorn SNOTEL | 11,020 ft | 356 | 0.16 |
 | Telluride | calibrated | Alta Lakes SNOTEL | 11,290 ft | 178 | 0.17 |
 
 ## Canada
@@ -33,6 +34,7 @@ the raw models with equal weights.
 | Blackcomb | raw models (gauge 2,765 ft below mid-mountain) | Callaghan Creek (BC snow pillow) | 3,337 ft |  |  |
 | Kicking Horse | calibrated | Caribou Creek (BC snow pillow) | 7,221 ft | 349 | 0.19 |
 | Lake Louise | calibrated | Pika Run (Alberta Rivers) | 7,382 ft | 356 | 0.12 |
+| Red Mountain | raw models (no gauge) | – | – |  |  |
 | Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
 | Whistler | raw models (gauge 2,732 ft below mid-mountain) | Callaghan Creek (BC snow pillow) | 3,337 ft |  |  |
 

@@ -1041,5 +1041,90 @@
    "icon_seamless",
    "jma_seamless"
   ]
+ },
+ "taos": {
+  "name": "Taos Ski Valley",
+  "country": "US",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 36.596,
+   "lon": -105.462,
+   "ft": 9207,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 36.5765,
+   "lon": -105.4321,
+   "ft": 11000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 36.5685,
+   "lon": -105.4198,
+   "ft": 12481,
+   "label": "Kachina Peak"
+  },
+  "dem_ft": {
+   "base": 9259,
+   "mid": 11014,
+   "summit": 12480
+  },
+  "obs": [
+   "snotel",
+   "1168:NM:SNTL",
+   "Taos Powderhorn SNOTEL",
+   11020,
+   36.58195,
+   -105.45617
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "jma_seamless"
+  ]
+ },
+ "redmountain": {
+  "name": "Red Mountain",
+  "country": "CA",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 49.1005,
+   "lon": -117.8195,
+   "ft": 3888,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 49.1207,
+   "lon": -117.8455,
+   "ft": 5500,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 49.129,
+   "lon": -117.8562,
+   "ft": 6807,
+   "label": "Granite Mountain"
+  },
+  "dem_ft": {
+   "base": 3865,
+   "mid": 5499,
+   "summit": 6722
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "jma_seamless"
+  ]
  }
 }

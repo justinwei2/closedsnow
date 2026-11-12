@@ -2423,5 +2423,194 @@
   "ratio_bins": [],
   "temp_n_wet": 0,
   "raw_reason": "gauge 2,287 ft below mid-mountain"
+ },
+ "taos": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 2.0,
+    "weight": 0.151,
+    "mae72": 3.95,
+    "raw_mae72": 3.52,
+    "n": 155,
+    "weight_ext": 0.093,
+    "mae_ext": 2.73
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.619,
+    "weight": 0.13,
+    "mae72": 4.26,
+    "raw_mae72": 3.86,
+    "n": 356,
+    "weight_ext": 0.107,
+    "mae_ext": 2.54
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 2.0,
+    "weight": 0.151,
+    "mae72": 3.95,
+    "raw_mae72": 3.9,
+    "n": 247,
+    "weight_ext": 0.121,
+    "mae_ext": 2.39
+   },
+   "gfs_seamless": {
+    "factor": 1.093,
+    "weight": 0.114,
+    "mae72": 4.54,
+    "raw_mae72": 4.41,
+    "n": 356,
+    "weight_ext": 0.193,
+    "mae_ext": 1.89
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.043,
+    "weight": 0.113,
+    "mae72": 4.57,
+    "raw_mae72": 4.49,
+    "n": 356,
+    "weight_ext": 0.175,
+    "mae_ext": 1.98
+   },
+   "gem_seamless": {
+    "factor": 1.129,
+    "weight": 0.129,
+    "mae72": 4.28,
+    "raw_mae72": 4.07,
+    "n": 356,
+    "weight_ext": 0.121,
+    "mae_ext": 2.39
+   },
+   "icon_seamless": {
+    "factor": 1.529,
+    "weight": 0.108,
+    "mae72": 4.68,
+    "raw_mae72": 4.07,
+    "n": 351,
+    "weight_ext": 0.093,
+    "mae_ext": 2.72
+   },
+   "jma_seamless": {
+    "factor": 1.649,
+    "weight": 0.104,
+    "mae72": 4.75,
+    "raw_mae72": 4.0,
+    "n": 341,
+    "weight_ext": 0.097,
+    "mae_ext": 2.67
+   }
+  },
+  "station": "Taos Powderhorn SNOTEL",
+  "blend_mae72": 4.07,
+  "n_windows": 356,
+  "n_wet": 65,
+  "ratio_q": {
+   "0.1": 0.0,
+   "0.25": 0.215,
+   "0.5": 0.663,
+   "0.75": 1.092,
+   "0.9": 1.604
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 50,
+    "q": {
+     "0.1": 0.0,
+     "0.25": 0.228,
+     "0.5": 0.705,
+     "0.75": 1.16,
+     "0.9": 1.637
+    }
+   }
+  ],
+  "temp_bias_c": -0.17,
+  "temp_bias_wet_c": -0.42,
+  "temp_n_wet": 93,
+  "temp_mae_c": [
+   0.95,
+   0.93
+  ]
+ },
+ "redmountain": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gfs_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "gem_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "icon_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   },
+   "jma_seamless": {
+    "factor": 1.0,
+    "weight": 0.125,
+    "mae72": null,
+    "raw_mae72": null,
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
+   }
+  },
+  "uncalibrated": true,
+  "n_wet": 0,
+  "ratio_q": {},
+  "ratio_bins": [],
+  "temp_n_wet": 0
  }
 }

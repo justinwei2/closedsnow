@@ -1,6 +1,6 @@
 # snowreport
 
-Snow forecasts for 23 ski resorts in western North America and Japan, built from free weather data.
+Snow forecasts for 25 ski resorts in western North America and Japan, built from free weather data.
 
 Site: https://justinwei2.github.io/snowreport/ · Methodology: https://justinwei2.github.io/snowreport/methodology.html
 
