@@ -15,7 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import conditions as cx
 import sources as src
-from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, load_calibration
+from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, SNOTEL_STATES, load_calibration
 
 OUT = os.path.join(HERE, "web", "data")
 PAST_DAYS = 7
@@ -119,6 +119,35 @@ def rnd(v):
     return round(v, 3) if isinstance(v, float) else v
 
 
+DEPTH_KM, DEPTH_FT = 15, 800  # a gauge stands in for an elevation within this distance / height
+
+
+def depths(r):
+    """Latest gauge snow depth for base / mid / summit: the resort's gauge or the nearest active
+    SNOTEL within DEPTH_KM and DEPTH_FT of that elevation; None where no gauge qualifies."""
+    import calibrate  # station search helpers
+    cands = [r.gauge] if r.gauge else []
+    for st in SNOTEL_STATES.get(r.region, []):
+        for s in calibrate._stations.setdefault(st, src.snotel_stations(st)):
+            if (s["stationTriplet"].endswith(":SNTL") and (s.get("endDate") or "2100") >= date.today().isoformat()
+                    and calibrate.km(r.mid.lat, r.mid.lon, s["latitude"], s["longitude"]) <= DEPTH_KM):
+                cands.append(src.Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]),
+                                       s["latitude"], s["longitude"]))
+    out, latest = {}, {}
+    for e in ELEVS:
+        pt = r.point(e)
+        ok = [g for g in cands if abs(g.ft - pt.ft) <= DEPTH_FT]
+        g = min(ok, key=lambda g: (abs(g.ft - pt.ft), calibrate.km(pt.lat, pt.lon, g.lat, g.lon)), default=None)
+        if g is None:
+            out[e] = None
+            continue
+        if g.id not in latest:
+            end = date.today() + timedelta(1)
+            latest[g.id] = src.StationSeries.fetch(g, (end - timedelta(5)).isoformat(), end.isoformat()).latest("depth")
+        out[e] = None if latest[g.id] is None else dict(depth_in=latest[g.id], station=g.name, ft=g.ft)
+    return out
+
+
 def process(r, cal):
     print("resort", r.key)
     run = attempt("model run metadata", latest_run)
@@ -141,6 +170,7 @@ def process(r, cal):
         if st:
             obs = dict(station=r.gauge.name, elev_ft=r.gauge.ft, days=st.daily(), depth_in=st.latest("depth"),
                        swe_in=st.latest("swe"))
+    depth = attempt("snow depths", lambda: depths(r))
     now = datetime.now(local).strftime("%Y-%m-%dT%H:00")
     now_i = next((i for i, t in enumerate(times) if t >= now), len(times) - 1)
 
@@ -307,13 +337,13 @@ def process(r, cal):
             for e in ELEVS:
                 summary[e][key]["station_in"] = sum(vals) if vals else None
 
-    # ---- snow and rain per 6 h for 10 days: forecast + ensemble spread (each member's precip split
+    # ---- snow and rain per hour for 10 days: forecast + ensemble spread (each member's precip split
     # with the forecast's hourly phase and snow ratio); bands widened to include the forecast
     plume = {}
     for e in ELEVS:
         hrs = hours[e]
         out = {k: {q: [] for q in ("fc", *map(str, QS))} for k in ("snow", "rain")}
-        bins = [range(i, min(i + 6, len(times))) for i in range(now_i, min(len(times), now_i + 24 * 10), 6)]
+        bins = [range(i, i + 1) for i in range(now_i, min(len(times), now_i + 24 * 10))]  # hourly
         for b in bins:
             s_liq = sum(hours["summit"][i].precip_mm or 0 for i in b)
             liq = sum(hrs[i].precip_mm or 0 for i in b)
@@ -343,7 +373,7 @@ def process(r, cal):
         calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
                          temp_bias_c=cal.temp_bias_c, profile_shift_c=cal.profile_shift_c,
                          models={m: asdict(v) for m, v in cal.models.items()}),
-        daily=daily, hourly=hourly, summary=summary, plume=plume, obs=obs, afd=afd, alerts=alerts,
+        daily=daily, hourly=hourly, summary=summary, plume=plume, obs=obs, depth=depth, afd=afd, alerts=alerts,
     )
 
 

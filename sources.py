@@ -9,7 +9,7 @@ HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, opt
 import hashlib, json, math, os, random, re, sys, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from resorts import FT, IN, LEVELS, PROFILE_MODELS, USER_AGENT
+from resorts import FT, IN, LEVELS, PROFILE_MODELS, USER_AGENT, Gauge
 
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 WAIT_ON_QUOTA = False  # setup jobs set True: sleep through Open-Meteo hourly/daily limits

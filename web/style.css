@@ -138,15 +138,14 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .stotal { font-size: 26px; font-weight: 650; text-align: center; line-height: 1.2; border-top: 1px solid var(--axis); margin-top: 6px; padding-top: 2px; }
 .stotal.past { color: var(--text-secondary); }
 .srange { font-size: 12px; text-align: center; margin-bottom: 6px; }
-.sdays { display: flex; gap: 4px; flex: 1; }
+.sdays { display: flex; gap: 10px; flex: 1; }  /* gap between days */
 .sday { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; outline: none; }
 .sday:hover .sstack, .sday:focus .sstack { filter: brightness(1.1); }
 .sday.past .sstack { opacity: .55; }
 .sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sbar-wrap { height: 110px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
-.sstack { width: min(22px, 70%); height: 100%; display: flex; flex-direction: column-reverse; gap: 2px; }
-.sseg { display: block; width: 100%; min-height: 2px; border-radius: 2px; }
-.sstack .sseg:last-child { border-radius: 4px 4px 2px 2px; }
+.sstack { width: 80%; height: 100%; display: flex; align-items: flex-end; gap: 1px; }
+.sseg { display: block; flex: 1; border-radius: 3px 3px 0 0; }
 .sday-l { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
 .sday-l.wk { color: var(--text-primary); font-weight: 600; }
 .sday-l.today { color: var(--text-primary); font-weight: 700; }
@@ -250,3 +249,4 @@ table.days tr.past td { opacity: .5; }
 .rainmark { display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--q-rain); margin-right: 3px; vertical-align: middle; }
 .depth { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
 .depth b { color: var(--text-primary); font-weight: 600; }
+.depth .dep { margin-left: 10px; }
