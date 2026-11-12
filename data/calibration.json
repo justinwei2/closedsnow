@@ -1,59 +1,74 @@
 {
  "palisades": {
-  "station": "Palisades Tahoe SNOTEL (High Camp area)",
-  "n_windows": 358,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
+    "weight": 0.124,
     "mae72": 13.94,
     "raw_mae72": 12.55,
     "n": 155,
-    "weight": 0.124
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.313,
+    "weight": 0.145,
     "mae72": 12.91,
     "raw_mae72": 12.11,
     "n": 358,
-    "weight": 0.145
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.181,
+    "weight": 0.183,
     "mae72": 11.46,
     "raw_mae72": 11.02,
     "n": 249,
-    "weight": 0.183
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.848,
+    "weight": 0.122,
     "mae72": 14.04,
     "raw_mae72": 15.61,
     "n": 358,
-    "weight": 0.122
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 0.844,
+    "weight": 0.127,
     "mae72": 13.78,
     "raw_mae72": 15.31,
     "n": 358,
-    "weight": 0.127
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.034,
+    "weight": 0.151,
     "mae72": 12.61,
     "raw_mae72": 12.43,
     "n": 358,
-    "weight": 0.151
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 0.992,
+    "weight": 0.147,
     "mae72": 12.78,
     "raw_mae72": 12.84,
     "n": 353,
-    "weight": 0.147
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
+  "station": "Palisades Tahoe SNOTEL (High Camp area)",
   "blend_mae72": 12.57,
+  "n_windows": 358,
+  "n_wet": 133,
   "ratio_q": {
    "0.1": 0.073,
    "0.25": 0.521,
@@ -99,63 +114,79 @@
     }
    }
   ],
-  "n_wet": 133
+  "version": 1,
+  "temp_n_wet": 0
  },
  "alpine": {
-  "station": "Ward Creek #3 SNOTEL",
-  "n_windows": 358,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.711,
+    "weight": 0.14,
     "mae72": 15.41,
     "raw_mae72": 15.05,
     "n": 155,
-    "weight": 0.14
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.544,
+    "weight": 0.13,
     "mae72": 16.03,
     "raw_mae72": 14.76,
     "n": 358,
-    "weight": 0.13
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.366,
+    "weight": 0.199,
     "mae72": 12.93,
     "raw_mae72": 12.65,
     "n": 249,
-    "weight": 0.199
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 1.047,
+    "weight": 0.124,
     "mae72": 16.41,
     "raw_mae72": 16.01,
     "n": 358,
-    "weight": 0.124
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.068,
+    "weight": 0.129,
     "mae72": 16.07,
     "raw_mae72": 15.61,
     "n": 358,
-    "weight": 0.129
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 2.0,
+    "weight": 0.123,
     "mae72": 16.44,
     "raw_mae72": 19.02,
     "n": 358,
-    "weight": 0.123
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
+    "weight": 0.155,
     "mae72": 14.65,
     "raw_mae72": 14.32,
     "n": 353,
-    "weight": 0.155
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
+  "station": "Ward Creek #3 SNOTEL",
   "blend_mae72": 14.78,
+  "n_windows": 358,
+  "n_wet": 140,
   "ratio_q": {
    "0.1": 0.16,
    "0.25": 0.513,
@@ -201,63 +232,79 @@
     }
    }
   ],
-  "n_wet": 140
+  "version": 1,
+  "temp_n_wet": 0
  },
  "kirkwood": {
-  "station": "Carson Pass SNOTEL",
-  "n_windows": 358,
   "models": {
    "ecmwf_ifs": {
     "factor": 0.801,
+    "weight": 0.146,
     "mae72": 8.33,
     "raw_mae72": 10.01,
     "n": 155,
-    "weight": 0.146
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 0.861,
+    "weight": 0.138,
     "mae72": 8.56,
     "raw_mae72": 9.47,
     "n": 358,
-    "weight": 0.138
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 0.85,
+    "weight": 0.154,
     "mae72": 8.1,
     "raw_mae72": 9.05,
     "n": 249,
-    "weight": 0.154
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.631,
+    "weight": 0.122,
     "mae72": 9.11,
     "raw_mae72": 13.49,
     "n": 358,
-    "weight": 0.122
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 0.636,
+    "weight": 0.12,
     "mae72": 9.18,
     "raw_mae72": 13.3,
     "n": 358,
-    "weight": 0.12
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 0.872,
+    "weight": 0.162,
     "mae72": 7.91,
     "raw_mae72": 8.66,
     "n": 358,
-    "weight": 0.162
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 0.762,
+    "weight": 0.158,
     "mae72": 8.01,
     "raw_mae72": 10.06,
     "n": 353,
-    "weight": 0.158
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
+  "station": "Carson Pass SNOTEL",
   "blend_mae72": 8.15,
+  "n_windows": 358,
+  "n_wet": 109,
   "ratio_q": {
    "0.1": 0.116,
    "0.25": 0.436,
@@ -303,63 +350,79 @@
     }
    }
   ],
-  "n_wet": 109
+  "version": 1,
+  "temp_n_wet": 0
  },
  "mammoth": {
-  "station": "Mammoth Pass (CDEC)",
-  "n_windows": 358,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.463,
+    "weight": 0.079,
     "mae72": 15.19,
     "raw_mae72": 11.84,
     "n": 155,
-    "weight": 0.079
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
+    "weight": 0.154,
     "mae72": 10.86,
     "raw_mae72": 9.24,
     "n": 358,
-    "weight": 0.154
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
+    "weight": 0.163,
     "mae72": 10.58,
     "raw_mae72": 9.09,
     "n": 249,
-    "weight": 0.163
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
+    "weight": 0.138,
     "mae72": 11.48,
     "raw_mae72": 11.94,
     "n": 358,
-    "weight": 0.138
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
+    "weight": 0.159,
     "mae72": 10.7,
     "raw_mae72": 10.5,
     "n": 358,
-    "weight": 0.159
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
+    "weight": 0.128,
     "mae72": 11.94,
     "raw_mae72": 10.61,
     "n": 358,
-    "weight": 0.128
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.203,
+    "weight": 0.179,
     "mae72": 10.07,
     "raw_mae72": 9.09,
     "n": 353,
-    "weight": 0.179
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
+  "station": "Mammoth Pass (CDEC)",
   "blend_mae72": 10.44,
+  "n_windows": 358,
+  "n_wet": 110,
   "ratio_q": {
    "0.1": 0.0,
    "0.25": 0.429,
@@ -405,63 +468,76 @@
     }
    }
   ],
-  "n_wet": 110
+  "version": 1,
+  "temp_n_wet": 0
  },
  "snowbird": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -472,63 +548,77 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "brighton": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -539,63 +629,77 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "solitude": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -606,56 +710,68 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "parkcity": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -666,70 +782,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "jackson": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -740,63 +872,77 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "bigsky": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.143,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -807,56 +953,68 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "vail": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -867,56 +1025,68 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "alyeska": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.167,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -927,70 +1097,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "whistler": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1001,70 +1187,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "blackcomb": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1075,70 +1277,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "kickinghorse": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1149,70 +1367,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "redmountain": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1223,70 +1457,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "fernie": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1297,70 +1547,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "panorama": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1371,70 +1637,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "sunshine": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1445,70 +1727,86 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  },
  "lakelouise": {
-  "station": null,
-  "uncalibrated": true,
   "models": {
    "ecmwf_ifs": {
     "factor": 1.467,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_ifs025": {
     "factor": 1.459,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ecmwf_aifs025_single": {
     "factor": 1.296,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gfs_seamless": {
     "factor": 0.954,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "ncep_nbm_conus": {
     "factor": 1.027,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_seamless": {
     "factor": 1.308,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "icon_seamless": {
     "factor": 1.054,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    },
    "gem_hrdps_continental": {
     "factor": 1.0,
     "weight": 0.125,
     "mae72": null,
     "raw_mae72": null,
-    "n": 0
+    "n": 0,
+    "weight_ext": null,
+    "mae_ext": null
    }
   },
-  "blend_mae72": null,
+  "uncalibrated": true,
   "n_wet": 0,
   "ratio_q": {
    "0.1": 0.116,
@@ -1519,6 +1817,8 @@
   },
   "ratio_bins": [],
   "peers": 4,
-  "peers_scope": "all"
+  "peers_scope": "all",
+  "version": 1,
+  "temp_n_wet": 0
  }
 }

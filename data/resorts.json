@@ -1,9 +1,7 @@
 {
  "palisades": {
   "name": "Palisades Tahoe",
-  "sub": "Olympic Valley side",
   "region": "California",
-  "pass_": "Ikon",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 39.1969,
@@ -48,9 +46,7 @@
  },
  "alpine": {
   "name": "Alpine Meadows",
-  "sub": "Palisades Tahoe \u2013 Alpine side",
   "region": "California",
-  "pass_": "Ikon",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 39.1645,
@@ -95,9 +91,7 @@
  },
  "kirkwood": {
   "name": "Kirkwood",
-  "sub": "",
   "region": "California",
-  "pass_": "Epic",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 38.6847,
@@ -142,9 +136,7 @@
  },
  "mammoth": {
   "name": "Mammoth Mountain",
-  "sub": "",
   "region": "California",
-  "pass_": "Ikon",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 37.651,
@@ -190,9 +182,7 @@
  },
  "snowbird": {
   "name": "Snowbird",
-  "sub": "",
   "region": "Utah",
-  "pass_": "Ikon",
   "tz": "America/Denver",
   "base": {
    "lat": 40.5772,
@@ -237,9 +227,7 @@
  },
  "brighton": {
   "name": "Brighton",
-  "sub": "",
   "region": "Utah",
-  "pass_": "Ikon",
   "tz": "America/Denver",
   "base": {
    "lat": 40.598,
@@ -284,9 +272,7 @@
  },
  "solitude": {
   "name": "Solitude",
-  "sub": "",
   "region": "Utah",
-  "pass_": "Ikon",
   "tz": "America/Denver",
   "base": {
    "lat": 40.6277,
@@ -331,9 +317,7 @@
  },
  "parkcity": {
   "name": "Park City",
-  "sub": "",
   "region": "Utah",
-  "pass_": "Epic",
   "tz": "America/Denver",
   "base": {
    "lat": 40.6514,
@@ -377,9 +361,7 @@
  },
  "jackson": {
   "name": "Jackson Hole",
-  "sub": "",
   "region": "Wyoming \u00b7 Montana \u00b7 Idaho",
-  "pass_": "Ikon",
   "tz": "America/Denver",
   "base": {
    "lat": 43.5877,
@@ -425,9 +407,7 @@
  },
  "bigsky": {
   "name": "Big Sky",
-  "sub": "",
   "region": "Wyoming \u00b7 Montana \u00b7 Idaho",
-  "pass_": "Ikon",
   "tz": "America/Denver",
   "base": {
    "lat": 45.2857,
@@ -472,9 +452,7 @@
  },
  "vail": {
   "name": "Vail",
-  "sub": "",
   "region": "Colorado",
-  "pass_": "Epic",
   "tz": "America/Denver",
   "base": {
    "lat": 39.6405,
@@ -518,9 +496,7 @@
  },
  "alyeska": {
   "name": "Alyeska",
-  "sub": "",
   "region": "Alaska",
-  "pass_": "Ikon",
   "tz": "America/Anchorage",
   "base": {
    "lat": 60.9705,
@@ -564,9 +540,7 @@
  },
  "whistler": {
   "name": "Whistler",
-  "sub": "Whistler Blackcomb",
   "region": "British Columbia",
-  "pass_": "Epic",
   "tz": "America/Vancouver",
   "base": {
    "lat": 50.115,
@@ -605,9 +579,7 @@
  },
  "blackcomb": {
   "name": "Blackcomb",
-  "sub": "Whistler Blackcomb",
   "region": "British Columbia",
-  "pass_": "Epic",
   "tz": "America/Vancouver",
   "base": {
    "lat": 50.1155,
@@ -646,9 +618,7 @@
  },
  "kickinghorse": {
   "name": "Kicking Horse",
-  "sub": "",
   "region": "British Columbia",
-  "pass_": "Epic",
   "tz": "America/Edmonton",
   "base": {
    "lat": 51.3005,
@@ -687,9 +657,7 @@
  },
  "redmountain": {
   "name": "RED Mountain",
-  "sub": "",
   "region": "British Columbia",
-  "pass_": "Ikon",
   "tz": "America/Vancouver",
   "base": {
    "lat": 49.1,
@@ -728,9 +696,7 @@
  },
  "fernie": {
   "name": "Fernie",
-  "sub": "",
   "region": "British Columbia",
-  "pass_": "Epic",
   "tz": "America/Edmonton",
   "base": {
    "lat": 49.4657,
@@ -769,9 +735,7 @@
  },
  "panorama": {
   "name": "Panorama",
-  "sub": "",
   "region": "British Columbia",
-  "pass_": "Ikon",
   "tz": "America/Edmonton",
   "base": {
    "lat": 50.46,
@@ -810,9 +774,7 @@
  },
  "sunshine": {
   "name": "Banff Sunshine",
-  "sub": "",
   "region": "Alberta",
-  "pass_": "Ikon",
   "tz": "America/Edmonton",
   "base": {
    "lat": 51.0815,
@@ -851,9 +813,7 @@
  },
  "lakelouise": {
   "name": "Lake Louise",
-  "sub": "",
   "region": "Alberta",
-  "pass_": "Ikon",
   "tz": "America/Edmonton",
   "base": {
    "lat": 51.436,
