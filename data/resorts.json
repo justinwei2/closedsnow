@@ -724,5 +724,230 @@
    "icon_seamless",
    "gem_hrdps_continental"
   ]
+ },
+ "abasin": {
+  "name": "Arapahoe Basin",
+  "country": "US",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 39.639,
+   "lon": -105.8793,
+   "ft": 10780,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 39.6326,
+   "lon": -105.8609,
+   "ft": 12000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 39.63,
+   "lon": -105.8533,
+   "ft": 13050,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 10768,
+   "mid": 12021,
+   "summit": 13061
+  },
+  "obs": [
+   "snotel",
+   "505:CO:SNTL",
+   "Grizzly Peak SNOTEL",
+   11110,
+   39.64646,
+   -105.8694
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "copper": {
+  "name": "Copper Mountain",
+  "country": "US",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 39.5018,
+   "lon": -106.1511,
+   "ft": 9712,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 39.484,
+   "lon": -106.155,
+   "ft": 11200,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 39.469,
+   "lon": -106.1582,
+   "ft": 12313,
+   "label": "Tucker Mtn"
+  },
+  "dem_ft": {
+   "base": 9731,
+   "mid": 11175,
+   "summit": 12303
+  },
+  "obs": [
+   "snotel",
+   "415:CO:SNTL",
+   "Copper Mountain SNOTEL",
+   10500,
+   39.48917,
+   -106.17154
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "steamboat": {
+  "name": "Steamboat",
+  "country": "US",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 40.4572,
+   "lon": -106.8045,
+   "ft": 6900,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 40.4566,
+   "lon": -106.7646,
+   "ft": 8900,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 40.4563,
+   "lon": -106.7406,
+   "ft": 10568,
+   "label": "Mt. Werner"
+  },
+  "dem_ft": {
+   "base": 6923,
+   "mid": 8862,
+   "summit": 10541
+  },
+  "obs": [
+   "snotel",
+   "457:CO:SNTL",
+   "Dry Lake SNOTEL",
+   8240,
+   40.5337,
+   -106.7814
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "telluride": {
+  "name": "Telluride",
+  "country": "US",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 37.9429,
+   "lon": -107.8429,
+   "ft": 8725,
+   "label": "Mountain Village"
+  },
+  "mid": {
+   "lat": 37.9188,
+   "lon": -107.832,
+   "ft": 10800,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 37.8985,
+   "lon": -107.8228,
+   "ft": 12570,
+   "label": "Gold Hill"
+  },
+  "dem_ft": {
+   "base": 8737,
+   "mid": 10814,
+   "summit": 12402
+  },
+  "obs": [
+   "snotel",
+   "1344:CO:SNTL",
+   "Alta Lakes SNOTEL",
+   11290,
+   37.88929,
+   -107.84484
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "crestedbutte": {
+  "name": "Crested Butte",
+  "country": "US",
+  "tz": "America/Denver",
+  "base": {
+   "lat": 38.8991,
+   "lon": -106.965,
+   "ft": 9375,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 38.8853,
+   "lon": -106.9484,
+   "ft": 10900,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 38.8817,
+   "lon": -106.944,
+   "ft": 12162,
+   "label": "North Face / High Lift"
+  },
+  "dem_ft": {
+   "base": 9383,
+   "mid": 10912,
+   "summit": 11916
+  },
+  "obs": [
+   "snotel",
+   "380:CO:SNTL",
+   "Butte SNOTEL",
+   10190,
+   38.89435,
+   -106.95327
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
  }
 }

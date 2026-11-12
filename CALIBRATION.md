@@ -18,11 +18,11 @@ the raw models with equal weights.
 | Snowbasin | calibrated | Ben Lomond Peak SNOTEL | 7,690 ft | 356 | 0.41 |
 | Jackson Hole | calibrated | Phillips Bench SNOTEL | 8,170 ft | 356 | 0.26 |
 | Big Sky | calibrated | Lone Mountain SNOTEL | 8,820 ft | 356 | 0.20 |
-| Arapahoe Basin | not located yet | | | | |
-| Copper Mountain | not located yet | | | | |
-| Steamboat | not located yet | | | | |
-| Telluride | not located yet | | | | |
-| Crested Butte | not located yet | | | | |
+| Arapahoe Basin | calibrated | Grizzly Peak SNOTEL | 11,110 ft | 356 | 0.19 |
+| Copper Mountain | calibrated | Copper Mountain SNOTEL | 10,500 ft | 356 | 0.16 |
+| Steamboat | calibrated | Dry Lake SNOTEL | 8,240 ft | 356 | 0.23 |
+| Telluride | calibrated | Alta Lakes SNOTEL | 11,290 ft | 178 | 0.17 |
+| Crested Butte | calibrated | Butte SNOTEL | 10,190 ft | 356 | 0.14 |
 | Whistler | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
 | Blackcomb | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
 | Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
