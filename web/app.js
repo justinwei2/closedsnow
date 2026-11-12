@@ -16,6 +16,9 @@ const QUALITY = {  // one colour per label everywhere: orange = snow, purple = m
 };
 const COUNTRY = { US: "United States", CA: "Canada" };  // lists group by country, alphabetical within
 const byCountry = (rs) => [...rs].sort((a, b) => Object.keys(COUNTRY).indexOf(a.country) - Object.keys(COUNTRY).indexOf(b.country) || a.name.localeCompare(b.name));
+// snow shaded by snow ratio, same cutoffs as the density classes: >= 12.5:1 dry, < 8.3:1 dense / wet
+const snowShade = (slr) => slr >= 12.5 ? "--q-snow-dry" : slr && slr < 8.3 ? "--q-snow-wet" : "--q-snow";
+const shade = (q, slr) => q === "snow" ? snowShade(slr) : qual(q).sw;
 const qual = (q) => QUALITY[q] || { sw: "--muted", text: q || "–" };  // unknown labels (older data) stay grey
 const ALERT = { powder: "--q-snow", wet: "--q-mixed", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
@@ -59,7 +62,7 @@ function snowRatio(quality, slr) {  // swatch in the quality colour + ratio; mix
   const q = qual(quality);
   const c = el("span", { class: "ratio", title: q.text });
   const sw = el("span", { class: "sw" });
-  sw.style.background = `var(${q.sw})`;
+  sw.style.background = `var(${shade(quality, slr)})`;
   const wet = quality === "mixed" || quality === "rain";
   c.append(sw, document.createTextNode(wet || !slr ? q.text : ratio(slr)));
   return c;
@@ -178,7 +181,7 @@ function renderSummary(d, e) {
   ];
   const sum = (v, k) => v.halves.reduce((a, h) => a + (h[k] || 0), 0);  // 6am-6am: daytime + nighttime
   // one bar per half: snow (coloured by type), or, with no snow, its rain (in of water) in blue
-  const bar = (h) => h.snow_in >= 0.25 ? { v: h.snow_in, color: qual(h.quality === "rain" ? "mixed" : h.quality).sw, n: fmtSnow(h.snow_in) }
+  const bar = (h) => h.snow_in >= 0.25 ? { v: h.snow_in, color: shade(h.quality === "rain" ? "mixed" : h.quality, h.slr), n: fmtSnow(h.snow_in) }
     : h.rain_in >= 0.05 ? { v: h.rain_in, color: "--q-rain", n: h.rain_in.toFixed(1) } : { v: 0, color: "--muted", n: "0" };
   const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].halves.map((h) => bar(h).v))));
   const box = $("#summary");

@@ -16,6 +16,7 @@
      steps; mixed vs rain is a weak CVD pair, so both always carry a text label);
      yellow (--warning) is reserved for warnings */
   --q-snow: #eb6834; --q-mixed: #6250d6; --q-rain: #2a78d6;
+  --q-snow-dry: #b8461b; --q-snow-wet: #f5ab85;  /* snow shaded by snow ratio: darker = drier */
 }
 /* dark: OS setting unless the toggle says light; toggle wins both ways */
 @media (prefers-color-scheme: dark) {
@@ -25,6 +26,7 @@
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
     --series-1: #3987e5; --series-2: #d95926;
     --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
+    --q-snow-dry: #f5895a; --q-snow-wet: #9a4421;  /* dark mode: drier = more vivid */
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -33,6 +35,7 @@
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
   --series-1: #3987e5; --series-2: #d95926;
   --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
+    --q-snow-dry: #f5895a; --q-snow-wet: #9a4421;  /* dark mode: drier = more vivid */
 }
 
 /* ---- base */
