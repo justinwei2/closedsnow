@@ -748,6 +748,24 @@ async function fetchData(key) {
   return r.ok ? r.json() : null;
 }
 
+function clock(d) {
+  /* "Now" from the browser clock in the resort's time zone (the data can be hours old): moves the
+     current hour, Today and the past/forecast split. Returns true when the hour changed. */
+  if (!d.tz) return false;
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: d.tz, year: "numeric", month: "2-digit",
+    day: "2-digit", hour: "2-digit", hourCycle: "h23" }).formatToParts(new Date()).map((x) => [x.type, x.value]));
+  const now = `${p.year}-${p.month}-${p.day}T${p.hour}:00`;
+  if (now === d.now) return false;
+  const shift = (t, h) => new Date(new Date(`${t}:00Z`).getTime() + h * 36e5).toISOString().slice(0, 16);
+  d.now = now;
+  d.today = shift(now, -6).slice(0, 10);  // ski day: 6am to 6am
+  for (const x of d.daily) {
+    x.past = x.date < d.today;
+    for (const e of ELEVS) x[e].halves.forEach((h, k) => { h.past = (k ? shift(`${x.date}T06:00`, 24) : `${x.date}T18:00`) <= now; });
+  }
+  return true;
+}
+
 async function load(key) {
   state.key = key;
   localStorage.setItem("resort", key);
@@ -755,6 +773,7 @@ async function load(key) {
   const d = await fetchData(key);
   if (key !== state.key) return;  // user switched resorts while this loaded
   state.data = d;
+  if (d) clock(d);
   $("#content").hidden = !state.data;
   $("#loading").hidden = !!state.data;
   if (state.data) return render();
@@ -811,6 +830,7 @@ async function boot() {
   addEventListener("hashchange", pick);
   let resizeT;
   addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(render, 150); });
+  setInterval(() => { if (state.data && clock(state.data)) render(); }, 60e3);  // keep "now" current while open
   $("#theme").addEventListener("click", () => {
     const root = document.documentElement;
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;

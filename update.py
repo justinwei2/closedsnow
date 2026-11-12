@@ -355,7 +355,7 @@ def process(r, cal):
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i - 24 * 7 <= i < now_i + 24 * 10]  # charts: last 7 + next 10 days
     return dict(
-        key=r.key, name=r.name, country=r.country, model_run=run, now=now, today=today,
+        key=r.key, name=r.name, country=r.country, tz=r.tz, model_run=run, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
         calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated,
