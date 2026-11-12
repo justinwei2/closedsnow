@@ -7,7 +7,7 @@
 
 HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, optional replay.
 """
-import csv, hashlib, io, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
+import csv, hashlib, http.client, io, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -48,7 +48,22 @@ def get_json(url, params=None, retries=6, parse=json.load):
     return json.load(open(path))
 
 
-STALL_S = 60  # give up when no data arrives for this long (handshake, first byte or mid-download)
+CONNECT_S, STALL_S = 10, 60  # connect + TLS handshake (healthy: < 1 s); then no data for this long
+
+
+class _Conn(http.client.HTTPSConnection):
+    def connect(self):  # a server that ignores the handshake is retried after seconds, not a minute
+        self.timeout = CONNECT_S
+        super().connect()
+        self.sock.settimeout(STALL_S)
+
+
+class _Https(urllib.request.HTTPSHandler):
+    def https_open(self, req):
+        return self.do_open(_Conn, req, context=self._context)
+
+
+_open = urllib.request.build_opener(_Https()).open
 
 
 def _fetch(url, retries, parse=json.load):
@@ -56,7 +71,7 @@ def _fetch(url, retries, parse=json.load):
     attempt = 0
     while attempt < retries:
         try:
-            with urllib.request.urlopen(req, timeout=STALL_S) as r:  # per read, not total
+            with _open(req) as r:
                 return parse(r)
         except urllib.error.HTTPError as e:
             try:

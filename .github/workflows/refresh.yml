@@ -1,7 +1,7 @@
 # Hourly check; refresh resorts once a new ECMWF run has landed (it arrives last of the 6-hourly
 # models, so the whole model cycle is in), or when data is > 7 h old. ~4 refreshes/day/resort.
-# A plan job picks the region groups with due resorts; each runs as its own parallel job (own
-# runner), staggered, so an Open-Meteo rate limit in one region doesn't stall the others.
+# A plan job picks the regions with due resorts; each runs as its own parallel job (own runner),
+# staggered, so an Open-Meteo rate limit in one region doesn't stall the others.
 # Forecast JSON lives on a single-commit `data` branch so the repo doesn't grow.
 name: refresh
 on:
@@ -47,16 +47,16 @@ jobs:
         with: { python-version: "3.12" }
       - uses: ./.github/actions/restore-data
       - run: sleep ${{ matrix.delay }}
-      - name: Update ${{ matrix.group }}
+      - name: Update ${{ matrix.region }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
         run: |
           touch /tmp/stamp
-          python -u update.py --scheduled --group ${{ matrix.group }} --no-index || echo "::warning::update exited non-zero"
+          python -u update.py --scheduled --region ${{ matrix.region }} --no-index || echo "::warning::update exited non-zero"
           mkdir -p out && find web/data -name '*.json' -newer /tmp/stamp -exec cp {} out/ \;
       - uses: actions/upload-artifact@v4
         if: always()   # each resort file is written atomically, so partial progress is valid
-        with: { name: "data-${{ matrix.group }}", path: out/, if-no-files-found: ignore, retention-days: 1 }
+        with: { name: "data-${{ matrix.region }}", path: out/, if-no-files-found: ignore, retention-days: 1 }
 
   publish:
     needs: [plan, fetch]

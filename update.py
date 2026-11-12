@@ -5,7 +5,7 @@ Phase, snow level and snow-to-liquid ratio come from a consensus pressure-level 
 Ranges average the quantiles of (a) the pooled bias-corrected ensembles and (b) the blend times
 this resort's historical obs/forecast error for that storm size.
 
-    python3 update.py [resort ...] [--scheduled] [--group G] [--no-index]
+    python3 update.py [resort ...] [--scheduled] [--region R] [--no-index]
     python3 update.py --plan              # regions with due resorts (CI matrix)
     python3 update.py --check [--url SITE]
 """
@@ -15,7 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import conditions as cx
 import sources as src
-from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, SNOTEL_STATES, Gauge, load_calibration
+from resorts import CATALOG, ELEVS, ENSEMBLES, FT, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, SNOTEL_STATES, Gauge, load_calibration, slug
 
 OUT = os.path.join(HERE, "web", "data")
 PAST_DAYS = 7
@@ -399,10 +399,10 @@ def due(key, run):
 
 
 def plan():
-    """Region groups with due resorts, as a GitHub Actions matrix (stagger each job's start)."""
+    """Regions with due resorts, as a GitHub Actions matrix (one job each, starts staggered)."""
     run = attempt("model run metadata", latest_run)
-    groups = [g for g in GROUPS if any(due(k, run) for k, r in RESORTS.items() if r.region in GROUPS[g])]
-    print(json.dumps([dict(group=g, delay=90 * i) for i, g in enumerate(groups)]))
+    regions = list(dict.fromkeys(slug(r.region) for k, r in RESORTS.items() if due(k, run)))
+    print(json.dumps([dict(region=g, delay=30 * i) for i, g in enumerate(regions)]))
 
 
 def write_index():
@@ -442,15 +442,15 @@ def update_one(key):
     print(f"  {key}: published ({time.time() - t0:.0f}s)", flush=True)
 
 
-def main(keys=None, scheduled=False, group=None, index=True):
-    """Refresh resorts (default: all, or a region group). scheduled: only due ones (new model run,
+def main(keys=None, scheduled=False, region=None, index=True):
+    """Refresh resorts (default: all, or one region). scheduled: only due ones (new model run,
     old format, or stale), oldest first. Stops cleanly on Open-Meteo quota; failures get a second pass."""
     os.makedirs(OUT, exist_ok=True)
-    todo = keys or [k for k, r in RESORTS.items() if not group or r.region in GROUPS[group]]
+    todo = keys or [k for k, r in RESORTS.items() if not region or slug(r.region) == region]
     if scheduled:
         run = attempt("model run metadata", latest_run)
         todo = sorted((k for k in todo if due(k, run)), key=lambda k: updated_at(k) or "")
-        print(f"group={group or 'all'} run={run}: refreshing {todo or 'nothing'}")
+        print(f"region={region or 'all'} run={run}: refreshing {todo or 'nothing'}")
     for _ in (1, 2):
         failed = []
         for key in todo:
@@ -513,5 +513,5 @@ if __name__ == "__main__":
     elif "--plan" in args:
         plan()
     else:
-        main([a for a in args if not a.startswith("--") and a != opt("--group")] or None,
-             scheduled="--scheduled" in args, group=opt("--group"), index="--no-index" not in args)
+        main([a for a in args if not a.startswith("--") and a != opt("--region")] or None,
+             scheduled="--scheduled" in args, region=opt("--region"), index="--no-index" not in args)

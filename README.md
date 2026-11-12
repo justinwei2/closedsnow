@@ -63,7 +63,7 @@ To add a resort, add a line to `CATALOG` in `resorts.py`; the next `backfill` ru
 A resort in a **new geographic region** also needs calibration support for that region: a gauge
 source (an adapter in `sources.py` mapping its data onto `StationSeries`, like SNOTEL/CDEC in the
 US or BC's snow-pillow network) and the station search in `calibrate.py`, plus the region in
-`GROUPS` (and `NON_US` / `SNOTEL_STATES` as appropriate). Until then the resort runs on regional
+`CATALOG` (and `NON_US` / `SNOTEL_STATES` as appropriate). Until then the resort runs on regional
 default factors borrowed from calibrated resorts, and the page says it isn't calibrated.
 
 ## Data

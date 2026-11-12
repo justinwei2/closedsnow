@@ -3,14 +3,15 @@ there) -> calibrate (precip bias factors, weights and error quantiles from two w
 as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate limits.
 
     python3 calibrate.py [resort ...] [--force] # resorts not set up yet (--force: recalibrate them)
-    python3 calibrate.py --group west --out o   # CI: one region -> o/{resorts,calibration}.json
+    python3 calibrate.py --region utah --out o  # CI: one region -> o/{resorts,calibration}.json
+    python3 calibrate.py --plan [--region R] [--force]  # CI: regions with resorts still to set up
     python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, regional defaults, CALIBRATION.md
 """
 import glob, json, math, os, statistics, sys, time
 from datetime import date, datetime, timedelta
 import sources as src
-from resorts import (BASE_MODELS, BC_REGIONS, CATALOG, DATA, ELEVS, EXTRA_MODELS, FT, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
-                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
+from resorts import (BASE_MODELS, BC_REGIONS, CATALOG, DATA, ELEVS, EXTRA_MODELS, FT, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
+                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts, slug)
 
 STEP = 0.003                        # deg, ~300 m DEM search grid
 FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't representative; cap, let weight fall
@@ -257,10 +258,22 @@ def save(resorts, cal):
     src.write_json(os.path.join(DATA, "calibration.json"), {k: c.to_json() for k, c in cal.items()}, indent=1)
 
 
-def run(group=None, out=None, force=False, only=None):
+def todo(k, resorts, cal, force=False):
+    """Needs locating or calibrating (force: recalibrate)."""
+    return force or k not in resorts or resorts[k].gauge is None or k not in cal or not cal[k].calibrated
+
+
+def plan(region=None, force=False):
+    """Regions with resorts still to set up, as a GitHub Actions matrix."""
+    resorts, cal = load_resorts(), load_calibration()
+    print(json.dumps(list(dict.fromkeys(slug(c[1]) for k, c in CATALOG.items()
+                                        if (not region or slug(c[1]) == region) and todo(k, resorts, cal, force)))))
+
+
+def run(region=None, out=None, force=False, only=None):
     """Locate and calibrate resorts that aren't done (force: recalibrate them too); always save
-    progress. only: specific resort keys; group: a region group. Gauge-less resorts are located again."""
-    keys = only or [k for k, c in CATALOG.items() if not group or c[1] in GROUPS[group]]
+    progress. only: specific resort keys; region: one region's slug. Gauge-less resorts are located again."""
+    keys = only or [k for k, c in CATALOG.items() if not region or slug(c[1]) == region]
     resorts, cal = load_resorts(), load_calibration()
     t0 = time.time()
     log = lambda i, k, msg: print(f"[{i}/{len(keys)} {time.time() - t0:5.0f}s] {k}: {msg}", flush=True)
@@ -294,7 +307,7 @@ def run(group=None, out=None, force=False, only=None):
             json.dump({k: resorts[k].to_json() for k in keys if k in resorts}, open(os.path.join(out, "resorts.json"), "w"), indent=1)
             json.dump({k: cal[k].to_json() for k in keys if k in cal and cal[k].calibrated},
                       open(os.path.join(out, "calibration.json"), "w"), indent=1)
-    print(f"setup {group or 'all'}: located {sum(k in resorts for k in keys)}/{len(keys)}, "
+    print(f"setup {region or 'all'}: located {sum(k in resorts for k in keys)}/{len(keys)}, "
           f"calibrated {sum(k in cal and cal[k].calibrated for k in keys)}")
 
 
@@ -348,8 +361,10 @@ if __name__ == "__main__":
     opt = lambda name: a[a.index(name) + 1] if name in a else None
     if "--merge" in a:
         merge(opt("--merge"))
+    elif "--plan" in a:
+        plan(opt("--region"), force="--force" in a)
     else:
         only = [k for k in a if k in CATALOG]
-        run(opt("--group"), opt("--out"), force="--force" in a, only=only)
-        if not opt("--group"):
+        run(opt("--region"), opt("--out"), force="--force" in a, only=only)
+        if not opt("--region"):
             merge(os.path.join(HERE, "__none__"))

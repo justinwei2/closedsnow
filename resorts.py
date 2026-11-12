@@ -25,9 +25,11 @@ SEASONS = [("2024-11-01", "2025-04-30"), ("2025-11-01", "2026-04-30")]  # calibr
 EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weights
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
-# Regions refresh/calibrate as separate parallel CI jobs (own runner each).
-GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Northern Rockies"],
-          "rockies": ["Colorado"], "north": ["Coastal BC", "Interior BC", "Canadian Rockies"]}
+def slug(region):
+    """Region id for the CLI and CI jobs (one parallel job per region): "Coastal BC" -> "coastal-bc"."""
+    return region.lower().replace(" ", "-").replace(".", "")
+
+
 NON_US = {"Coastal BC", "Interior BC", "Canadian Rockies"}  # no NWS products / SNOTEL
 BC_REGIONS = {"Coastal BC", "Interior BC"}  # gauge search: BC snow pillows (ASWS)
 SNOTEL_STATES = {"California": ["CA", "NV"], "Pacific Northwest": ["WA", "OR"], "Utah": ["UT"],

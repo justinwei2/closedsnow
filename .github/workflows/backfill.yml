@@ -6,42 +6,56 @@ on:
   workflow_dispatch:
     inputs:
       force: { description: "Recalibrate every resort", type: boolean, default: false }
-      group: { description: "Region group", type: choice, options: [all, sierra, west, rockies, north], default: all }
+      region: { description: "One region (e.g. utah, coastal-bc); empty = every region with work", type: string, default: "" }
   schedule:
     - cron: "41 9 * * *"
 permissions:
   contents: write
 concurrency:
-  group: backfill-${{ inputs.group || 'all' }}   # per region: manual single-region runs go in parallel; separate from refresh
+  group: backfill-${{ inputs.region || 'all' }}   # per region: single-region runs go in parallel; separate from refresh
   cancel-in-progress: false
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - id: plan   # regions with resorts still to set up ([] when all done: no region jobs)
+        run: echo "matrix=$(python calibrate.py --plan ${{ inputs.region && format('--region {0}', inputs.region) || '' }} ${{ inputs.force && '--force' || '' }} | tail -1)" >> "$GITHUB_OUTPUT"
+
   region:
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
       fail-fast: false
       matrix:
-        group: ${{ fromJSON(inputs.group && inputs.group != 'all' && format('["{0}"]', inputs.group) || '["sierra","west","rockies","north"]') }}
+        region: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Locate + calibrate ${{ matrix.group }}
+      - name: Locate + calibrate ${{ matrix.region }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
-        run: timeout 320m python -u calibrate.py --group ${{ matrix.group }} --out out ${{ inputs.force && '--force' || '' }} || echo "stopped early; progress kept, next run continues"
+        run: timeout 320m python -u calibrate.py --region ${{ matrix.region }} --out out ${{ inputs.force && '--force' || '' }} || echo "stopped early; progress kept, next run continues"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bf-${{ matrix.group }}
+          name: bf-${{ matrix.region }}
           path: out/
           if-no-files-found: ignore
           retention-days: 3
 
   merge:
-    needs: region
-    if: always()
+    needs: [plan, region]
+    if: always() && needs.plan.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
