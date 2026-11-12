@@ -58,13 +58,15 @@ function niceMax(v, steps = 4) {
   return { max: step * steps, step };
 }
 
-function chip(quality) {
+const ratio = (slr) => slr ? `${slr.toFixed(0)}:1` : null;
+function chip(quality, slr) {  // quality label + snow ratio (the label is derived from the ratio)
   const q = QUALITY[quality];
   if (!q) return el("span", { class: "muted" }, "–");
   const c = el("span", { class: "chip" });
   const sw = el("span", { class: "sw" });
   sw.style.background = `var(${q.sw})`;
-  c.append(sw, document.createTextNode(q.text));
+  const showRatio = slr && !/rain|sleet|mixed/.test(quality);
+  c.append(sw, document.createTextNode(showRatio ? `${q.text} · ${ratio(slr)}` : q.text));
   return c;
 }
 
@@ -129,6 +131,12 @@ function legend(target, items) {
 function renderTotals(d, e) {
   const past = $("#past"), next = $("#next");
   past.replaceChildren(); next.replaceChildren();
+  if (d.obs?.depth_in != null) {  // gauge depth: measured at the station, not the resort's report
+    const t = el("div", { class: "tile past" });
+    t.append(el("div", { class: "label" }, "Snow depth"), el("div", { class: "value" }, `${Math.round(d.obs.depth_in)}"`),
+      el("div", { class: "sub" }, `${d.obs.station.replace(/ \(.*\)/, "")}, ${d.obs.elev_ft.toLocaleString()} ft`));
+    past.append(t);
+  }
   for (const [label, v] of Object.entries(d.past)) {
     const t = el("div", { class: "tile past" });
     t.append(el("div", { class: "label" }, label), el("div", { class: "value" }, fmtIn(v[e].p50)));
@@ -187,7 +195,7 @@ function renderReport(d, e) {
     const amt = el("div", { class: "amt" });
     if (snowy) {
       amt.append(el("b", {}, `${fmtIn(v.p50)}${fmtRange(v.p25, v.p75) ? "  (" + fmtRange(v.p25, v.p75) + ")" : ""}`));
-      if (v.quality) amt.append(chip(v.quality));
+      if (v.quality) amt.append(chip(v.quality, v.slr));
     } else amt.append(el("span", { class: "quiet" }, "Dry"));
     const nn = el("div", { class: "notes" });
     for (const n of notes) {
@@ -254,7 +262,7 @@ function snowChart(d, e) {
       { name: "Likely (25–75%)", value: fmtRange(v.p25, v.p75) || "–" },
       ...(v.nws_snow_in != null ? [{ name: "NWS", value: fmtIn(v.nws_snow_in), color: "var(--series-3)" }] : []),
       { name: "Quality", value: QUALITY[v.quality]?.text || "–" },
-      { name: "Snow:liquid", value: v.slr ? `${v.slr.toFixed(0)}:1` : "–" },
+      { name: "Snow ratio", value: ratio(v.slr) || "–" },
       { name: "Snow level", value: fmtFt(x.snow_level_ft) },
     ]));
     g.append(hit);
@@ -296,8 +304,7 @@ function renderDailyTable(d, e) {
   const HOLD = { likely: "Likely", possible: "Possible", low: "–" };
   row("Snow", (x, v) => fmtIn(v.p50), "strong");
   row("Likely range", (x, v) => fmtRange(v.p25, v.p75) || "–");
-  row("Quality", (x, v) => (v.liquid_in > 0.04 ? chip(v.quality) : "–"));
-  row("Snow:liquid", (x, v) => v.slr && v.liquid_in > 0.04 ? `${v.slr.toFixed(0)}:1` : "–");
+  row("Quality · snow ratio", (x, v) => (v.liquid_in > 0.04 ? chip(v.quality, v.slr) : "–"));
   row("Rain", (x, v) => (v.rain_in || 0) >= 0.05 ? `${v.rain_in.toFixed(2)}"` : "–");
   row("Snow level", (x) => fmtFt(x.snow_level_ft));
   row("Freezing level", (x) => fmtFt(x.freezing_level_ft));
@@ -413,7 +420,7 @@ function levelCharts(d, e) {
       { name: "Snow / hr", value: `${(h[e].snow_in || 0).toFixed(2)}"`, color: "var(--series-1)" },
       { name: "Rain / hr", value: `${(h[e].rain_in || 0).toFixed(2)}"`, color: "var(--series-2)" },
       { name: "Snow fraction", value: h[e].frac != null ? `${Math.round(h[e].frac * 100)}%` : "–" },
-      { name: "Snow:liquid", value: h[e].slr ? `${h[e].slr.toFixed(0)}:1` : "–" },
+      { name: "Snow ratio", value: ratio(h[e].slr) || "–" },
       { name: "Wind", value: `${fmtMph(h[e].wind_mph)} mph` },
     ],
   });

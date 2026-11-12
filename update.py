@@ -179,9 +179,16 @@ def process(r, cal):
                 vals.append((sum(got) * len(ts) / len(got) * scale, w))
         eq = cal.error_quantiles(s_liq * 72 / max(1, i1 - i0), QS)  # bins were calibrated on 72 h totals
         ensq = wquantiles(vals, QS) if vals else None
-        for q in QS:  # quantile averaging of ensemble and historical-error distributions
-            res[f"p{round(q * 100)}"] = (ensq[q] * ratio + snow * eq[q]) / 2 if ensq else snow * eq[q]
+        for q in QS:
+            emp = snow * eq[q]
+            if ensq and ensq[0.5] > 0 and snow > 0:  # ensemble spread *shape*, centred on the blend
+                ens = snow * ensq[q] / ensq[0.5]
+            else:  # blend or ensemble median dry: absolute ensemble amounts
+                ens = ensq[q] * ratio if ensq else emp
+            res[f"p{round(q * 100)}"] = (ens + emp) / 2  # quantile averaging of the two distributions
         res["p50"] = snow
+        for lo, hi in (("p10", "p90"), ("p25", "p75")):  # the ranges always include the forecast
+            res[lo], res[hi] = min(res[lo], snow), max(res[hi], snow)
         return res
 
     # ---- daily

@@ -65,7 +65,7 @@ def _fetch(url, retries):
                 print(f"  quota: {reason} - sleeping {wait // 60} min", file=sys.stderr)
                 time.sleep(wait)
                 continue  # quota waits don't use up retries
-            if 400 <= e.code < 500 and e.code not in (408, 429):
+            if 400 <= e.code < 500 and e.code not in (403, 408, 429):  # NRCS throws transient 403s
                 raise RuntimeError(f"HTTP {e.code} {reason}: {url[:160]}")  # permanent: don't retry
             print(f"  retry {attempt}: {e} {reason} {url[:120]}", file=sys.stderr)
         except Exception as e:

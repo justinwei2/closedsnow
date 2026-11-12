@@ -23,7 +23,7 @@
 
     <nav class="toc card">
       <a href="#points">1. Forecast points</a><a href="#blend">2. Precipitation blend</a><a href="#calibration">3. Calibration</a>
-      <a href="#ranges">4. Likely range</a><a href="#phase">5. Rain vs snow &amp; snow level</a><a href="#slr">6. Snow-to-water ratio</a>
+      <a href="#ranges">4. Likely range</a><a href="#phase">5. Rain vs snow &amp; snow level</a><a href="#slr">6. Snow ratio</a>
       <a href="#quality">7. Snow-quality labels</a><a href="#report">8. Weather report</a><a href="#past">9. Past snowfall</a>
       <a href="#refresh">10. Refresh &amp; reliability</a><a href="#limits">11. Limitations</a><a href="#data">12. Data sources</a>
     </nav>
@@ -62,11 +62,12 @@
     <section class="card" id="ranges">
       <h2>4. Likely range (25–75%)</h2>
       <p>Two independent uncertainty estimates, averaged percentile by percentile (quantile averaging):</p>
-      <div class="eq">q<sub>p</sub> = ½ · [ ensemble q<sub>p</sub> · r + forecast · ratio<sub>p</sub>(storm size) ]</div>
+      <div class="eq">q<sub>p</sub> = ½ · [ forecast · ensemble q<sub>p</sub> / ensemble q<sub>50</sub> + forecast · ratio<sub>p</sub>(storm size) ]</div>
       <ul>
         <li><b>Ensembles</b>: about 190 members (ECMWF ENS 51, AIFS ENS 51, GEFS 31, ICON EPS 40, GEM 21). Each ensemble is bias-corrected with its parent model's f<sub>m</sub> and weighted equally. Window totals use members covering ≥ 90% of the hours. Liquid is converted to snow with the blend's snow/liquid ratio <i>r</i> for that window, and base/mid are scaled by the blend's elevation/summit liquid ratio.</li>
         <li><b>Historical error</b>: ratio<sub>p</sub> is the p-th percentile of observed/forecast at this resort for storms of that size. Window liquid is normalised to 72 h before picking the bin.</li>
-        <li>The headline number is the blend itself (the center, not the median). The 10–90% range is in each resort's Details.</li>
+        <li>The ensembles contribute the <i>shape</i> of the uncertainty (each percentile relative to their median), centred on the blend, because coarse ensembles are often drier than the blend several days out. When the blend or ensemble median is dry, absolute ensemble amounts are used.</li>
+        <li>The headline number is the blend itself, and both ranges are widened if needed so they always include it. The 10–90% range is in each resort's Details.</li>
       </ul>
     </section>
 
@@ -83,7 +84,7 @@
     </section>
 
     <section class="card" id="slr">
-      <h2>6. Snow-to-water ratio (Kuchera method)</h2>
+      <h2>6. Snow ratio (snow-to-liquid ratio, Kuchera method)</h2>
       <p><b>T<sub>max</sub></b> = warmest temperature between the elevation and 500 hPa (≈ 18,000 ft).</p>
       <div class="eq">if T<sub>max</sub> &gt; −2 °C: &nbsp; SLR = 12 − 2 · (T<sub>max</sub> + 2)<br>
         if T<sub>max</sub> ≤ −2 °C: &nbsp; SLR = 12 + (−2 − T<sub>max</sub>)</div>
