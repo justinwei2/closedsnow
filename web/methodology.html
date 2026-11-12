@@ -23,7 +23,7 @@
 
     <nav class="toc card">
       <a href="#points">1. Forecast Points</a><a href="#blend">2. Precipitation Blend</a><a href="#calibration">3. Calibration</a>
-      <a href="#ranges">4. Likely Range</a><a href="#phase">5. Rain vs Snow &amp; Snow Level</a><a href="#slr">6. Snow Ratio</a>
+      <a href="#ranges">4. Likely Ranges</a><a href="#phase">5. Rain vs Snow &amp; Snow Level</a><a href="#slr">6. Snow Ratio</a>
       <a href="#quality">7. Precipitation Type</a><a href="#report">8. Weather Report</a><a href="#past">9. Days &amp; Spread Charts</a>
       <a href="#refresh">10. Refresh &amp; Reliability</a><a href="#limits">11. Limitations</a><a href="#data">12. Data Sources</a>
     </nav>
@@ -62,14 +62,14 @@
     </section>
 
     <section class="card" id="ranges">
-      <h2>4. Likely Range (25–75%)</h2>
+      <h2>4. Likely Ranges (25–75%, 10–90%)</h2>
       <p>Two independent uncertainty estimates, averaged percentile by percentile (quantile averaging):</p>
       <div class="eq">q<sub>p</sub> = ½ · [ forecast · ensemble q<sub>p</sub> / ensemble q<sub>50</sub> + forecast · ratio<sub>p</sub>(storm size) ]</div>
       <ul>
         <li><b>Ensembles</b>: about 190 members (ECMWF ENS 51, AIFS ENS 51, GEFS 31, ICON EPS 40, GEM 21). Each ensemble is bias-corrected with its parent model's f<sub>m</sub> and weighted equally. Window totals use members covering ≥ 90% of the hours. Liquid is converted to snow with the blend's snow/liquid ratio <i>r</i> for that window, and base/mid are scaled by the blend's elevation/summit liquid ratio.</li>
         <li><b>Historical error</b>: ratio<sub>p</sub> is the p-th percentile of observed/forecast at this resort for storms of that size. Window liquid is normalised to 72 h before picking the bin.</li>
         <li>The ensembles contribute the <i>shape</i> of the uncertainty (each percentile relative to their median), centred on the blend, because coarse ensembles are often drier than the blend several days out. When the blend or ensemble median is dry, absolute ensemble amounts are used.</li>
-        <li>The headline number is the blend itself, and both ranges are widened if needed so they always include it. The middle-90% range (5–95%) is in each resort's Details.</li>
+        <li>The headline number is the blend itself, and both ranges are widened if needed so they always include it. The middle-80% range (10–90%) is in each resort's Details.</li>
       </ul>
     </section>
 
@@ -130,7 +130,7 @@
       <ul>
         <li><b>Ski day</b> = 6am to 6am the next morning, split into daytime (6am–6pm) and nighttime (6pm–6am).</li>
         <li><b>Summary</b>: last 7 ski days, last 24 hours, next 1–5 days (the rest of today plus 4 days) and next 6–10 days.</li>
-        <li><b>Snow &amp; rain chart</b>: amounts per hour for the last 7 days (model estimate) and the next 10. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. The bands are the members' weighted middle 50% and middle 90%, widened to include the forecast.</li>
+        <li><b>Snow &amp; rain chart</b>: amounts per hour for the last 7 days (model estimate) and the next 10. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. The bands are the members' weighted middle 50% and middle 80%, widened to include the forecast.</li>
         <li><b>Model estimate</b>: the same blend and phase/ratio maths applied to the last 7 days of the models' short-range forecasts. An estimate, not a measurement.</li>
         <li><b>Station measured</b>: the gauge's daily snow-depth gain. Settling makes this under-read new snow, and the station sits at one elevation (shown).</li>
       </ul>

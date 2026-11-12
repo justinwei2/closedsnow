@@ -18,7 +18,7 @@ FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't represent
 RATIO_BINS = [(10, 25), (25, 50), (50, 1e9)]  # forecast storm size, mm liquid per 72 h
 WET = 10.0                          # mm/72 h: only real storms feed the error distribution
 STORM_MM = 2.5                      # gauge mm/day: a "storm day" for the temperature bias
-QS = ("0.05", "0.25", "0.5", "0.75", "0.95")
+QS = ("0.1", "0.25", "0.5", "0.75", "0.9")
 
 
 # ---------------------------------------------------------------- locate

@@ -22,7 +22,7 @@ PAST_DAYS = 7
 TRIGGER_MODEL = "ecmwf_ifs025"  # refresh when its new run lands: it arrives last of the 6-hourly models
 SAFETY_H = 7           # ...or when data is older than this anyway
 MAX_AGE_H = 14         # freshness alarm: about 2 missed model cycles
-QS = (0.05, 0.25, 0.5, 0.75, 0.95)  # middle 50% and middle 90%
+QS = (0.1, 0.25, 0.5, 0.75, 0.9)  # middle 50% and middle 80%
 HOURLY_OUT = ("precip_mm", "snow_in", "rain_in", "slr", "temp_f", "wind_mph", "gust_mph", "wind_dir", "rh", "cloud")
 _discussions = {}  # one NWS discussion per office per run
 
@@ -226,7 +226,7 @@ def process(r, cal):
                 ens = ensq[q] * ratio if ensq else emp
             res[f"p{round(q * 100)}"] = (ens + emp) / 2  # quantile averaging of the two distributions
         res["p50"] = snow
-        for lo, hi in (("p5", "p95"), ("p25", "p75")):  # the ranges always include the forecast
+        for lo, hi in (("p10", "p90"), ("p25", "p75")):  # the ranges always include the forecast
             res[lo], res[hi] = min(res[lo], snow), max(res[hi], snow)
         return res
 

@@ -146,7 +146,7 @@ class Calibration:
     blend_mae72: float | None = None
     n_windows: int | None = None
     n_wet: int = 0
-    ratio_q: dict = field(default_factory=dict)  # "0.05".."0.95" -> obs/forecast ratio
+    ratio_q: dict = field(default_factory=dict)  # "0.1".."0.9" -> obs/forecast ratio
     ratio_bins: list = field(default_factory=list)  # [{lo_mm, hi_mm, n, q}] by forecast storm size
     temp_bias_c: float | None = None      # station minus model daily mean temperature, all days
     temp_bias_wet_c: float | None = None  # same on storm days: shifts the profile (phase, snow level, ratio)
