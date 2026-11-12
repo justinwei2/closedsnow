@@ -543,7 +543,9 @@ function renderModels(d, e) {
     tb.append(tr);
   }
   const c = d.calibration;
-  $("#cal-note").textContent = c.uncalibrated
+  $("#cal-note").textContent = c.raw_reason
+    ? `Not calibrated: the nearest gauge (${c.station}) is too far from the lifts to stand in for them (${c.raw_reason}). Raw model precipitation, models weighted equally, ranges from the ensembles only.`
+    : c.uncalibrated
     ? `Not calibrated yet (${d.obs ? "calibration pending" : "no nearby automated gauge"}): raw model precipitation, models weighted equally, and ranges from the ensembles only.`
     : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (NBM 11 d, JMA 11 d, ICON 7 d, GEM 10 d).`;
 }

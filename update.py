@@ -358,7 +358,7 @@ def process(r, cal):
         key=r.key, name=r.name, country=r.country, tz=r.tz, model_run=run, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
-        calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated,
+        calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, raw_reason=cal.raw_reason,
                          temp_bias_c=cal.temp_bias_c, profile_shift_c=cal.profile_shift_c,
                          models={m: asdict(v) for m, v in cal.models.items()}),
         daily=daily, hourly=hourly, summary=summary, plume=plume, obs=obs, depth=depth, afd=afd, alerts=alerts,
@@ -408,7 +408,7 @@ def write_index():
         if not r:  # not set up yet: listed in the coverage appendix, hidden from search
             idx.append(dict(key=key, name=name, country=country, calibration="not set up yet", located=False, updated=None))
             continue
-        status = "calibrated" if c and c.calibrated else "pending" if r.gauge else "raw models"
+        status = "calibrated" if c and c.calibrated else "raw models" if (c and c.raw_reason) or not r.gauge else "pending"
         idx.append(dict(key=key, name=r.name, country=r.country, calibration=status,
                         station=r.gauge.name if r.gauge else None, station_ft=r.gauge.ft if r.gauge else None,
                         blend_mae72_in=round(c.blend_mae72 / IN, 2) if c and c.blend_mae72 else None,

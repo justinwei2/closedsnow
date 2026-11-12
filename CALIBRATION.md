@@ -18,7 +18,7 @@ the raw models with equal weights.
 | Jackson Hole | calibrated | Phillips Bench SNOTEL | 8,170 ft | 356 | 0.26 |
 | Kirkwood | calibrated | Carson Pass SNOTEL | 8,360 ft | 356 | 0.32 |
 | Mammoth Mountain | calibrated | Mammoth Pass (CDEC) | 9,400 ft | 356 | 0.41 |
-| Mt. Bachelor | calibrated | Three Creeks Meadow SNOTEL | 5,680 ft | 356 | 0.37 |
+| Mt. Bachelor | raw models (gauge 2,220 ft below mid-mountain) | Three Creeks Meadow SNOTEL | 5,680 ft |  |  |
 | Palisades Tahoe | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 356 | 0.49 |
 | Snowbasin | calibrated | Ben Lomond Peak SNOTEL | 7,690 ft | 356 | 0.41 |
 | Snowbird | calibrated | Snowbird SNOTEL | 9,170 ft | 356 | 0.37 |
@@ -30,15 +30,15 @@ the raw models with equal weights.
 
 | Resort | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
 |---|---|---|---|---|---|
-| Blackcomb | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
+| Blackcomb | raw models (gauge 1,663 ft below mid-mountain) | Callaghan Creek (BC snow pillow) | 3,337 ft |  |  |
 | Kicking Horse | calibrated | Caribou Creek (BC snow pillow) | 7,221 ft | 349 | 0.19 |
 | Lake Louise | calibrated | Pika Run (Alberta Rivers) | 7,382 ft | 356 | 0.12 |
 | Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
-| Whistler | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
+| Whistler | raw models (gauge 1,663 ft below mid-mountain) | Callaghan Creek (BC snow pillow) | 3,337 ft |  |  |
 
 ## Japan
 
 | Resort | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
 |---|---|---|---|---|---|
-| Hakuba Happo-One | calibrated | Hakuba (JMA AMeDAS) | 2,306 ft | 356 | 0.21 |
-| Niseko Grand Hirafu | calibrated | Kutchan (JMA) | 578 ft | 356 | 0.19 |
+| Hakuba Happo-One | raw models (gauge 2,094 ft below mid-mountain) | Hakuba (JMA AMeDAS) | 2,306 ft |  |  |
+| Niseko Grand Hirafu | raw models (gauge 2,022 ft below mid-mountain) | Kutchan (JMA) | 578 ft |  |  |

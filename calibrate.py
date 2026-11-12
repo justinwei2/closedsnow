@@ -18,6 +18,7 @@ FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't represent
 RATIO_BINS = [(10, 25), (25, 50), (50, 1e9)]  # forecast storm size, mm liquid per 72 h
 WET = 10.0                          # mm/72 h: only real storms feed the error distribution
 STORM_MM = 2.5                      # gauge mm/day: a "storm day" for the temperature bias
+GAUGE_NEAR_FT = 1500  # calibrate only against a gauge within this height of mid-mountain (valley gauges mislead)
 QS = ("0.1", "0.25", "0.5", "0.75", "0.9")
 
 
@@ -240,9 +241,17 @@ def calibrate_one(r):
                                    round(sum(abs(x - bias) for x, _ in diffs) / len(diffs), 2)] if diffs else None)
 
 
-def raw(r):
-    """Not calibrated yet (or no usable gauge): the raw models, equal weights, no historical error."""
-    return Calibration({m: ModelCal(1.0, round(1 / len(r.models), 3)) for m in r.models}, uncalibrated=True)
+def raw(r, reason=None):
+    """Raw models, equal weights, no historical error: not calibrated yet, no gauge, or (reason) a gauge
+    too far above / below the mountain to stand in for it."""
+    return Calibration({m: ModelCal(1.0, round(1 / len(r.models), 3)) for m in r.models}, uncalibrated=True,
+                       station=r.gauge.name if r.gauge else None, raw_reason=reason)
+
+
+def far_gauge(r):
+    """Why the gauge can't calibrate this resort (too far from mid-mountain in height), or None."""
+    dz = r.gauge.ft - r.mid.ft
+    return f"gauge {abs(dz):,} ft {'above' if dz > 0 else 'below'} mid-mountain" if abs(dz) > GAUGE_NEAR_FT else None
 
 
 # ---------------------------------------------------------------- orchestration
@@ -253,8 +262,9 @@ def save(resorts, cal):
 
 
 def todo(k, resorts, cal, force=False):
-    """Needs locating or calibrating (force: recalibrate)."""
-    return force or k not in resorts or resorts[k].gauge is None or k not in cal or not cal[k].calibrated
+    """Needs locating or calibrating (force: recalibrate); deliberately raw resorts are done."""
+    return (force or k not in resorts or resorts[k].gauge is None or k not in cal
+            or not (cal[k].calibrated or cal[k].raw_reason))
 
 
 def plan(only=None, force=False):
@@ -282,7 +292,11 @@ def run(out=None, force=False, only=None):
                     print(f"  locate failed {k}: {e}", file=sys.stderr)
                 save(resorts, cal)
             r = resorts.get(k)
-            if r and r.gauge and (force or k not in cal or not cal[k].calibrated):
+            if r and r.gauge and todo(k, resorts, cal, force) and far_gauge(r):
+                cal[k] = raw(r, far_gauge(r))
+                log(i, k, f"raw models: {cal[k].raw_reason}")
+                save(resorts, cal)
+            elif r and r.gauge and todo(k, resorts, cal, force):
                 log(i, k, f"calibrating against {r.gauge.name} ({len(r.models)} models x {len(SEASONS)} winters)")
                 try:
                     cal[k] = calibrate_one(r)
@@ -293,7 +307,7 @@ def run(out=None, force=False, only=None):
                     print(f"  calibration failed {k}: {e}", file=sys.stderr)
                 save(resorts, cal)
             else:
-                log(i, k, "already calibrated" if r and r.gauge else "no gauge: raw models")
+                log(i, k, "already set up" if r and r.gauge else "no gauge: raw models")
     finally:  # hand back progress even on a crash or timeout
         if out:
             os.makedirs(out, exist_ok=True)
@@ -319,7 +333,7 @@ def merge(d):
         for k, v in _load(os.path.join(part, "calibration.json")).items():
             cal[k] = Calibration.from_json(v)
     resorts = {k: r for k, r in resorts.items() if k in CATALOG}
-    cal = {k: c for k, c in cal.items() if k in resorts and c.calibrated}
+    cal = {k: c for k, c in cal.items() if k in resorts and (c.calibrated or c.raw_reason)}
     for k, r in resorts.items():
         cal.setdefault(k, raw(r))
     save(resorts, cal)
@@ -343,7 +357,8 @@ def write_report(resorts, cal):
                 lines.append(f"| {CATALOG[k][0]} | not located yet | | | | |")
                 continue
             g = r.gauge
-            status = "calibrated" if c and c.calibrated else "pending (raw models for now)" if g else "raw models (no gauge)"
+            status = ("calibrated" if c and c.calibrated else f"raw models ({c.raw_reason})" if c and c.raw_reason
+                      else "pending (raw models for now)" if g else "raw models (no gauge)")
             err = f"{c.blend_mae72 / IN:.2f}" if c and c.calibrated else ""
             lines.append(f"| {r.name} | {status} | {g.name if g else '–'} | {f'{g.ft:,} ft' if g else '–'} | "
                          f"{c.n_windows if c and c.calibrated else ''} | {err} |")

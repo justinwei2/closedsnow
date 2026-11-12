@@ -157,6 +157,7 @@ class Calibration:
     temp_bias_wet_c: float | None = None  # same on storm days: shifts the profile (phase, snow level, ratio)
     temp_n_wet: int = 0
     temp_mae_c: list | None = None        # [raw, corrected] daily-mean temperature MAE at the gauge
+    raw_reason: str | None = None         # deliberately not calibrated (gauge not representative): why
 
     @property
     def calibrated(self):

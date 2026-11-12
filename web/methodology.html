@@ -54,7 +54,7 @@
       <div class="eq">temperature bias = mean(station − model daily mean temperature) at the gauge, lead day 1: all days (displayed temperatures) and storm days ≥ 2.5 mm (profile correction, §5)</div>
       <ul>
         <li><b>Observed precipitation</b> is the daily gauge increment. When the gauge clearly missed a storm (snow water gain &gt; 0.3" and gauge &lt; half of it), the snowpack's water gain is used instead. Storage gauges cap and freeze; Mammoth Pass caught 12" vs 31" of snow-water gain in 2024–25.</li>
-        <li><b>Resorts not calibrated yet</b> (or without a gauge): f<sub>m</sub> = 1 (raw model precipitation), equal weights, ranges from the ensembles only.</li>
+        <li><b>Resorts not calibrated</b> (no gauge, not set up yet, or a gauge more than 1,500 ft above or below mid-mountain, e.g. a valley station): f<sub>m</sub> = 1 (raw model precipitation), equal weights, ranges from the ensembles only. A gauge far below the lifts measures valley precipitation and would cut the mountain's forecast.</li>
         <li><b>Error bins</b> for the range (§4): the observed/forecast ratio for the blend, split by forecast storm size per 72 h: 10–25 mm, 25–50 mm, &gt; 50 mm (each bin needs ≥ 15 windows).</li>
       </ul>
       <p>Per-resort status, gauge and error: <a href="./#calcov">Calibration coverage</a> (in each resort's Details) and <a href="https://github.com/justinwei2/snowreport/blob/main/CALIBRATION.md">CALIBRATION.md</a>.</p>
