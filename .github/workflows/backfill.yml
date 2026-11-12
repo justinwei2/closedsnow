@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       force: { description: "Recalibrate every resort", type: boolean, default: false }
+      group: { description: "Region group", type: choice, options: [all, sierra, west, rockies, north], default: all }
   schedule:
     - cron: "41 9 * * *"
 permissions:
@@ -20,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [sierra, west, rockies, north]
+        group: ${{ fromJSON(inputs.group && inputs.group != 'all' && format('["{0}"]', inputs.group) || '["sierra","west","rockies","north"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
