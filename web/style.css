@@ -131,8 +131,9 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .sday.past .sstack { opacity: .55; }
 .sbar-wrap { height: 110px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
 .sstack { width: 80%; height: 100%; display: flex; align-items: flex-end; gap: 1px; }
-.sseg { display: block; flex: 1; border-radius: 3px 3px 0 0; }
-.sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.shalf { flex: 1; height: 100%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+.sseg { display: block; width: 100%; border-radius: 3px 3px 0 0; }
+.sval { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.4; }
 .sday-l { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
 .sday-l.wk { color: var(--text-primary); font-weight: 600; }
 .sday-l.today { color: var(--text-primary); font-weight: 700; }
@@ -157,6 +158,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .chart text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .chart text.today { fill: var(--text-primary); font-weight: 600; }
 .chart text.reflabel { fill: var(--text-secondary); }
+.chart text.axtitle { fill: var(--text-secondary); font-size: 10px; }
 .chart .gridline { stroke: var(--grid); stroke-width: 1; }
 .chart .baseline { stroke: var(--axis); stroke-width: 1; }
 .chart .ref { stroke: var(--text-secondary); stroke-width: 1; opacity: .55; }
@@ -237,6 +239,7 @@ table.days td.dlabel { text-align: left; font-weight: 600; color: var(--text-pri
 table.days td.dlabel span { display: block; font-weight: 400; color: var(--muted); }
 table.days th.grp { border-bottom: 1px solid var(--axis); }
 table.days tr.past td:not(.dlabel) { opacity: .5; }
+table.days tr.today td { background: color-mix(in srgb, var(--q-snow) 10%, var(--surface-1)); }
 table.days tr.past td.dlabel { color: var(--text-secondary); }
 .asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; }
 .ratio { display: inline-flex; align-items: center; gap: 5px; }

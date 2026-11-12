@@ -208,18 +208,19 @@ function renderSummary(d, e) {
       const v = x[e], dl = dayLabel(x.date), weekend = /Sat|Sun/.test(dl.dow);
       const col = el("div", { class: "sday" + (x.past ? " past" : ""), tabindex: 0 });
       const stack = el("div", { class: "sstack" });
-      v.halves.forEach((p) => {  // daytime, nighttime left to right
-        const seg = el("span", { class: "sseg" });
-        seg.style.height = p.snow_in >= 0.05 ? `${p.snow_in / vmax * 100}%` : "0";
+      v.halves.forEach((p) => {  // daytime, nighttime left to right, each with its snowfall on top
+        const half = el("span", { class: "shalf" }), seg = el("span", { class: "sseg" });
+        seg.style.height = p.snow_in >= 0.05 ? `${p.snow_in / vmax * 82}%` : "0";  // headroom for the number
         seg.style.background = `var(${qual(p.quality).sw})`;
-        stack.append(seg);
+        half.append(el("span", { class: "sval" }, fmtSnow(p.snow_in)), seg);
+        stack.append(half);
       });
       const wrap = el("div", { class: "sbar-wrap" });
       wrap.append(stack);
       const rain = sum(v, "rain_in");
       const label = el("div", { class: "sday-l" + (weekend ? " wk" : "") + (x.date === t0 ? " today" : "") });
       label.append(el("span", {}, x.date === t0 ? "Today" : dl.dow.slice(0, 2)), el("span", {}, String(dl.dom)));
-      col.append(el("div", { class: "sval" }, fmtSnow(sum(v, "snow_in"))), wrap, label);
+      col.append(wrap, label);
       days.append(col);
       hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
         { name: x.past ? "Model estimate" : "Forecast", value: amount(sum(v, "snow_in"), rain) },
@@ -351,7 +352,7 @@ function renderDailyTable(d, e) {
   for (const x of days) {
     const dl = dayLabel(x.date);
     x[e].halves.forEach((h, k) => {
-      const tr = el("tr", { class: `${k ? "night" : "dayrow"}${h.past ? " past" : ""}`, "data-date": x.date });
+      const tr = el("tr", { class: `${k ? "night" : "dayrow"}${h.past ? " past" : ""}${x.date === today() ? " today" : ""}`, "data-date": x.date });
       if (!k) {
         const td = el("td", { class: "dlabel", rowspan: x[e].halves.length });
         td.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", {}, `${dl.mon} ${dl.dom}`));
@@ -385,10 +386,15 @@ function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (
   const X = (i) => pad + i * dx;
   const { min = 0, max, step, fmt } = opts.y;
   const Y = (v) => m.t + ih - ((Math.max(min, Math.min(max, v)) - min) / (max - min)) * ih;
-  for (let v = min; v <= max + 1e-9; v += step) {
+  const y2 = opts.y2, Y2 = y2 ? (v) => m.t + ih - (Math.max(0, Math.min(y2.max, v)) / y2.max) * ih : Y;
+  const Yof = (s) => s.axis === 2 ? Y2 : Y;
+  for (let v = min, k = 0; v <= max + 1e-9; v += step, k++) {  // right-axis ticks share the left gridlines
     svg.append(svgEl("line", { x1: 0, x2: W, y1: Y(v), y2: Y(v), class: v === min ? "baseline" : "gridline" }));
     left.append(svgText({ x: m.l - 6, y: Y(v) + 4, "text-anchor": "end" }, fmt(v)));
+    if (y2) right.append(svgText({ x: 6, y: Y(v) + 4 }, y2.fmt(k * y2.step)));
   }
+  if (opts.y.title) left.append(svgText({ x: 2, y: m.t - 4, class: "axtitle" }, opts.y.title));
+  if (y2?.title) right.append(svgText({ x: m.r - 2, y: m.t - 4, "text-anchor": "end", class: "axtitle" }, y2.title));
   const tick = opts.tick || ((p) => p.t.endsWith("T00:00"));
   pts.forEach((p, i) => {
     if (!tick(p)) return;
@@ -396,21 +402,22 @@ function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (
     svg.append(svgEl("line", { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ih, class: "gridline" }),
       svgText({ x: X(i) + 4, y: H - 6, class: day === state.data.today ? "today" : "" }, day === state.data.today ? `Today ${dl.dom}` : `${dl.dow} ${dl.dom}`));
   });
-  const path = (get) => {  // polyline through non-null values
+  const path = (get, Yf) => {  // polyline through non-null values
     let d = "", pen = false;
     pts.forEach((p, i) => {
       const v = get(p);
       if (v == null) { pen = false; return; }
-      d += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true;
+      d += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Yf(v).toFixed(1)}`; pen = true;
     });
     return d;
   };
   for (const b of opts.bands || []) {
     let d = "", back = "";
+    const Yb = Yof(b);
     pts.forEach((p, i) => {
       const lo = b.lo(p), hi = b.hi(p);
       if (lo == null || hi == null) return;
-      d += `${d ? "L" : "M"}${X(i)},${Y(hi)}`; back = `L${X(i)},${Y(lo)}` + back;
+      d += `${d ? "L" : "M"}${X(i)},${Yb(hi)}`; back = `L${X(i)},${Yb(lo)}` + back;
     });
     if (d) svg.append(svgEl("path", { d: d + back + "Z", fill: b.color, opacity: b.opacity ?? 0.12 }));
   }
@@ -420,7 +427,7 @@ function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (
     right.append(svgText({ x: 6, y: Y(r.v) + 4, class: "reflabel" + (r.strong ? " today" : "") }, r.label));
   }
   for (const s of opts.lines || [])
-    svg.append(svgEl("path", { d: path(s.get), fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    svg.append(svgEl("path", { d: path(s.get, Yof(s)), fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
   const hrs = (t) => (new Date(t) - new Date(pts[0].t)) / 36e5;  // hours since the first point
   const xNow = pad + hrs(state.data.now) * dx * (opts.perDay || 24) / 24;
   if (xNow > pad && xNow < W - pad) {  // past (model estimate) | forecast, placed by time
@@ -472,15 +479,18 @@ function levelCharts(d, e) {
 function plumeChart(d, e) {  // snow and rain per 12 h period (6a-6p, 6p-6a): forecast lines with spread bands
   const p = d.plume[e];
   const pts = p.t.map((t, i) => ({ t, i }));
-  const kinds = [["snow", "var(--q-snow)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
-  const { max, step } = niceMax(Math.max(2, ...p.snow["0.95"], ...p.rain["0.95"]));
+  const kinds = [["snow", "var(--q-snow)", "Snow", 1, 1], ["rain", "var(--q-rain)", "Rain", 2, 2]];  // [key, colour, name, decimals, axis]
+  const { max, step } = niceMax(Math.max(2, ...p.snow["0.95"]));
+  const ticks = Math.round(max / step), rainTop = Math.max(0.2, ...p.rain["0.95"]);
+  const rstep = [0.05, 0.1, 0.2, 0.25, 0.5, 1, 2, 5].find((s) => s * ticks >= rainTop) || 5;  // rain ticks on the snow gridlines
   const q = (k, s) => (x) => p[k][s][x.i];
   timeChart($("#plume"), pts, {
-    perDay: 2, tick: (x) => x.t.endsWith("T06:00"), margin: { r: 12 },
-    y: { max, step, fmt: (v) => `${v}"` },
-    bands: kinds.flatMap(([k, color]) => [{ lo: q(k, "0.05"), hi: q(k, "0.95"), color, opacity: 0.1 },
-                                         { lo: q(k, "0.25"), hi: q(k, "0.75"), color, opacity: 0.2 }]),
-    lines: kinds.map(([k, color]) => ({ get: q(k, "fc"), color })),
+    perDay: 2, tick: (x) => x.t.endsWith("T06:00"), margin: { r: 48 },
+    y: { max, step, fmt: (v) => `${v}"`, title: "snow" },
+    y2: { max: rstep * ticks, step: rstep, fmt: (v) => `${+v.toFixed(2)}"`, title: "rain" },
+    bands: kinds.flatMap(([k, color, , , axis]) => [{ lo: q(k, "0.05"), hi: q(k, "0.95"), color, axis, opacity: 0.1 },
+                                                   { lo: q(k, "0.25"), hi: q(k, "0.75"), color, axis, opacity: 0.2 }]),
+    lines: kinds.map(([k, color, , , axis]) => ({ get: q(k, "fc"), color, axis })),
     tipHead: (x) => { const dl = dayLabel(x.t.slice(0, 10)); return `${dl.dow} ${dl.mon} ${dl.dom} · ${x.t.endsWith("T18:00") ? "6pm–6am" : "6am–6pm"}`; },
     tip: (x) => kinds.flatMap(([k, color, name, dp]) => [
       { name, value: `${p[k].fc[x.i].toFixed(dp)}"`, color },
@@ -490,8 +500,8 @@ function plumeChart(d, e) {  // snow and rain per 12 h period (6a-6p, 6p-6a): fo
   });
   $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h (6am–6pm, 6pm–6am)`;
   legend("#plume-legend", [
-    { label: "Snow (in)", color: "var(--q-snow)" },
-    { label: "Rain (in of water)", color: "var(--q-rain)" },
+    { label: "Snow (in, left axis)", color: "var(--q-snow)" },
+    { label: "Rain (in of water, right axis)", color: "var(--q-rain)" },
     { label: "Middle 50%", color: "var(--text-secondary)", kind: "key-band" },
     { label: "Middle 90%", color: "var(--text-secondary)", kind: "key-band light" },
   ]);
