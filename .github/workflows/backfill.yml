@@ -52,13 +52,17 @@ jobs:
         with:
           pattern: bf-*
           path: parts
-      - name: Merge
-        run: python calibrate.py --merge parts
-      - name: Commit
+      # merge onto the latest main each attempt (other pushes land while regions run); fail loudly
+      - name: Merge and commit
         run: |
           git config user.name "opensnow-bot"
           git config user.email "opensnow-bot@users.noreply.github.com"
-          git add data CALIBRATION.md
-          git diff --cached --quiet && exit 0
-          git commit -m "backfill: locate/calibrate $(date -u +%Y-%m-%dT%H:%MZ)"
-          for i in 1 2 3; do git pull --rebase --autostash && git push && break; sleep $((i * 15)); done
+          for i in 1 2 3; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            python calibrate.py --merge parts
+            git add data CALIBRATION.md
+            git diff --cached --quiet && exit 0
+            git commit -qm "backfill: locate/calibrate $(date -u +%Y-%m-%dT%H:%MZ)" && git push -q origin HEAD:main && exit 0
+            sleep $((i * 15))
+          done
+          echo "::error::could not push the merged calibration"; exit 1
