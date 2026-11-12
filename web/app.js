@@ -19,7 +19,6 @@ const qual = (q) => QUALITY[q] || { sw: "--muted", text: q || "–" };  // unkno
 const ALERT = { powder: "--q-snow", wet: "--q-mixed", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
 const NOTE_ALERT = { powder: "powder", rain: "wet", sleet: "wet", vis: "info" };  // weather-report note -> alert
-// weather-report note styling: status colours always ship with an icon + text
 
 // ---------------------------------------------------------------- formatting
 const fmtSnow = (v) => v == null ? "–" : v < 0.25 ? "0" : v < 1 ? "<1" : String(Math.round(v));
@@ -64,7 +63,6 @@ function snowRatio(quality, slr) {  // swatch in the quality colour + ratio; mix
   c.append(sw, document.createTextNode(wet || !slr ? q.text : ratio(slr)));
   return c;
 }
-const chip = snowRatio;
 
 // ---------------------------------------------------------------- tooltip
 const tip = $("#tip");
@@ -117,8 +115,7 @@ function legend(target, items) {
   lg.replaceChildren();
   for (const it of items) {
     const s = el("span");
-    if (it.glyph) s.append(el("span", { class: "muted" }, it.glyph));
-    else { const k = el("span", { class: it.kind || "key-line" }); k.style.background = it.color; s.append(k); }
+    const k = el("span", { class: it.kind || "key-line" }); k.style.background = it.color; s.append(k);
     s.append(document.createTextNode(it.label)); lg.append(s);
   }
 }
@@ -187,7 +184,7 @@ function renderSummary(d, e) {
     if (g.center) {
       const c = el("div", { class: "scenter" });
       c.append(el("div", { class: "slabel" }, "Last 24 Hours"), el("div", { class: "sbig" }, fmtIn(s.last24.p50)),
-        el("div", { class: "muted" }, s.last24.station_in != null ? `station measured ${fmtIn(s.last24.station_in)}` : "model estimate"));
+        el("div", { class: "muted" }, s.last24.station_in != null ? `station, yesterday ${fmtIn(s.last24.station_in)}` : "model estimate"));
       const lg = el("div", { class: "legend-col" });
       qualityKeys(lg);
       c.append(lg);
@@ -200,12 +197,12 @@ function renderSummary(d, e) {
     const type = !g.past && windowType(g.tot);
     if (type) {  // forecast totals take the window's precipitation-type colour, named underneath
       tot.style.color = `var(${QUALITY[type].sw})`;
-      sub.replaceChildren(chip(type));
+      sub.replaceChildren(snowRatio(type));
     }
     grp.append(el("div", { class: "slabel" }, g.label), tot, sub);
     const days = el("div", { class: "sdays" });
     for (const x of g.days) {
-      const v = x[e], dl = dayLabel(x.date), weekend = /Sat|Sun/.test(dl.dow);
+      const v = x[e], dl = dayLabel(x.date), weekend = [0, 6].includes(new Date(x.date + "T12:00:00").getDay());
       const col = el("div", { class: "sday" + (x.past ? " past" : ""), tabindex: 0 });
       const stack = el("div", { class: "sstack" });
       v.halves.forEach((p) => {  // daytime, nighttime left to right, each with its snowfall on top
@@ -310,7 +307,7 @@ function renderDailyTable(d, e) {
     const notes = k ? [] : (x.report || []).filter((n) => NOTE_ALERT[n.kind]).map((n) => ({ kind: NOTE_ALERT[n.kind], text: n.text, where: "Mountain" }));
     return [...seen.values(), ...notes];
   };
-  const cols = [  // [header, cell(h, x, k), class, header group]
+  const cols = [  // [header, cell(h, x, k), header group]
     ["Temp", (h) => fmtF(h.temp_f)],
     ["Alerts", (h, x, k) => {
       const al = rowAlerts(h, x, k);
@@ -337,14 +334,14 @@ function renderDailyTable(d, e) {
     ["Snow Level (ft)", (h) => fmtFt(h.snow_level_ft)],
     ["Precip Chance", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}%`],
     ["Precip Amount", (h) => h.liquid_in >= 0.005 ? `${h.liquid_in.toFixed(2)}"` : "0\""],
-    ["Speed", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`, "", "Wind (mph)"],
-    ["Gust", (h) => fmtMph(h.gust_mph), "", "Wind (mph)"],
+    ["Speed", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`, "Wind (mph)"],
+    ["Gust", (h) => fmtMph(h.gust_mph), "Wind (mph)"],
   ];
   const head1 = el("tr"), head2 = el("tr");
   head1.append(el("th", { class: "rowh", rowspan: 2 }, ""));
-  cols.forEach(([name, , , grp], k) => {
+  cols.forEach(([name, , grp], k) => {
     if (!grp) return head1.append(el("th", { rowspan: 2 }, name));
-    if (cols[k - 1]?.[3] !== grp) head1.append(el("th", { colspan: cols.filter((c) => c[3] === grp).length, class: "grp" }, grp));
+    if (cols[k - 1]?.[2] !== grp) head1.append(el("th", { colspan: cols.filter((c) => c[2] === grp).length, class: "grp" }, grp));
     head2.append(el("th", {}, name));
   });
   const thead = el("thead"); thead.append(head1, head2);
@@ -358,8 +355,8 @@ function renderDailyTable(d, e) {
         td.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", {}, `${dl.mon} ${dl.dom}`));
         tr.append(td);
       }
-      for (const [, fn, cls] of cols) {
-        const td = el("td", { class: cls || "" });
+      for (const [, fn] of cols) {
+        const td = el("td");
         const v = fn(h, x, k);
         if (v instanceof Node) td.append(v); else td.textContent = v;
         tr.append(td);
@@ -375,7 +372,7 @@ function renderDailyTable(d, e) {
 const VISIBLE_DAYS = 7;  // scrolling time charts show about a week; scroll for the rest
 function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (perDay per day)
   if (pts.length < 2) { container.replaceChildren(el("div", { class: "muted" }, "No data.")); return; }
-  const m = { t: 14, b: 24, l: 48, r: 74, ...opts.margin }, H = opts.height || 240, ih = H - m.t - m.b;
+  const m = { t: 14, b: 24, l: 48, r: 74, ...opts.margin }, H = 240, ih = H - m.t - m.b;
   container.replaceChildren(); container.classList.add("scroll");
   const vis = Math.max(200, container.clientWidth - m.l - m.r), n = pts.length;
   const dx = vis / (VISIBLE_DAYS * (opts.perDay || 24)), pad = 2, W = Math.max(vis, dx * (n - 1) + 2 * pad);
@@ -411,15 +408,17 @@ function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (
     });
     return d;
   };
-  for (const b of opts.bands || []) {
-    let d = "", back = "";
+  for (const b of opts.bands || []) {  // one closed shape per run of points with both bounds
     const Yb = Yof(b);
+    let d = "", top = "", back = "";
+    const close = () => { if (top) d += top + back + "Z"; top = back = ""; };
     pts.forEach((p, i) => {
       const lo = b.lo(p), hi = b.hi(p);
-      if (lo == null || hi == null) return;
-      d += `${d ? "L" : "M"}${X(i)},${Yb(hi)}`; back = `L${X(i)},${Yb(lo)}` + back;
+      if (lo == null || hi == null) return close();
+      top += `${top ? "L" : "M"}${X(i)},${Yb(hi)}`; back = `L${X(i)},${Yb(lo)}` + back;
     });
-    if (d) svg.append(svgEl("path", { d: d + back + "Z", fill: b.color, opacity: b.opacity ?? 0.12 }));
+    close();
+    if (d) svg.append(svgEl("path", { d, fill: b.color, opacity: b.opacity ?? 0.12 }));
   }
   for (const r of opts.refs || []) {
     if (r.v < min || r.v > max) continue;
@@ -545,10 +544,14 @@ function renderObs(d) {
   const tiles = $("#obs-tiles");
   tiles.replaceChildren();
   $("#obs-chart").replaceChildren();
-  if (!o) { $("#obs-station").textContent = ""; tiles.append(el("div", { class: "muted" }, "No automated station data for this resort.")); return; }
+  if (!o || o.unavailable) {
+    $("#obs-station").textContent = o ? `· ${o.station}` : "";
+    tiles.append(el("div", { class: "muted" }, o ? "Station data unavailable right now." : "No automated station data for this resort."));
+    return;
+  }
   $("#obs-station").textContent = `· ${o.station}, ${o.elev_ft.toLocaleString()} ft`;
   const days = o.days.slice(-14);
-  const sum = (n, k) => days.slice(-n).reduce((a, x) => a + (x[k] || 0), 0);
+  const sum = (n, k) => days.slice(-n).some((x) => x[k] != null) ? days.slice(-n).reduce((a, x) => a + (x[k] || 0), 0) : null;
   const tile = (label, value, sub) => {
     const t = el("div", { class: "tile" });
     t.append(el("div", { class: "label" }, label), el("div", { class: "value" }, value));
@@ -556,8 +559,10 @@ function renderObs(d) {
     tiles.append(t);
   };
   tile("Snow depth", o.depth_in != null ? `${Math.round(o.depth_in)}"` : "–", o.swe_in != null ? `${o.swe_in.toFixed(1)}" water content` : "");
-  tile("Last 7 Days", `${Math.round(sum(7, "new_snow_in"))}"`, `${sum(7, "precip_in").toFixed(2)}" precip`);
-  tile("Last 14 days", `${Math.round(sum(14, "new_snow_in"))}"`, `${sum(14, "precip_in").toFixed(2)}" precip`);
+  for (const n of [7, 14]) {
+    const snow = sum(n, "new_snow_in"), pr = sum(n, "precip_in");
+    tile(`Last ${n} Days`, snow == null ? "–" : `${Math.round(snow)}"`, pr == null ? "" : `${pr.toFixed(2)}" precip`);
+  }
   const f = frame($("#obs-chart"), { t: 10, r: 8, b: 22, l: 30 });
   const { max, step } = niceMax(Math.max(4, ...days.map((x) => x.new_snow_in || 0)), 2);
   yAxis(f, max, step, (v) => `${v}"`);
@@ -591,7 +596,7 @@ function renderAfd(d) {
   if (s > 0) text = text.slice(s);
   const m = text.match(/\.(KEY MESSAGES|SYNOPSIS)[\s\S]*?(?=\n&&|\n\.[A-Z])/);
   if (m) { box.append(el("div", { class: "km" }, m[0].trim()), document.createTextNode("\n\n")); }
-  box.append(document.createTextNode(text.replace(m ? m[0] : "", "").trim()));
+  box.append(document.createTextNode((m ? text.replace(m[0], "") : text).trim()));
 }
 
 function renderWide(d, e) {
@@ -682,7 +687,15 @@ function renderElevToggle(d) {
   }
 }
 
-function render() {
+const SCROLLERS = ["#hourly-wrap", "#daily-wrap", "#level-chart .xscroll", "#plume .xscroll"];
+function render() {  // same resort again (resize, elevation): keep where the reader has scrolled to
+  const keep = state.rendered === state.key && SCROLLERS.map((s) => $(s) && [$(s).scrollLeft, $(s).scrollTop]);
+  draw();
+  if (keep) SCROLLERS.forEach((s, i) => { if ($(s) && keep[i]) [$(s).scrollLeft, $(s).scrollTop] = keep[i]; });
+  state.rendered = state.key;
+}
+
+function draw() {
   const d = state.data;
   if (!d) return;
   const e = state.elev;
@@ -772,7 +785,15 @@ async function boot() {
   setupSearch();
   const ready = state.index.filter((r) => r.located !== false);
   const last = localStorage.getItem("resort");
-  const pick = () => load(location.hash.slice(1) || (ready.some((r) => r.key === last) ? last : ready[0].key));
+  const fallback = () => ready.some((r) => r.key === last) ? last : ready[0].key;
+  const pick = async () => {
+    const h = location.hash.slice(1);
+    if (!h || state.index.some((r) => r.key === h)) return load(h || fallback());
+    if (!state.data) await load(fallback());  // an in-page anchor (e.g. #calcov), not a resort
+    const a = document.getElementById(h);
+    a?.closest("details")?.setAttribute("open", "");
+    a?.scrollIntoView();
+  };
   addEventListener("hashchange", pick);
   let resizeT;
   addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(render, 150); });
@@ -781,7 +802,6 @@ async function boot() {
     const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
     root.dataset.theme = dark ? "light" : "dark";
     localStorage.setItem("theme", root.dataset.theme);
-    render();
   });
   if (localStorage.getItem("theme")) document.documentElement.dataset.theme = localStorage.getItem("theme");
   pick();

@@ -15,7 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import conditions as cx
 import sources as src
-from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, SNOTEL_STATES, load_calibration
+from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, SNOTEL_STATES, Gauge, load_calibration
 
 OUT = os.path.join(HERE, "web", "data")
 PAST_DAYS = 7
@@ -23,7 +23,7 @@ TRIGGER_MODEL = "ecmwf_ifs025"  # refresh when its new run lands: it arrives las
 SAFETY_H = 7           # ...or when data is older than this anyway
 MAX_AGE_H = 14         # freshness alarm: about 2 missed model cycles
 QS = (0.05, 0.25, 0.5, 0.75, 0.95)  # middle 50% and middle 90%
-HOURLY_OUT = ("precip_mm", "snow_in", "rain_in", "frac", "slr", "temp_f", "wind_mph", "gust_mph", "wind_dir", "rh", "cloud")
+HOURLY_OUT = ("precip_mm", "snow_in", "rain_in", "slr", "temp_f", "wind_mph", "gust_mph", "wind_dir", "rh", "cloud")
 _discussions = {}  # one NWS discussion per office per run
 
 
@@ -85,9 +85,14 @@ def hours_at(r, e, grid, cons, precip, temp_bias_c):
                     None if g10 is None else g10 * KMH_MPH, grid.wind_dir(i), grid.mean("cloud_cover", i),
                     grid.mean("relative_humidity_2m", i))
         p = cons[i]
+        if p is None and tc is not None and h.rh is not None:  # no full sounding: phase from the surface
+            h.frac, h.slr = cx.snow_fraction(cx.wet_bulb(tc, h.rh)), 10.0
+            if h.precip_mm is not None:
+                h.snow_in = h.precip_mm * h.frac * h.slr / IN
+                h.rain_in = h.precip_mm * (1 - h.frac) / IN
         if p is not None:
             at = p.at(z)
-            h.frac, h.slr, h.warm_nose, h.tw_c = cx.snow_fraction(at["tw"]), cx.slr_at(p, z), p.warm_nose(z), at["tw"]
+            h.frac, h.slr, h.warm_nose = cx.snow_fraction(at["tw"]), cx.slr_at(p, z), p.warm_nose(z)
             if e == "summit":  # exposed ridge: free-air wind at summit height, not smoothed 10 m wind
                 h.wind_mph = at["wind"] * KMH_MPH
                 h.gust_mph = max(h.gust_mph or 0, h.wind_mph * cx.GUST_FACTOR)
@@ -128,10 +133,12 @@ def depths(r):
     import calibrate  # station search helpers
     cands = [r.gauge] if r.gauge else []
     for st in SNOTEL_STATES.get(r.region, []):
-        for s in calibrate._stations.setdefault(st, src.snotel_stations(st)):
+        if st not in calibrate._stations:
+            calibrate._stations[st] = src.snotel_stations(st)
+        for s in calibrate._stations[st]:
             if (s["stationTriplet"].endswith(":SNTL") and (s.get("endDate") or "2100") >= date.today().isoformat()
                     and calibrate.km(r.mid.lat, r.mid.lon, s["latitude"], s["longitude"]) <= DEPTH_KM):
-                cands.append(src.Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]),
+                cands.append(Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]),
                                        s["latitude"], s["longitude"]))
     out, latest = {}, {}
     for e in ELEVS:
@@ -166,12 +173,11 @@ def process(r, cal):
     if r.gauge:
         end = date.today() + timedelta(1)
         st = attempt("obs", lambda: src.StationSeries.fetch(r.gauge, (end - timedelta(15)).isoformat(), end.isoformat(), r.tz))
-        if st:
-            obs = dict(station=r.gauge.name, elev_ft=r.gauge.ft, days=st.daily(), depth_in=st.latest("depth"),
-                       swe_in=st.latest("swe"))
+        obs = (dict(station=r.gauge.name, elev_ft=r.gauge.ft, days=st.daily(), depth_in=st.latest("depth"),
+                    swe_in=st.latest("swe")) if st else dict(station=r.gauge.name, elev_ft=r.gauge.ft, unavailable=True))
     depth = attempt("snow depths", lambda: depths(r))
     now = datetime.now(local).strftime("%Y-%m-%dT%H:00")
-    now_i = next((i for i, t in enumerate(times) if t >= now), len(times) - 1)
+    now_i = next((i for i, t in enumerate(times) if t > now), len(times) - 1)  # stamps are hour-ending
 
     # ---- hourly per elevation
     hours, model_snow = {}, {}
@@ -271,7 +277,7 @@ def process(r, cal):
                    cloud=mean([h.cloud for h in hrs if h.cloud is not None]),
                    snow_level_ft=mean(wet) or mean(sls), freezing_level_ft=mean(fz),
                    **quality_of(hrs, 0.0, 0.0))
-        out["alerts"] = cx.half_alerts(out, hrs, d, name, [hours["summit"][i] for i in span])
+        out["alerts"] = cx.half_alerts(out, d, name, [hours["summit"][i] for i in span])
         return out
 
     today = (datetime.fromisoformat(now) - timedelta(hours=6)).strftime("%Y-%m-%d")  # current ski day
@@ -289,14 +295,7 @@ def process(r, cal):
             b.update(quality_of(hrs))
             b["halves"] = [half(name, range(a, min(z, i1)), e, d) for name, a, z in
                            (("day", first, first + 12), ("night", first + 12, first + 24)) if a < i1]
-            temps = [h.temp_f for h in hrs if h.temp_f is not None]
-            lift = cx.lift_hours(hrs, d)
-            winds = [h.wind_mph for h in lift if h.wind_mph is not None]
-            gusts = [h.gust_mph for h in lift if h.gust_mph is not None]
-            dirs = [h.wind_dir for h in lift if h.wind_dir is not None]
-            b.update(hi_f=max(temps, default=None), lo_f=min(temps, default=None), wind_mph=max(winds, default=None),
-                     gust_mph=max(gusts, default=None), wind_dir=cx.compass(cx.circ_mean(dirs)) if dirs else None,
-                     models={m: (sum(v for v in s[first:i1] if v is not None) if any(v is not None for v in s[first:i1]) else None)
+            b.update(models={m: (sum(v for v in s[first:i1] if v is not None) if any(v is not None for v in s[first:i1]) else None)
                              for m, s in model_snow[e].items()})
             entry[e] = b
         wet_i = [i for i in range(first, i1) if (hours["summit"][i].precip_mm or 0) > 0.2]
@@ -308,7 +307,7 @@ def process(r, cal):
         if d in obs_by_day:  # station days are calendar days
             o = obs_by_day[d]
             entry["obs"] = dict(new_snow_in=o.get("new_snow_in"), precip_in=o.get("precip_in"), swe_in=o.get("swe_in"))
-        entry["report"], entry["wind_hold"] = cx.report(d, entry, hours, {e: r.point(e).ft for e in ELEVS})
+        entry["report"] = cx.report(d, entry, hours, {e: r.point(e).ft for e in ELEVS})
         daily.append(entry)
 
     # ---- summary strip: last 7 days | last 24 hours | next 1-5 | next 6-10 (ski days)
@@ -320,7 +319,7 @@ def process(r, cal):
         summary[e] = dict(past7=window(*span(-7, 0), e), last24=last24,
                           next1_5=window(now_i, span(5, 5)[0], e), next6_10=window(*span(5, 10), e))
     if obs:
-        done = [x for x in obs["days"] if x["date"] < now[:10]]
+        done = [x for x in obs.get("days", []) if x["date"] < now[:10]]
         for key, n in (("last24", 1), ("past7", 7)):
             vals = [x["new_snow_in"] for x in done[-n:] if x.get("new_snow_in") is not None]
             for e in ELEVS:
@@ -333,7 +332,7 @@ def process(r, cal):
     plume = {}
     for e in ELEVS:
         hrs = hours[e]
-        out = {k: {q: [] for q in ("fc", *map(str, QS))} for k in ("snow", "rain")}
+        out = {k: {q: [] for q in ("fc", *(str(p) for p in QS if p != 0.5))} for k in ("snow", "rain")}
         span = [d for d in sorted(starts) if today_minus(7) <= d < today_minus(-10)]
         bins = [range(a, min(a + 12, len(times))) for d in span for a in (starts[d], starts[d] + 12) if a < len(times)]
         for b in bins:
@@ -351,8 +350,9 @@ def process(r, cal):
             for k in ("snow", "rain"):
                 q = wquantiles(vals[k], QS) if vals[k] else {p: fc[k] for p in QS}
                 out[k]["fc"].append(round(fc[k], 2))
-                for p in QS:
-                    out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]) if p > 0.5 else q[p], 2))
+                for p in QS:  # bands widened to include the forecast; the median isn't drawn
+                    if p != 0.5:
+                        out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]), 2))
         plume[e] = dict(t=[(datetime.fromisoformat(times[b[0]]) - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
                            for b in bins], **out)  # labelled by period start (6am / 6pm)
 
@@ -418,17 +418,21 @@ def write_index():
         idx.append(dict(key=key, name=r.name, region=r.region, calibration=status,
                         station=r.gauge.name if r.gauge else None, station_ft=r.gauge.ft if r.gauge else None,
                         blend_mae72_in=round(c.blend_mae72 / IN, 2) if c and c.blend_mae72 else None,
-                        windows=c.n_windows if c else None, updated=updated_at(key), located=True))
-    json.dump(dict(resorts=idx), open(os.path.join(OUT, "index.json"), "w"))
+                        updated=updated_at(key), located=True))
+    src.write_json(os.path.join(OUT, "index.json"), dict(resorts=idx))
     for f in os.listdir(OUT):  # resorts removed from the catalog
         if f.endswith(".json") and f != "index.json" and f[:-5] not in CATALOG:
             os.remove(os.path.join(OUT, f))
 
 
+class NotSetUp(Exception):
+    pass
+
+
 def update_one(key):
     cal = load_calibration()
     if key not in RESORTS or key not in cal:
-        raise KeyError(f"{key}: not set up yet (run calibrate.py)")
+        raise NotSetUp(f"{key}: not set up yet (run calibrate.py)")
     data = process(RESORTS[key], cal[key])
     nxt = [h for h in data["hourly"] if h["t"] >= data["now"]][:72]
     ok = sum(1 for h in nxt if h["summit"]["snow_in"] is not None and h["summit"]["temp_f"] is not None)
@@ -455,7 +459,7 @@ def main(keys=None, scheduled=False, group=None, index=True):
                 print(f"  quota reached ({e}); keeping existing data for the rest", file=sys.stderr)
                 failed = []
                 break
-            except KeyError as e:  # located but not calibrated yet: expected while setting up
+            except NotSetUp as e:  # located but not calibrated yet: expected while setting up
                 print(f"  skip {e}", file=sys.stderr)
             except Exception:
                 traceback.print_exc()

@@ -10,9 +10,7 @@
   --border: rgba(11, 11, 11, 0.10);
   --series-1: #2a78d6;  /* forecast / snow level */
   --series-2: #eb6834;  /* station measured / freezing level / rain */
-  --series-3: #1baf7a;  /* NWS */
-  --seq-100: #cde2fb; --seq-200: #9ec5f4; --seq-300: #6da7ec; --seq-400: #3987e5;
-  --seq-500: #256abf; --seq-600: #184f95; --seq-700: #0d366b;
+  --seq-400: #3987e5;  /* model heat wash */
   --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
   /* precipitation type: orange = snow, purple = mixed / sleet, blue = rain (reference categorical
      steps; mixed vs rain is a weak CVD pair, so both always carry a text label);
@@ -25,7 +23,7 @@
     color-scheme: dark;
     --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-    --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    --series-1: #3987e5; --series-2: #d95926;
     --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
   }
 }
@@ -33,7 +31,7 @@
   color-scheme: dark;
   --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+  --series-1: #3987e5; --series-2: #d95926;
   --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
 }
 
@@ -87,26 +85,13 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .seg button.on { background: var(--grid); color: var(--text-primary); font-weight: 600; }
 .seg button .ft { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
 
-.totals { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.tg-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-#past.tiles { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); grid-auto-flow: column; }
-#next.tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 900px) { .totals { grid-template-columns: 1fr; } }
 .tile { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
 .tile .label { color: var(--text-secondary); font-size: 12px; }
 .tile .value { font-size: 30px; font-weight: 650; line-height: 1.15; margin-top: 2px; }
-.tile.hero .value { font-size: 48px; }
-.tile.past .value { color: var(--text-secondary); }
-.tile .range { color: var(--text-secondary); font-size: 13px; }
 .tile .sub { color: var(--muted); font-size: 12px; margin-top: 6px; }
 .tiles.small .value { font-size: 22px; }
 
-.chip {
-  display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 999px; align-self: flex-start;
-  font-size: 12px; white-space: nowrap; border: 1px solid var(--border); color: var(--text-primary);
-}
-.chip .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
 
 .alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 8px; margin-bottom: 10px;
   border: 1px solid var(--border); background: var(--surface-1); }
@@ -118,7 +103,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 
 
 
-/* ---- snow summary strip: day bars stack morning / afternoon / night, coloured by quality */
+/* ---- snow summary strip: daytime + nighttime bars per day, coloured by precipitation type */
 .summary { display: flex; gap: 14px; align-items: stretch; }
 .sgroup { display: flex; flex-direction: column; min-width: 0; }
 .slabel { font-size: 12px; color: var(--text-secondary); text-align: center; font-weight: 600; }
@@ -141,9 +126,8 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .sbig { font-size: 44px; font-weight: 650; line-height: 1.1; margin: 4px 0; }
 .legend-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 10px; font-size: 11px; }
 .qkey { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); }
-.qkey .sw, .chip .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.qkey .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
 @media (max-width: 900px) { .summary { overflow-x: auto; } .sgroup { min-width: 220px; } }
-.sub-h { font-size: 13px; margin: 18px 0 6px; color: var(--text-secondary); }
 .plume-head { margin-top: 20px; }
 .key-band.light { opacity: .12; }
 
@@ -165,7 +149,6 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .chart .divider { stroke: var(--text-secondary); stroke-width: 1; opacity: .5; }
 .chart .xhair { stroke: var(--text-secondary); stroke-width: 1; opacity: .6; }
 .chart .hit { fill: transparent; }
-.chart g.col:hover .mark { filter: brightness(1.12); }
 .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin: 6px 0 4px; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
 .key-line { width: 14px; height: 2px; border-radius: 1px; display: inline-block; }
@@ -188,7 +171,6 @@ table.grid th, table.grid td { padding: 5px 8px; text-align: center; border-bott
 table.grid th { color: var(--text-secondary); font-weight: 500; }
 /* sticky first column sits above faded (opacity) cells, which otherwise paint over it */
 table.grid .rowh { text-align: left; color: var(--text-secondary); position: sticky; left: 0; z-index: 2; background: var(--surface-1); }
-table.grid .today { background: color-mix(in srgb, var(--series-1) 7%, transparent); }
 table.grid .strong { font-weight: 650; color: var(--text-primary); }
 
 /* ---- appendix */
@@ -241,7 +223,7 @@ table.days th.grp { border-bottom: 1px solid var(--axis); }
 table.days tr.past td:not(.dlabel) { opacity: .5; }
 table.days tr.today td { background: color-mix(in srgb, var(--q-snow) 10%, var(--surface-1)); }
 table.days tr.past td.dlabel { color: var(--text-secondary); }
-.asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; }
+.asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; cursor: default; outline: none; }
 .ratio { display: inline-flex; align-items: center; gap: 5px; }
 .ratio .sw { width: 10px; height: 10px; border-radius: 3px; }
 .depth { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
@@ -250,7 +232,6 @@ table.days tr.past td.dlabel { color: var(--text-secondary); }
 .alerts { cursor: default; outline: none; padding: 2px; border-radius: 4px; }
 .alerts:hover, .alerts:focus { background: var(--grid); }
 .tip .t-row b { max-width: 340px; white-space: normal; text-align: right; }
-table.days td.extra, table.days th.extra { border-left: 1px solid var(--grid); color: var(--text-secondary); }
 /* ---- hourly forecast */
 table.hourly { width: auto; }
 table.hourly th, table.hourly td { min-width: 52px; padding: 5px 6px; }
@@ -260,5 +241,4 @@ table.hourly td.rowh { min-width: 150px; color: var(--muted); font-size: 11px; w
 table.hourly td.rowh b { color: var(--text-primary); font-size: 12px; font-weight: 600; }
 table.hourly .past { opacity: .5; }
 table.hourly .now { background: color-mix(in srgb, var(--q-snow) 10%, transparent); }
-.asq { cursor: default; outline: none; }
 .asq:hover, .asq:focus { outline: 2px solid var(--text-secondary); outline-offset: 1px; }

@@ -6,8 +6,8 @@ as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate lim
     python3 calibrate.py --group west --out o   # CI: one region -> o/{resorts,calibration}.json
     python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, regional defaults, CALIBRATION.md
 """
-import glob, json, math, os, sys, time
-from datetime import date, timedelta
+import glob, json, math, os, statistics, sys, time
+from datetime import date, datetime, timedelta
 import sources as src
 from resorts import (BASE_MODELS, BC_REGIONS, CATALOG, DATA, ELEVS, EXTRA_MODELS, FT, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
                      Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
@@ -54,7 +54,8 @@ def nearest_snotel(lat, lon, lo_ft, hi_ft, states):
     """Closest active SNOTEL gauge within 25 km, preferring the lift-served elevation band."""
     cands = []
     for st in states:
-        _stations.setdefault(st, src.snotel_stations(st))
+        if st not in _stations:
+            _stations[st] = src.snotel_stations(st)
         for s in _stations[st]:
             d = km(lat, lon, s["latitude"], s["longitude"])
             active = (s.get("endDate") or "2100") >= date.today().isoformat()
@@ -152,12 +153,12 @@ def hindcast(r, model, start, end):
         time.sleep(4)  # stay well inside the free-tier per-minute limit
         return j
     h = src.cached(f"hind_{r.key}_{model}_{start}.json", fetch).get("hourly") or {}
-    def daily(var, agg):
+    def daily(var, agg, shift_h=0):  # precip is stamped at the end of its hour: 01:00..00:00 is one day
         per = {}
         for t, v in zip(h.get("time", []), h.get(var, [])):
-            per.setdefault(date.fromisoformat(t[:10]), []).append(v)
+            per.setdefault((datetime.fromisoformat(t) - timedelta(hours=shift_h)).date(), []).append(v)
         return {d: agg(vs) for d, vs in per.items() if len(vs) == 24 and None not in vs}
-    precip = {n: daily(f"precipitation_previous_day{n}", sum) for n in range(1, 8)}
+    precip = {n: daily(f"precipitation_previous_day{n}", sum, 1) for n in range(1, 8)}
     return precip, daily("temperature_2m_previous_day1", lambda vs: sum(vs) / len(vs))
 
 
@@ -241,7 +242,7 @@ def regional_default(cal, r, resorts):
     peers = [c for k, c in cal.items() if c.calibrated and k in resorts and resorts[k].region == r.region]
     scope = "region" if peers else "all"
     peers = peers or [c for c in cal.values() if c.calibrated]
-    med = lambda xs: sorted(xs)[len(xs) // 2] if xs else 1.0
+    med = lambda xs: statistics.median(xs) if xs else 1.0
     return Calibration({m: ModelCal(round(med([p.models[m].factor for p in peers if m in p.models]), 3), round(1 / len(r.models), 3))
                         for m in r.models}, uncalibrated=True,
                        ratio_q={q: round(med([p.ratio_q.get(q, 1.0) for p in peers]), 3) for q in QS}, peers=len(peers), peers_scope=scope)

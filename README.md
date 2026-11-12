@@ -10,7 +10,7 @@ Each resort has base, mid and summit points. For each point the site shows:
 - snowfall for the past 7 days and next 10 days (6am–6am days, split into daytime / nighttime)
 - likely ranges: middle 50% (25–75%) and middle 90% (5–95%) from ensembles plus the resort's historical forecast error
 - snow quality and snow ratio, rain/snow line, freezing level
-- hourly forecast, and 12 h snow / rain bars with forecast spread (current and history views)
+- hourly forecast, and 12 h snow / rain with forecast spread (scrollable: last 7 days and next 10)
 - daily alerts: powder, wet / icy precipitation, wind holds, wind chill
 - NWS alerts and forecast discussion (US)
 

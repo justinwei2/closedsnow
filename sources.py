@@ -9,9 +9,9 @@ HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, opt
 """
 import csv, hashlib, io, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
-from resorts import FT, IN, LEVELS, PROFILE_MODELS, SEASONS, USER_AGENT, Gauge
+from resorts import FT, IN, LEVELS, PROFILE_MODELS, SEASONS, USER_AGENT
 
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 WAIT_ON_QUOTA = False  # setup jobs set True: sleep through Open-Meteo hourly/daily limits
@@ -73,7 +73,8 @@ def _fetch(url, retries, parse=json.load):
         except Exception as e:
             print(f"  retry {attempt}: {e} {url[:120]}", file=sys.stderr)
         attempt += 1
-        time.sleep(min(60, 3 * 2 ** attempt) + random.uniform(0, 2))  # exponential backoff + jitter
+        if attempt < retries:
+            time.sleep(min(60, 3 * 2 ** attempt) + random.uniform(0, 2))  # exponential backoff + jitter
     raise RuntimeError(f"failed: {url[:200]}")
 
 
@@ -82,7 +83,7 @@ def cached(name, fetch):
     os.makedirs(CACHE, exist_ok=True)
     path = os.path.join(CACHE, name)
     if not os.path.exists(path):
-        json.dump(fetch(), open(path, "w"))
+        write_json(path, fetch())
     return json.load(open(path))
 
 
@@ -137,7 +138,7 @@ def om_params(pt, tz, days=16, **extra):
 
 def forecast(pt, tz, models, past_days):
     vars_ = ["precipitation", "temperature_2m", "relative_humidity_2m", "wind_speed_10m",
-             "wind_gusts_10m", "wind_direction_10m", "cloud_cover", "freezing_level_height"]
+             "wind_gusts_10m", "wind_direction_10m", "cloud_cover"]
     j = get_json(OM, om_params(pt, tz, hourly=",".join(vars_), models=",".join(models), past_days=past_days))
     return ModelGrid.from_json(j, models)
 
@@ -223,7 +224,7 @@ def _bc_column(sid, since):
         r = csv.reader(io.TextIOWrapper(fh, encoding="utf-8-sig"))
         i = next((k for k, c in enumerate(next(r)) if c.split(" ")[0] == sid), None)
         return [] if i is None else [(row[0], float(row[i])) for row in r
-                                     if row[0] >= since and i < len(row) and row[i] not in ("", "NaN")]
+                                     if row and row[0] >= since and i < len(row) and row[i] not in ("", "NaN")]
     return parse
 
 
@@ -239,8 +240,8 @@ def bc_asws(element, sid, start):
     current, archive = BC_FILES[element]
     if start >= wy:
         return get_json(BC_ASWS + current, parse=_bc_column(sid, start))
-    since = min(s for s, _ in SEASONS)
-    rows = cached(f"bcasws_{element}_{sid}_{since}.json", lambda: get_json(BC_ASWS + archive, parse=_bc_column(sid, since)))
+    since = min(s for s, _ in SEASONS)  # cache per water year: the archive gains the last one each autumn
+    rows = cached(f"bcasws_{element}_{sid}_{since}_{wy}.json", lambda: get_json(BC_ASWS + archive, parse=_bc_column(sid, since)))
     return [r for r in rows if r[0] >= start] + bc_asws(element, sid, wy)
 
 
@@ -266,11 +267,10 @@ def _alberta(gauge, start, end, tz):
     if end >= (date.today() - timedelta(4)).isoformat():
         j = get_json(AB_RIVERS + f"apps/Basins/data/figures/river/abrivers/envdata/envdata_{sid}_table.json")
         cols = [m["parameter_name"] for m in j["ts_metadata"]]
-        for name, el, conv, agg in (("TA", "TAVG", lambda c: c * 1.8 + 32, lambda vs: _mean(vs, 24)),):
-            if name in cols:
-                k = cols.index(name) + 1
-                rows = [(r["values"][0], r["values"][k]) for r in j["data"] if r["values"][k] is not None]
-                raw[el] = [(d, conv(a)) for d, vs in _local_days(rows, tz, AB_UTC_H).items() if (a := agg(vs)) is not None]
+        if "TA" in cols:
+            k = cols.index("TA") + 1
+            rows = [(r["values"][0], r["values"][k]) for r in j["data"] if r["values"][k] is not None]
+            raw["TAVG"] = [(d, m * 1.8 + 32) for d, vs in _local_days(rows, tz, AB_UTC_H).items() if (m := _mean(vs, 24)) is not None]
     return raw
 
 
@@ -336,10 +336,14 @@ class StationSeries:
         return next((getattr(d, attr) for d in reversed(self.days) if getattr(d, attr) is not None), None)
 
     def daily(self):
-        """Per-day amounts (in) from consecutive readings: depth gain, SWE change, gauge precip."""
+        """Per-day amounts (in) from readings on consecutive days: depth gain, SWE change, gauge precip.
+        A day before a missing reading gets no amounts (they'd span two days)."""
         out = []
         for a, b in zip(self.days, self.days[1:]):
             row = dict(date=a.date, depth_in=a.depth)
+            if (date.fromisoformat(b.date) - date.fromisoformat(a.date)).days != 1:
+                out.append(row)
+                continue
             if a.depth is not None and b.depth is not None:
                 row["new_snow_in"] = max(0.0, b.depth - a.depth)
             if a.swe is not None and b.swe is not None:

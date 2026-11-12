@@ -37,7 +37,6 @@ class Hour:
     rh: float | None = None
     frac: float | None = None   # share falling as snow
     slr: float | None = None    # snow-to-liquid ratio
-    tw_c: float | None = None
     warm_nose: bool = False
     snow_in: float | None = None
     rain_in: float | None = None
@@ -164,17 +163,17 @@ def wind_hold(summit, day):
 
 
 def powder_morning(summit, day):
-    """Summit snow from 4pm the day before through 9am."""
+    """Summit snow from 4pm the day before through 9am (precip stamps are hour-ending: 17:00..09:00)."""
     prev = (date.fromisoformat(day) - timedelta(1)).isoformat()
     return sum(h.snow_in or 0 for h in summit
-               if (h.t.startswith(prev) and h.hour >= 16) or (h.t.startswith(day) and h.hour < 9))
+               if (h.t.startswith(prev) and h.hour >= 17) or (h.t.startswith(day) and h.hour <= 9))
 
 
 POWDER_12H_IN = 4  # powder alert: 12 h snowfall with good quality
 BAD = {"mixed", "rain"}
 
 
-def half_alerts(row, hrs, day, name, summit_hrs):
+def half_alerts(row, day, name, summit_hrs):
     """Alert squares for a 12 h row: powder and wet/icy precip (this elevation), plus warnings.
     Wind holds are mountain-wide: always judged from the summit ridge wind."""
     out = []
@@ -191,7 +190,7 @@ def half_alerts(row, hrs, day, name, summit_hrs):
 
 
 def report(day, entry, hours_by_elev, elevs_ft):
-    """Notes [{kind, level: info|watch|warn, text}] and the wind-hold verdict for one day."""
+    """Notes [{kind, level: info|watch|warn, text}] for one day."""
     notes = []
     note = lambda kind, level, text: notes.append(dict(kind=kind, level=level, text=text))
     summit = hours_by_elev["summit"]
@@ -220,4 +219,4 @@ def report(day, entry, hours_by_elev, elevs_ft):
     chills = [c for c in (wind_chill(h.temp_f, h.wind_mph) for h in hrs) if c is not None]
     if chills and min(chills) <= WIND_CHILL_F:
         note("cold", "watch", f"Wind chill near {round(min(chills))}°F at the summit")
-    return notes, w
+    return notes
