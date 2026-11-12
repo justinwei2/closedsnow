@@ -18,8 +18,8 @@
   "summit": {
    "lat": 39.1983,
    "lon": -120.2871,
-   "ft": 9010,
-   "label": "Granite Chief"
+   "ft": 9050,
+   "label": "Peak"
   },
   "dem_ft": {
    "base": 6214,
@@ -155,8 +155,8 @@
   "summit": {
    "lat": 38.665,
    "lon": -120.061,
-   "ft": 9876,
-   "label": "Thimble Peak ridge"
+   "ft": 9800,
+   "label": "Top"
   },
   "dem_ft": {
    "base": 7795,
@@ -178,7 +178,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "mammoth": {
@@ -371,7 +372,7 @@
   "base": {
    "lat": 40.6257,
    "lon": -111.5996,
-   "ft": 7988,
+   "ft": 7994,
    "label": "Base"
   },
   "mid": {
@@ -406,7 +407,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "snowbasin": {
@@ -416,7 +418,7 @@
   "base": {
    "lat": 41.2163,
    "lon": -111.857,
-   "ft": 6400,
+   "ft": 6391,
    "label": "Base"
   },
   "mid": {
@@ -451,7 +453,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "jackson": {
@@ -558,15 +561,15 @@
   },
   "mid": {
    "lat": 50.0956,
-   "lon": -122.8972,
+   "lon": -122.8971,
    "ft": 6102,
    "label": "Rendezvous"
   },
   "summit": {
    "lat": 50.089,
    "lon": -122.8786,
-   "ft": 7494,
-   "label": "Glacier / 7th Heaven"
+   "ft": 8019,
+   "label": "Blackcomb summit"
   },
   "dem_ft": {
    "base": 2224,
@@ -603,21 +606,21 @@
    "label": "Base"
   },
   "mid": {
-   "lat": 50.961,
-   "lon": -118.1233,
-   "ft": 5400,
+   "lat": 50.9608,
+   "lon": -118.1288,
+   "ft": 4700,
    "label": "Mid-mountain"
   },
   "summit": {
    "lat": 50.9636,
-   "lon": -118.0892,
-   "ft": 8074,
-   "label": "Mount Mackenzie"
+   "lon": -118.094,
+   "ft": 7300,
+   "label": "Summit"
   },
   "dem_ft": {
    "base": 1690,
-   "mid": 5404,
-   "summit": 7664
+   "mid": 4675,
+   "summit": 7290
   },
   "obs": [
    "bcasws",
@@ -657,8 +660,8 @@
   "summit": {
    "lat": 51.283,
    "lon": -117.0968,
-   "ft": 8033,
-   "label": "Terminator Peak"
+   "ft": 8218,
+   "label": "Top of Kicking Horse"
   },
   "dem_ft": {
    "base": 3963,
@@ -681,7 +684,7 @@
    "ncep_nbm_conus",
    "gem_seamless",
    "icon_seamless",
-   "gem_hrdps_continental"
+   "jma_seamless"
   ]
  },
  "lakelouise": {
@@ -885,8 +888,8 @@
   "summit": {
    "lat": 37.8807,
    "lon": -107.8293,
-   "ft": 13319,
-   "label": "Palmyra Peak"
+   "ft": 13150,
+   "label": "Summit"
   },
   "dem_ft": {
    "base": 9534,
@@ -1053,14 +1056,14 @@
   "tz": "America/Denver",
   "base": {
    "lat": 36.596,
-   "lon": -105.462,
-   "ft": 9207,
+   "lon": -105.4545,
+   "ft": 9350,
    "label": "Base"
   },
   "mid": {
-   "lat": 36.5765,
-   "lon": -105.4321,
-   "ft": 11000,
+   "lat": 36.5777,
+   "lon": -105.4314,
+   "ft": 11200,
    "label": "Mid-mountain"
   },
   "summit": {
@@ -1070,8 +1073,8 @@
    "label": "Kachina Peak"
   },
   "dem_ft": {
-   "base": 9259,
-   "mid": 11014,
+   "base": 9327,
+   "mid": 11198,
    "summit": 12480
   },
   "obs": [
