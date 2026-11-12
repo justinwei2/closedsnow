@@ -10,22 +10,19 @@ const MODEL_NAMES = {
   gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)",
   gem_hrdps_continental: "HRDPS 2.5 km",
 };
-const QUALITY = {  // one colour per label, used everywhere: orange = good snow, purple = heavy/sleet, blue = rain
+const QUALITY = {  // one colour per label everywhere: orange = good snow, purple = heavy / mixed / sleet / rain
   "blower": { sw: "--q-blower", text: "Blower" },
   "light & dry": { sw: "--q-light", text: "Light & dry" },
   "medium": { sw: "--q-medium", text: "Medium" },
   "dense": { sw: "--q-dense", text: "Dense" },
   "heavy / wet (Sierra cement)": { sw: "--q-heavy", text: "Heavy / wet" },
-  "sleet / freezing rain risk": { sw: "--q-sleet", text: "⚠ Sleet / ZR" },
-  "mixed rain/snow": { sw: "--q-mixed", text: "⚠ Mixed" },
-  "rain": { sw: "--q-rain", text: "☂ Rain" },
+  "mixed rain/snow": { sw: "--q-mixed", text: "Mixed" },
+  "sleet / freezing rain risk": { sw: "--q-sleet", text: "Sleet / ZR" },
+  "rain": { sw: "--q-rain", text: "Rain" },
 };
+const ALERT = { powder: "--q-light", wet: "--q-sleet", warn: "--warning" };  // daily-overview alert squares
 // weather-report note styling: status colours always ship with an icon + text
-const NOTE = {
-  wind: { ic: "≋", byLevel: true }, powder: { ic: "❄", color: "--good" }, rain: { ic: "☂", byLevel: true },
-  sleet: { ic: "!", color: "--critical" }, vis: { ic: "◌", color: "--muted" }, cold: { ic: "°", byLevel: true },
-};
-const LEVEL_COLOR = { warn: "--critical", watch: "--warning", info: "--muted" };
+const NOTE = { powder: "--q-light", rain: "--q-sleet", sleet: "--q-sleet", wind: "--warning", cold: "--warning", vis: "--muted" };
 
 // ---------------------------------------------------------------- formatting
 const fmtSnow = (v) => v == null ? "–" : v < 0.25 ? "0" : v < 1 ? "<1" : String(Math.round(v));
@@ -59,16 +56,17 @@ function niceMax(v, steps = 4) {
 }
 
 const ratio = (slr) => slr ? `${slr.toFixed(0)}:1` : null;
-function chip(quality, slr) {  // quality label + snow ratio (the label is derived from the ratio)
+function snowRatio(quality, slr) {  // swatch in the quality colour + ratio; rain/mixed/sleet show the label
   const q = QUALITY[quality];
   if (!q) return el("span", { class: "muted" }, "–");
-  const c = el("span", { class: "chip" });
+  const c = el("span", { class: "ratio", title: q.text });
   const sw = el("span", { class: "sw" });
   sw.style.background = `var(${q.sw})`;
-  const showRatio = slr && !/rain|sleet|mixed/.test(quality);
-  c.append(sw, document.createTextNode(showRatio ? `${q.text} · ${ratio(slr)}` : q.text));
+  const wet = /rain|sleet|mixed/.test(quality);
+  c.append(sw, document.createTextNode(wet || !slr ? q.text : ratio(slr)));
   return c;
 }
+const chip = snowRatio;
 
 // ---------------------------------------------------------------- tooltip
 const tip = $("#tip");
@@ -172,12 +170,10 @@ function renderReport(d, e) {
     } else amt.append(el("span", { class: "quiet" }, "Dry"));
     const nn = el("div", { class: "notes" });
     for (const n of notes) {
-      const spec = NOTE[n.kind] || { ic: "•", color: "--muted" };
-      const color = spec.byLevel ? LEVEL_COLOR[n.level] : spec.color;
       const line = el("div", { class: "note" });
-      const ic = el("span", { class: "ic" + (color === "--warning" ? " warning" : "") }, spec.ic);
-      ic.style.background = `var(${color})`;
-      line.append(ic, el("span", {}, n.text));
+      const sq = el("span", { class: "sq" });
+      sq.style.background = `var(${NOTE[n.kind] || "--muted"})`;
+      line.append(sq, el("span", {}, n.text));
       nn.append(line);
     }
     const w = x.wind_hold;
@@ -195,7 +191,7 @@ function renderReport(d, e) {
 function qualityKeys(box) {
   for (const k of Object.keys(QUALITY)) {
     const row = el("span", { class: "qkey" }); const sw = el("span", { class: "sw" });
-    sw.style.background = `var(${QUALITY[k].sw})`; row.append(sw, document.createTextNode(QUALITY[k].text.replace(/^[⚠☂] /, "")));
+    sw.style.background = `var(${QUALITY[k].sw})`; row.append(sw, document.createTextNode(QUALITY[k].text));
     box.append(row);
   }
 }
@@ -248,7 +244,10 @@ function renderSummary(d, e) {
       const rain = v.periods.reduce((a, p) => a + (p.rain_in || 0), 0);
       const label = el("div", { class: "sday-l" + (weekend ? " wk" : "") + (x.date === t0 ? " today" : "") });
       label.append(el("span", {}, x.date === t0 ? "Today" : dl.dow.slice(0, 2)), el("span", {}, String(dl.dom)));
-      col.append(el("div", { class: "sval" }, `${rain >= 0.1 ? "☂ " : ""}${fmtSnow(total(v))}`), wrap, label);
+      const val = el("div", { class: "sval" });
+      if (rain >= 0.1) val.append(el("span", { class: "rainmark", title: `${rain.toFixed(2)}" rain` }));
+      val.append(document.createTextNode(fmtSnow(total(v))));
+      col.append(val, wrap, label);
       days.append(col);
       hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
         { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(total(v)) },
@@ -256,7 +255,7 @@ function renderSummary(d, e) {
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
         ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => {
           const p = v.periods[k];
-          return { name: nm, value: `${fmtIn(p.snow_in)}${p.quality && p.snow_in >= 0.05 ? " · " + QUALITY[p.quality].text : ""}${p.rain_in >= 0.01 ? ` · ☂ ${p.rain_in.toFixed(2)}"` : ""}` };
+          return { name: nm, value: `${fmtIn(p.snow_in)}${p.quality && p.snow_in >= 0.05 ? " · " + QUALITY[p.quality].text : ""}${p.rain_in >= 0.01 ? ` · rain ${p.rain_in.toFixed(2)}"` : ""}` };
         }),
         ...(rain >= 0.01 ? [{ name: "Rain", value: `${rain.toFixed(2)}"` }] : []),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
@@ -270,32 +269,48 @@ function renderSummary(d, e) {
 function renderDailyTable(d, e) {
   const tb = $("#daily-table");
   tb.replaceChildren();
+  tb.className = "grid days";
   const days = d.daily.filter((x) => !x.past).slice(0, 10);
-  $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft`;
-  const head = el("tr"); head.append(el("th", { class: "rowh" }, ""));
-  days.forEach((x) => { const dl = dayLabel(x.date); head.append(el("th", { class: x.date === today() ? "today" : "" }, x.date === today() ? "Today" : `${dl.dow} ${dl.dom}`)); });
+  $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft · day 6am–6pm, night 6pm–6am`;
+  const cols = [
+    ["Temp", (h) => fmtF(h.temp_f)],
+    ["Alerts", (h) => { const s = el("span"); for (const a of h.alerts) { const q = el("span", { class: "asq", title: a.text }); q.style.background = `var(${ALERT[a.kind]})`; s.append(q); } return h.alerts.length ? s : ""; }],
+    ["Snow", (h) => fmtIn(h.snow_in), "strong"],
+    ["Middle 50%", (h) => fmtRange(h.p25, h.p75) || "–"],
+    ["Snow ratio", (h) => (h.liquid_in > 0.02 ? snowRatio(h.quality, h.slr) : "–")],
+    ["Snow level", (h) => { const t = el("span", { title: h.nws_snow_level_ft != null ? `NWS ${fmtFt(h.nws_snow_level_ft)}` : "" }, fmtFt(h.snow_level_ft)); return t; }],
+    ["Precip chance", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}%`],
+    ["Precip", (h) => h.liquid_in >= 0.005 ? `${h.liquid_in.toFixed(2)}"` : "0\""],
+    ["Feels like", (h) => fmtF(h.feels_f)],
+    ["Humidity", (h) => h.rh == null ? "–" : `${Math.round(h.rh)}%`],
+    ["Wind", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`],
+    ["Gust", (h) => fmtMph(h.gust_mph)],
+    ["Cloud", (h) => h.cloud == null ? "–" : `${Math.round(h.cloud)}%`],
+    ["Freezing level", (h) => fmtFt(h.freezing_level_ft)],
+    ["NWS snow", (h) => h.nws_snow_in != null ? fmtIn(h.nws_snow_in) : "–"],
+  ];
+  const head = el("tr"); head.append(el("th", { class: "rowh" }, ""), el("th", {}, ""));
+  for (const [name] of cols) head.append(el("th", {}, name === "Wind" || name === "Gust" ? `${name} (mph)` : name));
   tb.append(head);
-  const row = (label, fn, cls = "") => {
-    const tr = el("tr"); tr.append(el("td", { class: "rowh" }, label));
-    days.forEach((x) => {
-      const td = el("td", { class: (x.date === today() ? "today " : "") + cls });
-      const v = fn(x, x[e]);
-      if (v instanceof Node) td.append(v); else td.textContent = v;
-      tr.append(td);
+  for (const x of days) {
+    const dl = dayLabel(x.date);
+    x[e].halves.forEach((h, k) => {
+      const tr = el("tr", { class: `${k ? "night" : "dayrow"}${h.past ? " past" : ""}` });
+      if (!k) {
+        const td = el("td", { class: "dlabel", rowspan: x[e].halves.length });
+        td.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", {}, `${dl.mon} ${dl.dom}`));
+        tr.append(td);
+      }
+      tr.append(el("td", { class: "muted" }, h.name === "day" ? "Day" : "Night"));
+      for (const [, fn, cls] of cols) {
+        const td = el("td", { class: cls || "" });
+        const v = fn(h);
+        if (v instanceof Node) td.append(v); else td.textContent = v;
+        tr.append(td);
+      }
+      tb.append(tr);
     });
-    tb.append(tr);
-  };
-  const HOLD = { likely: "Likely", possible: "Possible", low: "–" };
-  row("Snow", (x, v) => fmtIn(v.p50), "strong");
-  row("Likely range", (x, v) => fmtRange(v.p25, v.p75) || "–");
-  row("Quality · snow ratio", (x, v) => (v.liquid_in > 0.04 ? chip(v.quality, v.slr) : "–"));
-  row("Rain", (x, v) => (v.rain_in || 0) >= 0.05 ? `${v.rain_in.toFixed(2)}"` : "–");
-  row("Snow level", (x) => fmtFt(x.snow_level_ft));
-  row("Freezing level", (x) => fmtFt(x.freezing_level_ft));
-  row("Hi / Lo", (x, v) => `${fmtF(v.hi_f)} / ${fmtF(v.lo_f)}`);
-  row(e === "summit" ? "Ridge wind (mph)" : "Wind (mph)", (x, v) => v.wind_mph == null ? "–" : `${v.wind_dir || ""} ${fmtMph(v.wind_mph)}${v.gust_mph ? " g" + fmtMph(v.gust_mph) : ""}`);
-  row("Wind holds", (x) => HOLD[x.wind_hold?.level] || "–");
-  if (days.some((x) => x[e].nws_snow_in != null)) row("NWS snow", (x, v) => v.nws_snow_in != null ? fmtIn(v.nws_snow_in) : "–");
+  }
 }
 
 function timeChart(container, hours, opts) {
@@ -608,6 +623,10 @@ function render() {
   if (!d) return;
   const e = state.elev;
   $("#r-name").textContent = d.name;
+  const dep = $("#r-depth");  // gauge depth: measured at the station, not the resort's report
+  dep.replaceChildren();
+  if (d.obs?.depth_in != null) dep.append(el("b", {}, `${Math.round(d.obs.depth_in)}" snow depth`),
+    document.createTextNode(` · ${d.obs.station}, ${d.obs.elev_ft.toLocaleString()} ft`));
   $("#updated").textContent = `updated ${new Date(d.updated).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
   renderElevToggle(d);
   renderAlerts(d);

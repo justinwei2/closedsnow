@@ -34,6 +34,7 @@ class Hour:
     gust_mph: float | None = None
     wind_dir: float | None = None
     cloud: float | None = None
+    rh: float | None = None
     frac: float | None = None   # share falling as snow
     slr: float | None = None    # snow-to-liquid ratio
     tw_c: float | None = None
@@ -174,6 +175,26 @@ def powder_morning(summit, day):
     prev = (date.fromisoformat(day) - timedelta(1)).isoformat()
     return sum(h.snow_in or 0 for h in summit
                if (h.t.startswith(prev) and h.hour >= 16) or (h.t.startswith(day) and h.hour < 9))
+
+
+POWDER_12H_IN = 4  # powder alert: 12 h snowfall with good quality
+GOOD = {"blower", "light & dry", "medium", "dense"}
+BAD = {"mixed rain/snow", "sleet / freezing rain risk", "rain", "heavy / wet (Sierra cement)"}
+
+
+def half_alerts(row, hrs, day, name):
+    """Alert squares for a 12 h row: powder (orange), wet/icy precip (purple), warning (yellow)."""
+    out = []
+    if row["snow_in"] >= POWDER_12H_IN and row.get("quality") in GOOD:
+        out.append(dict(kind="powder", text=f"Powder: {round(row['snow_in'])}\" of {row['quality']} snow"))
+    if row["liquid_in"] >= 0.05 and row.get("quality") in BAD:
+        out.append(dict(kind="wet", text=f"{row['quality'].split(' (')[0].capitalize()}"))
+    w = wind_hold(hrs, day) if name == "day" else None
+    if w and w["level"] != "low":
+        out.append(dict(kind="warn", text=f"Upper-lift wind holds {w['level']}: ridge {w['sustained_mph']} mph, gusts ~{w['gust_mph']}"))
+    if row["feels_f"] is not None and row["feels_f"] <= WIND_CHILL_F:
+        out.append(dict(kind="warn", text=f"Wind chill near {round(row['feels_f'])}°F"))
+    return out
 
 
 def report(day, entry, hours_by_elev, elevs_ft):

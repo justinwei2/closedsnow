@@ -82,13 +82,15 @@ def hours_at(r, e, grid, cons, precip, temp_bias_c):
         tc, w10, g10 = (grid.mean(v, i) for v in ("temperature_2m", "wind_speed_10m", "wind_gusts_10m"))
         tc = None if tc is None else tc + temp_bias_c
         h = cx.Hour(t, precip[i], None if tc is None else tc * 9 / 5 + 32, None if w10 is None else w10 * KMH_MPH,
-                    None if g10 is None else g10 * KMH_MPH, grid.wind_dir(i), grid.mean("cloud_cover", i))
+                    None if g10 is None else g10 * KMH_MPH, grid.wind_dir(i), grid.mean("cloud_cover", i),
+                    grid.mean("relative_humidity_2m", i))
         p = cons[i]
         if p is not None:
             at = p.at(z)
             h.frac, h.slr, h.warm_nose, h.tw_c = cx.snow_fraction(at["tw"]), cx.slr_at(p, z), p.warm_nose(z), at["tw"]
             if e == "summit":  # exposed ridge: free-air wind at summit height, not smoothed 10 m wind
                 h.wind_mph = at["wind"] * KMH_MPH
+                h.gust_mph = max(h.gust_mph or 0, h.wind_mph * cx.GUST_FACTOR)
             if h.warm_nose:  # refrozen sleet / ice pellets, not fluffy snow
                 h.slr = 2.0
             if h.precip_mm is not None:
@@ -210,6 +212,43 @@ def process(r, cal):
         nose = any(h.warm_nose and h.precip_mm > 0.5 for h in wet)
         return dict(slr=slr, quality=cx.quality(slr or 10, snow_liq / liq, nose) if liq > min_liq else None)
 
+    def precip_chance(span):
+        """Share of ensemble members (weighted) with >= 0.01" liquid in the span, at the summit."""
+        ts = [times[i] for i in span]
+        hit = tot = 0.0
+        for w, mm in members:
+            if all(t in mm for t in ts):
+                tot += w
+                hit += w if sum(mm[t] for t in ts) >= 0.254 else 0
+        return round(100 * hit / tot) if tot else None
+
+    def half(name, span, e, d):
+        """One 12-hour row of the daily overview (day 6am-6pm / night 6pm-6am)."""
+        hrs = [hours[e][i] for i in span]
+        w = window(max(span.start, now_i) if span.stop > now_i else span.start, span.stop, e)
+        temps = [h.temp_f for h in hrs if h.temp_f is not None]
+        feels = [cx.wind_chill(h.temp_f, h.wind_mph) for h in hrs if h.temp_f is not None]
+        winds = [h.wind_mph for h in hrs if h.wind_mph is not None]
+        gusts = [h.gust_mph for h in hrs if h.gust_mph is not None]
+        dirs = [h.wind_dir for h in hrs if h.wind_dir is not None]
+        wet = [levels[i]["snow_level_ft"] for i in span if (hours["summit"][i].precip_mm or 0) > 0.2 and levels[i]["snow_level_ft"] is not None]
+        sls = [levels[i]["snow_level_ft"] for i in span if levels[i]["snow_level_ft"] is not None]
+        fz = [levels[i]["freezing_level_ft"] for i in span if levels[i]["freezing_level_ft"] is not None]
+        ns = [nws[e].snow.get(times[i]) for i in span] if nws[e] else []
+        out = dict(name=name, past=span.stop <= now_i, snow_in=w["p50"], p25=w.get("p25"), p75=w.get("p75"),
+                   liquid_in=w["liquid_in"], rain_in=w["rain_in"], precip_chance=precip_chance(span),
+                   temp_f=(max if name == "day" else min)(temps) if temps else None,
+                   feels_f=mean(feels), rh=mean([h.rh for h in hrs if h.rh is not None]),
+                   wind_mph=max(winds, default=None), gust_mph=max(gusts, default=None),
+                   wind_dir=cx.compass(cx.circ_mean(dirs)) if dirs else None,
+                   cloud=mean([h.cloud for h in hrs if h.cloud is not None]),
+                   snow_level_ft=mean(wet) or mean(sls), freezing_level_ft=mean(fz),
+                   nws_snow_level_ft=mean([levels[i]["nws_snow_level_ft"] for i in span if levels[i]["nws_snow_level_ft"] is not None]),
+                   nws_snow_in=sum(v or 0 for v in ns) / IN if any(v is not None for v in ns) else None,
+                   **quality_of(hrs, 0.0, 0.0))
+        out["alerts"] = cx.half_alerts(out, hrs, d, name)
+        return out
+
     today = (datetime.fromisoformat(now) - timedelta(hours=6)).strftime("%Y-%m-%d")  # current ski day
     starts = {t[:10]: i for i, t in enumerate(times) if t.endswith("T06:00")}
     obs_by_day = {x["date"]: x for x in (obs or {}).get("days", [])}
@@ -224,6 +263,8 @@ def process(r, cal):
             b.update(quality_of(hrs))
             b["periods"] = [dict(snow_in=sum(h.snow_in or 0 for h in part), rain_in=sum(h.rain_in or 0 for h in part),
                                  **quality_of(part, 0.0, 0.0)) for part in (hrs[:6], hrs[6:12], hrs[12:24])]
+            b["halves"] = [half(name, range(a, min(z, i1)), e, d) for name, a, z in
+                           (("day", first, first + 12), ("night", first + 12, first + 24)) if a < i1]
             temps = [h.temp_f for h in hrs if h.temp_f is not None]
             lift = cx.lift_hours(hrs, d)
             winds = [h.wind_mph for h in lift if h.wind_mph is not None]

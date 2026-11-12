@@ -14,11 +14,10 @@
   --seq-100: #cde2fb; --seq-200: #9ec5f4; --seq-300: #6da7ec; --seq-400: #3987e5;
   --seq-500: #256abf; --seq-600: #184f95; --seq-700: #0d366b;
   --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
-  /* precipitation quality (OpenSnow-style families): orange = good snow, purple = heavy / sleet,
-     blue = rain; deeper shade = more extreme within the family */
-  --q-blower: #b8461b; --q-light: #eb6834; --q-medium: #f29a6e;
-  --q-dense: #b3a9f2; --q-heavy: #8a7de8; --q-sleet: #6250d6;
-  --q-mixed: #8ab8ef; --q-rain: #2a78d6;
+  /* precipitation quality: orange = good snow (deeper = drier), purple = heavy / mixed / sleet / rain
+     (deeper = wetter or icier); yellow (--warning) is reserved for warnings */
+  --q-blower: #b8461b; --q-light: #eb6834; --q-medium: #f29a6e; --q-dense: #f7c3a6;
+  --q-heavy: #c9c1f7; --q-mixed: #a99cf0; --q-sleet: #8577e6; --q-rain: #6250d6;
 }
 /* dark: OS setting unless the toggle says light; toggle wins both ways */
 @media (prefers-color-scheme: dark) {
@@ -27,8 +26,8 @@
     --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-    --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #b9b0f5; --q-heavy: #9085e9; --q-sleet: #7466e0;
-    --q-mixed: #9ac3f2; --q-rain: #3987e5;
+    --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #f9cfb6;
+    --q-heavy: #cfc8f8; --q-mixed: #b1a6f2; --q-sleet: #9085e9; --q-rain: #7466e0;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -36,8 +35,8 @@
   --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-  --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #b9b0f5; --q-heavy: #9085e9; --q-sleet: #7466e0;
-  --q-mixed: #9ac3f2; --q-rain: #3987e5;
+  --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #f9cfb6;
+  --q-heavy: #cfc8f8; --q-mixed: #b1a6f2; --q-sleet: #9085e9; --q-rain: #7466e0;
 }
 
 /* ---- base */
@@ -235,3 +234,19 @@ details[open] summary::before { content: "▾ "; }
 .toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; }
 .toc a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
 .toc a:hover { color: var(--text-primary); }
+
+/* ---- daily overview (12 h rows) */
+table.days td, table.days th { padding: 6px 8px; }
+table.days tr.night td { background: color-mix(in srgb, var(--page) 60%, transparent); }
+table.days tr.dayrow td { border-top: 1px solid var(--axis); }
+table.days td.dlabel { text-align: left; font-weight: 600; color: var(--text-primary); vertical-align: middle; position: sticky; left: 0; background: var(--surface-1); }
+table.days td.dlabel span { display: block; font-weight: 400; color: var(--muted); }
+table.days th.grp { border-bottom: 1px solid var(--axis); }
+table.days tr.past td { opacity: .5; }
+.asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; }
+.ratio { display: inline-flex; align-items: center; gap: 5px; }
+.ratio .sw { width: 10px; height: 10px; border-radius: 3px; }
+.note .sq { width: 10px; height: 10px; border-radius: 3px; flex: none; transform: translateY(1px); }
+.rainmark { display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--q-rain); margin-right: 3px; vertical-align: middle; }
+.depth { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+.depth b { color: var(--text-primary); font-weight: 600; }
