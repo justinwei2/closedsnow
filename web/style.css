@@ -118,7 +118,6 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .sstack { width: 80%; height: 100%; display: flex; align-items: flex-end; gap: 1px; }
 .shalf { flex: 1; height: 100%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
 .sseg { display: block; width: 100%; border-radius: 3px 3px 0 0; }
-.sseg + .sseg { border-radius: 0; }  /* snow under rain: one rounded top per bar */
 .sval { font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: 1.4; }
 .sday-l { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
 .sday-l.wk { color: var(--text-primary); font-weight: 600; }

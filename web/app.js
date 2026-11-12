@@ -176,7 +176,10 @@ function renderSummary(d, e) {
     { label: "Next 6–10 Days", days: next.slice(5, 10), tot: s.next6_10 },
   ];
   const sum = (v, k) => v.halves.reduce((a, h) => a + (h[k] || 0), 0);  // 6am-6am: daytime + nighttime
-  const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].halves.map((h) => (h.snow_in || 0) + (h.rain_in || 0)))));
+  // one bar per half: snow (coloured by type), or, with no snow, its rain (in of water) in blue
+  const bar = (h) => h.snow_in >= 0.25 ? { v: h.snow_in, color: qual(h.quality === "rain" ? "mixed" : h.quality).sw, n: fmtSnow(h.snow_in) }
+    : h.rain_in >= 0.05 ? { v: h.rain_in, color: "--q-rain", n: h.rain_in.toFixed(1) } : { v: 0, color: "--muted", n: "0" };
+  const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].halves.map((h) => bar(h).v))));
   const box = $("#summary");
   box.replaceChildren();
   $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · days run 6am to 6am; night is 6pm to 6am the next morning`;
@@ -208,14 +211,11 @@ function renderSummary(d, e) {
       const v = x[e], dl = dayLabel(x.date), weekend = [0, 6].includes(new Date(x.date + "T12:00:00").getDay());
       const col = el("div", { class: "sday" + (x.past ? " past" : ""), tabindex: 0 });
       const stack = el("div", { class: "sstack" });
-      v.halves.forEach((p) => {  // daytime, nighttime left to right: snow, with any rain (in of water) on top
-        const half = el("span", { class: "shalf" });
-        const h = (v) => v >= 0.05 ? `${v / vmax * 82}%` : "0";  // headroom for the number
-        const rainSeg = el("span", { class: "sseg" }), snowSeg = el("span", { class: "sseg" });
-        rainSeg.style.height = h(p.rain_in); rainSeg.style.background = "var(--q-rain)";
-        snowSeg.style.height = h(p.snow_in); snowSeg.style.background = `var(${qual(p.quality === "rain" ? "mixed" : p.quality).sw})`;
-        const n = p.snow_in >= 0.25 || !(p.rain_in >= 0.05) ? fmtSnow(p.snow_in) : p.rain_in.toFixed(1);  // rain-only: its amount
-        half.append(el("span", { class: "sval" }, n), ...(p.rain_in >= 0.05 ? [rainSeg] : []), snowSeg);
+      v.halves.forEach((p) => {  // daytime, nighttime left to right, each with its amount on top
+        const b = bar(p), half = el("span", { class: "shalf" }), seg = el("span", { class: "sseg" });
+        seg.style.height = `${b.v / vmax * 82}%`;  // headroom for the number
+        seg.style.background = `var(${b.color})`;
+        half.append(el("span", { class: "sval" }, b.n), seg);
         stack.append(half);
       });
       const wrap = el("div", { class: "sbar-wrap" });
