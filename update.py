@@ -6,6 +6,7 @@ Ranges average the quantiles of (a) the pooled bias-corrected ensembles and (b) 
 this resort's historical obs/forecast error for that storm size.
 
     python3 update.py [resort ...] [--scheduled] [--group G] [--no-index]
+    python3 update.py --plan              # regions with due resorts (CI matrix)
     python3 update.py --check [--url SITE]
 """
 import json, os, sys, time, traceback
@@ -18,10 +19,11 @@ from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PR
 
 OUT = os.path.join(HERE, "web", "data")
 PAST_DAYS = 7
-REFRESH_EVERY_H = 7.5  # ~every 9 h on the 3-hourly schedule: ~7.5k of Open-Meteo's 10k calls/day
-MAX_AGE_H = 20         # freshness alarm: about 2 missed refreshes
+TRIGGER_MODEL = "ecmwf_ifs025"  # refresh when its new run lands: it arrives last of the 6-hourly models
+SAFETY_H = 7           # ...or when data is older than this anyway
+MAX_AGE_H = 14         # freshness alarm: about 2 missed model cycles
 FORMAT = 2             # bump when the JSON layout changes: older files count as stale
-QS = (0.1, 0.25, 0.5, 0.75, 0.9)
+QS = (0.05, 0.25, 0.5, 0.75, 0.95)  # middle 50% and middle 90%
 HOURLY_OUT = ("temp_f", "wind_mph", "frac", "slr", "snow_in", "rain_in")  # fields the charts read
 _discussions = {}  # one NWS discussion per office per run
 
@@ -118,6 +120,7 @@ def rnd(v):
 
 def process(r, cal):
     print("resort", r.key)
+    run = attempt("model run metadata", latest_run)
     local = ZoneInfo(r.tz)
     models = [m for m in r.models if m in cal.models]
     grids = {e: src.forecast(r.point(e), r.tz, models, PAST_DAYS) for e in ELEVS}
@@ -193,7 +196,7 @@ def process(r, cal):
                 ens = ensq[q] * ratio if ensq else emp
             res[f"p{round(q * 100)}"] = (ens + emp) / 2  # quantile averaging of the two distributions
         res["p50"] = snow
-        for lo, hi in (("p10", "p90"), ("p25", "p75")):  # the ranges always include the forecast
+        for lo, hi in (("p5", "p95"), ("p25", "p75")):  # the ranges always include the forecast
             res[lo], res[hi] = min(res[lo], snow), max(res[hi], snow)
         return res
 
@@ -300,7 +303,7 @@ def process(r, cal):
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i <= i < now_i + 24 * 10]  # charts use the next 10 days
     return dict(
-        key=r.key, name=r.name, region=r.region, format=FORMAT, now=now, today=today,
+        key=r.key, name=r.name, region=r.region, format=FORMAT, model_run=run, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
         calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
@@ -312,18 +315,38 @@ def process(r, cal):
 
 # ---------------------------------------------------------------- files
 
-def updated_at(key, current_format=False):
+def latest_run():
+    """Init time of the trigger model's newest available run (Open-Meteo metadata, not an API call)."""
+    j = src.get_json(f"https://api.open-meteo.com/data/{TRIGGER_MODEL}/static/meta.json")
+    return datetime.fromtimestamp(j["last_run_initialisation_time"], timezone.utc).isoformat(timespec="minutes")
+
+
+def saved(key):
     try:
-        d = json.load(open(os.path.join(OUT, f"{key}.json")))
+        return json.load(open(os.path.join(OUT, f"{key}.json")))
     except Exception:
         return None
-    return None if current_format and d.get("format", 1) < FORMAT else d["updated"]
 
 
-def age_h(key):
-    """Age from the JSON's own timestamp (file mtimes are reset by git checkouts)."""
-    t = updated_at(key, current_format=True)
-    return None if t is None else (datetime.now(timezone.utc) - datetime.fromisoformat(t)).total_seconds() / 3600
+def updated_at(key):
+    d = saved(key)
+    return d["updated"] if d else None
+
+
+def due(key, run):
+    """Needs a refresh: no data, an older file format, a newer model run, or older than SAFETY_H."""
+    d = saved(key)
+    if not d or d.get("format", 1) < FORMAT:
+        return True
+    age = (datetime.now(timezone.utc) - datetime.fromisoformat(d["updated"])).total_seconds() / 3600
+    return age > SAFETY_H or (run is not None and d.get("model_run") != run)
+
+
+def plan():
+    """Region groups with due resorts, as a GitHub Actions matrix (stagger each job's start)."""
+    run = attempt("model run metadata", latest_run)
+    groups = [g for g in GROUPS if any(due(k, run) for k, r in RESORTS.items() if r.region in GROUPS[g])]
+    print(json.dumps([dict(group=g, delay=90 * i) for i, g in enumerate(groups)]))
 
 
 def write_index():
@@ -340,6 +363,9 @@ def write_index():
                         blend_mae72_in=round(c.blend_mae72 / IN, 2) if c and c.blend_mae72 else None,
                         windows=c.n_windows if c else None, updated=updated_at(key), located=True))
     json.dump(dict(resorts=idx), open(os.path.join(OUT, "index.json"), "w"))
+    for f in os.listdir(OUT):  # resorts removed from the catalog
+        if f.endswith(".json") and f != "index.json" and f[:-5] not in CATALOG:
+            os.remove(os.path.join(OUT, f))
 
 
 def update_one(key):
@@ -355,14 +381,14 @@ def update_one(key):
 
 
 def main(keys=None, scheduled=False, group=None, index=True):
-    """Refresh resorts (default: all, or a region group). scheduled: only those older than
-    REFRESH_EVERY_H, oldest first. Stops cleanly on Open-Meteo quota; failures get a second pass."""
+    """Refresh resorts (default: all, or a region group). scheduled: only due ones (new model run,
+    old format, or stale), oldest first. Stops cleanly on Open-Meteo quota; failures get a second pass."""
     os.makedirs(OUT, exist_ok=True)
     todo = keys or [k for k, r in RESORTS.items() if not group or r.region in GROUPS[group]]
     if scheduled:
-        age = {k: age_h(k) for k in todo}
-        todo = sorted((k for k in todo if age[k] is None or age[k] > REFRESH_EVERY_H), key=lambda k: -(age[k] or 1e9))
-        print(f"group={group or 'all'}: refreshing {todo or 'nothing (all fresh)'}")
+        run = attempt("model run metadata", latest_run)
+        todo = sorted((k for k in todo if due(k, run)), key=lambda k: updated_at(k) or "")
+        print(f"group={group or 'all'} run={run}: refreshing {todo or 'nothing'}")
     for _ in (1, 2):
         failed = []
         for key in todo:
@@ -422,6 +448,8 @@ if __name__ == "__main__":
     opt = lambda name: args[args.index(name) + 1] if name in args else None
     if "--check" in args:
         check(opt("--url"))
+    elif "--plan" in args:
+        plan()
     else:
         main([a for a in args if not a.startswith("--") and a != opt("--group")] or None,
              scheduled="--scheduled" in args, group=opt("--group"), index="--no-index" not in args)

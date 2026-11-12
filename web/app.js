@@ -254,7 +254,7 @@ function renderSummary(d, e) {
       pqdays.append(pcol);
       const tipRows = () => [
         { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(v.p50) },
-        ...(!x.past && fmtRange(v.p25, v.p75) ? [{ name: "Likely (25–75%)", value: fmtRange(v.p25, v.p75) }] : []),
+        ...(!x.past && fmtRange(v.p25, v.p75) ? [{ name: "Middle 50%", value: fmtRange(v.p25, v.p75) }] : []),
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
         ...["Morning", "Afternoon", "Night"].map((nm, k) => ({ name: nm, value: `${fmtIn(v.periods[k].snow_in)}${v.periods[k].quality ? " · " + QUALITY[v.periods[k].quality].text : ""}` })),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
@@ -399,25 +399,25 @@ function levelCharts(d, e) {
 function plumeCharts(d, e) {
   const p = d.plume[e];
   for (const [kind, id, color] of [["snow", "#snow-plume", "var(--series-1)"], ["rain", "#rain-plume", "var(--series-2)"]]) {
-    const pts = p.t.map((t, i) => ({ t, fc: p[kind].fc[i], q10: p[kind]["0.1"][i], q25: p[kind]["0.25"][i], q75: p[kind]["0.75"][i], q90: p[kind]["0.9"][i] }));
-    const top = Math.max(kind === "snow" ? 4 : 0.5, ...pts.map((x) => x.q90));
+    const pts = p.t.map((t, i) => ({ t, fc: p[kind].fc[i], q5: p[kind]["0.05"][i], q25: p[kind]["0.25"][i], q75: p[kind]["0.75"][i], q95: p[kind]["0.95"][i] }));
+    const top = Math.max(kind === "snow" ? 4 : 0.5, ...pts.map((x) => x.q95));
     const { max, step } = niceMax(top, kind === "snow" ? 4 : 2);
     const end = pts.at(-1) || {};
     $(`${id}-sub`).textContent = `${ELEV_NAME[e].toLowerCase()} · cumulative from now · 10 days: ${fmtIn(end.fc)} (likely ${fmtSnow(end.q25)}–${fmtSnow(end.q75)}")`;
     timeChart($(id), pts, {
       y: { min: 0, max, step, fmt: (v) => `${v}"` },
-      bands: [{ lo: (x) => x.q10, hi: (x) => x.q90, color, opacity: 0.1 }, { lo: (x) => x.q25, hi: (x) => x.q75, color, opacity: 0.22 }],
+      bands: [{ lo: (x) => x.q5, hi: (x) => x.q95, color, opacity: 0.1 }, { lo: (x) => x.q25, hi: (x) => x.q75, color, opacity: 0.22 }],
       lines: [{ get: (x) => x.fc, color }],
       tip: (x) => [
         { name: `${kind === "snow" ? "Snow" : "Rain"} so far`, value: `${x.fc.toFixed(kind === "snow" ? 0 : 2)}"`, color },
-        { name: "Likely (25–75%)", value: `${x.q25.toFixed(kind === "snow" ? 0 : 2)}–${x.q75.toFixed(kind === "snow" ? 0 : 2)}"` },
-        { name: "10–90%", value: `${x.q10.toFixed(kind === "snow" ? 0 : 2)}–${x.q90.toFixed(kind === "snow" ? 0 : 2)}"` },
+        { name: "Middle 50%", value: `${x.q25.toFixed(kind === "snow" ? 0 : 2)}–${x.q75.toFixed(kind === "snow" ? 0 : 2)}"` },
+        { name: "Middle 90%", value: `${x.q5.toFixed(kind === "snow" ? 0 : 2)}–${x.q95.toFixed(kind === "snow" ? 0 : 2)}"` },
       ],
     });
     legend(`${id}-legend`, [
       { label: "Forecast", color },
       { label: "Likely (25–75%)", color, kind: "key-band" },
-      { label: "10–90%", color, kind: "key-band light" },
+      { label: "Middle 90%", color, kind: "key-band light" },
     ]);
   }
 }
@@ -517,7 +517,7 @@ function renderWide(d, e) {
   const head = el("tr"); head.append(el("th", { class: "rowh" }, ELEV_NAME[e]));
   days.forEach((x) => { const dl = dayLabel(x.date); head.append(el("th", {}, `${dl.dow} ${dl.dom}`)); });
   tb.append(head);
-  for (const [lbl, k] of [["90%", "p90"], ["75%", "p75"], ["Forecast", "p50"], ["25%", "p25"], ["10%", "p10"]]) {
+  for (const [lbl, k] of [["95th %ile", "p95"], ["75th", "p75"], ["Forecast", "p50"], ["25th", "p25"], ["5th", "p5"]]) {
     const tr = el("tr"); tr.append(el("td", { class: "rowh" }, lbl));
     days.forEach((x) => tr.append(el("td", { class: k === "p50" ? "strong" : "" }, fmtIn(x[e][k]))));
     tb.append(tr);
@@ -526,7 +526,7 @@ function renderWide(d, e) {
   const tr = el("tr"); tr.append(el("td", { class: "rowh" }, "Next 1–5 / 6–10 days"));
   const td = el("td", { colspan: days.length });
   td.style.textAlign = "left";
-  td.textContent = `${fmtSnow(s.next1_5.p10)}–${fmtSnow(s.next1_5.p90)}"  ·  ${fmtSnow(s.next6_10.p10)}–${fmtSnow(s.next6_10.p90)}"`;
+  td.textContent = `${fmtSnow(s.next1_5.p5)}–${fmtSnow(s.next1_5.p95)}"  ·  ${fmtSnow(s.next6_10.p5)}–${fmtSnow(s.next6_10.p95)}"`;
   tr.append(td); tb.append(tr);
 }
 

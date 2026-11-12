@@ -69,7 +69,7 @@
         <li><b>Ensembles</b>: about 190 members (ECMWF ENS 51, AIFS ENS 51, GEFS 31, ICON EPS 40, GEM 21). Each ensemble is bias-corrected with its parent model's f<sub>m</sub> and weighted equally. Window totals use members covering ≥ 90% of the hours. Liquid is converted to snow with the blend's snow/liquid ratio <i>r</i> for that window, and base/mid are scaled by the blend's elevation/summit liquid ratio.</li>
         <li><b>Historical error</b>: ratio<sub>p</sub> is the p-th percentile of observed/forecast at this resort for storms of that size. Window liquid is normalised to 72 h before picking the bin.</li>
         <li>The ensembles contribute the <i>shape</i> of the uncertainty (each percentile relative to their median), centred on the blend, because coarse ensembles are often drier than the blend several days out. When the blend or ensemble median is dry, absolute ensemble amounts are used.</li>
-        <li>The headline number is the blend itself, and both ranges are widened if needed so they always include it. The 10–90% range is in each resort's Details.</li>
+        <li>The headline number is the blend itself, and both ranges are widened if needed so they always include it. The middle-90% range (5–95%) is in each resort's Details.</li>
       </ul>
     </section>
 
@@ -135,7 +135,7 @@
       <ul>
         <li><b>Ski day</b> = 6am to 6am the next morning, split into morning (6–12), afternoon (12–6pm) and night (6pm–6am). Each part's powder-quality bar uses the same quality rules (§7) on that part's hours.</li>
         <li><b>Summary</b>: last 7 ski days, last 24 hours, next 1–5 days (the rest of today plus 4 days) and next 6–10 days.</li>
-        <li><b>Snow and rain spread charts</b>: cumulative amounts from now for 10 days. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. The 25–75% and 10–90% bands are the members' weighted percentiles, centred on the forecast line. Members drop out past their horizon (ICON EPS after ~7.5 days).</li>
+        <li><b>Snow and rain spread charts</b>: cumulative amounts from now for 10 days. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. The middle-50% (25–75%) and middle-90% (5–95%) bands are the members' weighted percentiles, centred on the forecast line. Members drop out past their horizon (ICON EPS after ~7.5 days).</li>
         <li><b>Model estimate</b>: the same blend and phase/ratio maths applied to the last 7 days of the models' short-range forecasts. An estimate, not a measurement.</li>
         <li><b>Station measured</b>: the gauge's daily snow-depth gain. Settling makes this under-read new snow, and the station sits at one elevation (shown).</li>
       </ul>
@@ -144,7 +144,7 @@
     <section class="card" id="refresh">
       <h2>10. Refresh &amp; reliability</h2>
       <ul>
-        <li>GitHub Actions every 3 h, as four parallel region jobs, each on its own runner and staggered 2 min apart. A resort refreshes when its data is &gt; 7.5 h old (≈ every 9 h), about 7.5k of Open-Meteo's free 10k calls/day.</li>
+        <li>GitHub Actions checks hourly and refreshes a resort once a new ECMWF run has landed (ECMWF arrives last of the 6-hourly models, so GFS, ICON and AIFS from the same cycle are already in), or if its data is more than 7 h old: about 4 refreshes a day, within about an hour of each model cycle. Only the region groups with due resorts run, as parallel jobs on separate runners, staggered 90 s apart. About 7k of Open-Meteo's free 10k calls/day.</li>
         <li>HTTP: 6 attempts with exponential backoff and jitter. Permanent 4xx errors aren't retried. On a rate limit, the region stops and keeps its previous data. Failed resorts get a second pass after 60 s. Mostly-empty forecasts are never published.</li>
         <li>Publishing: data restore/push 3 attempts, Pages deploy 3 attempts, and failed jobs re-run once automatically. Publishing is refused if the resort count drops.</li>
         <li>Freshness check (<code>update.py --check</code>) after every refresh, plus a daily outside-in watchdog: a missing forecast or 3+ stale resorts fails the run, which emails the repo owner.</li>

@@ -11,14 +11,14 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 import sources as src
 from resorts import (BASE_MODELS, CAL_VERSION, CATALOG, DATA, ELEVS, EXTRA_MODELS, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
-                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
+                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts, ratio_at)
 
 STEP = 0.003                        # deg, ~300 m DEM search grid
 FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't representative; cap, let weight fall
 RATIO_BINS = [(10, 25), (25, 50), (50, 1e9)]  # forecast storm size, mm liquid per 72 h
 WET = 10.0                          # mm/72 h: only real storms feed the error distribution
 STORM_MM = 2.5                      # gauge mm/day: a "storm day" for the temperature bias
-QS = ("0.1", "0.25", "0.5", "0.75", "0.9")
+QS = ("0.05", "0.25", "0.5", "0.75", "0.95")
 
 
 # ---------------------------------------------------------------- locate
@@ -223,7 +223,7 @@ def regional_default(cal, r, resorts):
     med = lambda xs: sorted(xs)[len(xs) // 2] if xs else 1.0
     return Calibration({m: ModelCal(round(med([p.models[m].factor for p in peers if m in p.models]), 3), round(1 / len(r.models), 3))
                         for m in r.models}, uncalibrated=True,
-                       ratio_q={q: round(med([p.ratio_q[q] for p in peers]), 3) for q in QS}, peers=len(peers), peers_scope=scope)
+                       ratio_q={q: round(med([ratio_at(p.ratio_q, q) for p in peers]), 3) for q in QS}, peers=len(peers), peers_scope=scope)
 
 
 # ---------------------------------------------------------------- orchestration

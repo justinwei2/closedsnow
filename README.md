@@ -1,6 +1,6 @@
 # opensnow
 
-Snow forecasts for ~35 western North America ski resorts, built from free weather data.
+Snow forecasts for 21 western North America ski resorts, built from free weather data.
 Unofficial; not affiliated with OpenSnow.
 
 Site: https://justinwei2.github.io/opensnow/ · Methodology: https://justinwei2.github.io/opensnow/methodology.html
@@ -8,7 +8,7 @@ Site: https://justinwei2.github.io/opensnow/ · Methodology: https://justinwei2.
 Each resort has base, mid and summit points. For each point the site shows:
 
 - snowfall for the past 7 days and next 10 days (6am–6am days, split into morning / afternoon / night)
-- a likely range (25–75%) from ensembles plus the resort's historical forecast error
+- likely ranges: middle 50% (25–75%) and middle 90% (5–95%) from ensembles plus the resort's historical forecast error
 - snow quality and snow ratio, rain/snow line, freezing level
 - cumulative snow and rain with forecast spread
 - a daily weather report: wind holds, powder mornings, rain line, visibility, wind chill
@@ -31,14 +31,14 @@ Stdlib Python only. No server: everything runs in GitHub Actions and is served b
 
 | Workflow | Schedule | Purpose |
 |---|---|---|
-| `refresh` | every 3 h | refresh resorts with data > 7.5 h old (4 parallel region jobs), save to the `data` branch, freshness check, trigger `pages` |
+| `refresh` | hourly check | refresh a resort once a new ECMWF run has landed (~4×/day, within ~1 h) or its data is > 7 h old; parallel region jobs; save to the `data` branch, freshness check, trigger `pages` |
 | `pages` | after refresh / on `web/` changes | deploy the site |
 | `backfill` | nightly | set up or recalibrate resorts (no-op when everything is current) |
 | `watchdog` | daily | check the live site is fresh |
 | `autoretry` | on failure | re-run failed jobs once |
 
 Failed runs email the repo owner. Open-Meteo's free tier (10k calls/day) is the budget: a
-refresh costs ~65–80 calls per resort; calibration ~200 per resort.
+refresh costs ~65–85 calls per resort (~7k/day for 21 resorts); calibration ~200 per resort.
 
 ## Files
 
