@@ -177,7 +177,8 @@ details[open] summary::before { content: "▾ "; }
 
 /* ---- map page */
 .map-main { max-width: none; padding: 16px 24px 24px; }
-#map { height: calc(100vh - 170px); min-height: 420px; border-radius: 10px; border: 1px solid var(--border); }
+#map { height: calc(100vh - 170px); min-height: 420px; border-radius: 10px; border: 1px solid var(--border);
+  position: relative; z-index: 0; }  /* own stacking context: Leaflet's z-indexes (up to 1000) stay under the header */
 #map .leaflet-tile-pane { filter: grayscale(1) contrast(.85) brightness(1.08); }  /* quiet basemap: the pills carry the colour */
 .mpin { position: relative; cursor: pointer; }
 .mpin .mdot { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--text-primary); }

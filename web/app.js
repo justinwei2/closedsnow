@@ -851,7 +851,7 @@ async function bootMap() {
   state.index = (await (await fetch(`data/index.json?ts=${Date.now()}`)).json()).resorts;
   setupSearch();
   const rs = state.index.filter((r) => r.lat != null);
-  const map = L.map("map", { worldCopyJump: true });
+  const map = L.map("map", { worldCopyJump: true, zoomSnap: 0.25 });  // fractional zoom: fit tightly
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 13, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   }).addTo(map);
@@ -876,7 +876,8 @@ async function bootMap() {
   };
   map.on("zoomend", layout);
   const views = { "North America": rs.filter((r) => r.country !== "JP"), Japan: rs.filter((r) => r.country === "JP") };
-  const fit = (name) => map.fitBounds(L.latLngBounds(views[name].map((r) => [r.lat, r.lon])).pad(0.15));
+  const fit = (name) => map.fitBounds(L.latLngBounds(views[name].map((r) => [r.lat, r.lon])),
+    { paddingTopLeft: [40, 120], paddingBottomRight: [40, 20] });  // labels sit above their dots
   const box = $("#map-views");
   for (const name of Object.keys(views)) {
     if (!views[name].length) continue;
@@ -884,8 +885,11 @@ async function bootMap() {
     b.addEventListener("click", () => { box.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); fit(name); });
     box.append(b);
   }
-  box.querySelector("button")?.click();
-  layout();
+  requestAnimationFrame(() => {  // after layout: Leaflet measures its container, then fit the first view
+    map.invalidateSize();
+    box.querySelector("button")?.click();
+    layout();
+  });
   legend("#map-legend", [{ label: "Snow (darker = drier)", color: "var(--q-snow)", kind: "key-rect" },
     { label: "Mixed / sleet", color: "var(--q-mixed)", kind: "key-rect" }, { label: "Rain", color: "var(--q-rain)", kind: "key-rect" }]);
 }
