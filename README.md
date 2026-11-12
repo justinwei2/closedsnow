@@ -5,15 +5,15 @@ endorsed by OpenSnow.** Live: https://justinwei2.github.io/opensnow/
 
 ## Snow Report: personal resort forecast
 
-On-mountain (base / mid / summit) snow forecasts for ~35 expert-worthy Ikon/Epic resorts in
+On-mountain (base / mid / summit) snow forecasts for ~35 expert-worthy resorts in
 western North America. Shows a bias-corrected multi-model blend with 25–75% ranges, a weather
 report (wind holds, powder mornings, rain line), snow level vs.
 lift elevations, snow quality (blower → Sierra cement, mixed, sleet, rain), a per-model comparison,
 recent station observations, and the NWS Area Forecast Discussion.
 
     python3 backfill.py    # one-time: locate new catalog resorts + calibrate (sleeps through rate limits)
-    python3 update.py      # refresh favorites -> web/data/*.json   (--scheduled: tiered, as in CI)
-    python3 serve.py       # local: http://localhost:8765, favorites every 3 h, others on demand
+    python3 update.py alta # refresh resorts -> web/data/*.json   (--scheduled: only stale ones, as in CI)
+    python3 -m http.server -d web 8000   # preview locally
 
 ## Hosted (GitHub Pages + Actions)
 `.github/workflows/refresh.yml` runs every 3 h on GitHub as four parallel, staggered region jobs
@@ -25,7 +25,7 @@ refresh costs ~65-80 calls per resort. Forecast JSON lives on a single-commit
 `data` branch (force-pushed each run, so the repo doesn't grow); each run restores it, refreshes,
 saves it and deploys `web/` to Pages. `backfill.yml` (manual) runs
 locate + calibrate in CI. Optional repo secret `SKISITE_CONTACT` (email) goes in the NWS User-Agent.
-Repo must be public for free Pages. The static site has no on-demand refresh.
+Repo must be public for free Pages.
 
 No dependencies beyond Python 3.11+ stdlib. Open-Meteo free tier (non-commercial, 10k calls/day);
 one full refresh is ~40 requests.

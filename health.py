@@ -7,11 +7,9 @@ API hiccup) doesn't trip it; only a persistent problem does.
 """
 import json, os, sys, urllib.request
 from datetime import datetime, timezone
-from catalog import FAVORITES
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FAV_MAX_H = 9      # favorites refresh every 3 h: ~2 missed runs
-OTHER_MAX_H = 20   # resorts refresh ~every 9 h: ~2 missed refreshes
+MAX_AGE_H = 20   # resorts refresh ~every 9 h: ~2 missed refreshes
 
 
 def load(url):
@@ -31,7 +29,7 @@ def main():
         not_ready = (r.get("calibration") in (None, "not set up yet")) if cal is None else (r["key"] not in cal)
         if r.get("located") is False or not_ready:
             rows.append((r["name"], "awaiting calibration (backfill)", "")); continue
-        limit = FAV_MAX_H if r["key"] in FAVORITES else OTHER_MAX_H
+        limit = MAX_AGE_H
         if not r.get("updated"):
             age, status = None, "MISSING"
         else:
@@ -39,9 +37,9 @@ def main():
             status = "ok" if age <= limit else f"STALE (> {limit} h)"
         rows.append((r["name"], status, f"{age:.1f} h" if age is not None else "–"))
         if status != "ok":
-            bad.append((r["name"], r["key"] in FAVORITES or status == "MISSING"))
+            bad.append((r["name"], status == "MISSING"))
     table = "| Resort | Status | Data age |\n|---|---|---|\n" + "\n".join(f"| {a} | {b} | {c} |" for a, b, c in rows)
-    # Email (fail the run) for a stale favorite, a missing forecast, or 3+ stale others; a single
+    # Email (fail the run) for a missing forecast or 3+ stale resorts; a single
     # straggler is only a warning so one flaky resort doesn't send an email every 3 h.
     alarm = [n for n, serious in bad if serious] or ([n for n, _ in bad] if len(bad) >= 3 else [])
     head = f"### Forecast health: {'❌ ' if alarm else '⚠️ ' if bad else '✅ '}{len(bad)} problem(s)\n\n"

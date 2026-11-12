@@ -15,7 +15,7 @@
       <a href="methodology.html">Methodology</a>
     </nav>
     <div class="search" id="search">
-      <input id="q" type="search" placeholder="Search resorts — Alta, Whistler, Ikon, Colorado…" autocomplete="off"
+      <input id="q" type="search" placeholder="Search resorts — Alta, Whistler, Colorado…" autocomplete="off"
              role="combobox" aria-expanded="false" aria-controls="results" aria-label="Search resorts">
       <ul id="results" class="results" role="listbox" hidden></ul>
     </div>
@@ -28,13 +28,12 @@
   <main id="app">
     <section class="title-row">
       <div>
-        <h1><span id="r-name"></span> <span id="r-pass" class="pass"></span></h1>
-        <div id="r-sub" class="muted"></div>
+        <h1 id="r-name"></h1>
       </div>
-      <div class="seg big" role="tablist" id="elev-toggle" aria-label="Elevation"></div>
+      <div class="seg" role="tablist" id="elev-toggle" aria-label="Elevation"></div>
     </section>
 
-    <div id="loading" class="card loading" hidden>Fetching forecast for this resort… (first load takes ~30 s)</div>
+    <div id="loading" class="card loading" hidden>No forecast for this resort yet. Forecasts refresh every few hours; check back soon.</div>
 
     <div id="content">
       <section id="alerts"></section>

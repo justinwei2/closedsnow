@@ -12,7 +12,6 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from config import RESORTS, FT, ELEVS, PROFILE_MODELS, LEVELS, ENSEMBLES
-from catalog import FAVORITES
 from sources import get_json, cache_path, obs_raw, IN, QuotaExceeded
 import physics as ph
 import report
@@ -28,7 +27,7 @@ NON_US = {"British Columbia", "Alberta"}  # no NWS products there
 # doesn't stall the rest.
 GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Wyoming · Montana · Idaho"],
           "rockies": ["Colorado", "New Mexico"], "north": ["British Columbia", "Alberta", "Alaska"]}
-OTHERS_EVERY_H = 7.5  # refresh when older than this: ~every 9 h on the 3-hourly schedule, ~7.5k of 10k calls/day
+REFRESH_EVERY_H = 7.5  # refresh when older than this: ~every 9 h on the 3-hourly schedule, ~7.5k of 10k calls/day
 # per-resort context, set at the start of process()
 CTX = dict(tz="America/Los_Angeles", local=ZoneInfo("America/Los_Angeles"), models=[])
 KMH_MPH = 0.621371
@@ -446,7 +445,7 @@ def process(key, r, cal):
         hourly.append(dict(t=t, past=i < now_i, **{k: rnd(v) for k, v in levels[i].items()},
                            **{e: {k: rnd(v) for k, v in elev[e]["rows"][i].items() if k != "t"} for e in ELEVS}))
     return dict(
-        key=key, name=r["name"], sub=r["sub"], region=r["region"], pass_=r["pass_"], tz=r["tz"], now=now,
+        key=key, name=r["name"], region=r["region"], tz=r["tz"], now=now,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=r[e], grid=elev[e]["grid"],
                         nws_elev_ft=nws[e]["elev_m"] / FT if nws[e] else None) for e in ELEVS},
@@ -472,8 +471,7 @@ def write_index():
         c = cal.get(key) or {}
         status = ("calibrated" if c and not c.get("uncalibrated") else
                   "pending" if r.get("obs") else "regional default")
-        idx.append(dict(key=key, name=r["name"], sub=r["sub"], region=r["region"], pass_=r["pass_"],
-                        favorite=key in FAVORITES, calibration=status,
+        idx.append(dict(key=key, name=r["name"], region=r["region"], calibration=status,
                         station=(r.get("obs") or [None, None, None])[2],
                         station_ft=(r.get("obs") or [None] * 4)[3],
                         blend_mae72_in=round(c["blend_mae72"] / 25.4, 2) if c.get("blend_mae72") else None,
@@ -481,8 +479,7 @@ def write_index():
     from catalog import CATALOG
     for key, c in CATALOG.items():  # not located yet: listed in the coverage appendix, hidden from search
         if key not in RESORTS:
-            idx.append(dict(key=key, name=c[0], sub=c[6], region=c[2], pass_=c[1], favorite=key in FAVORITES,
-                            calibration="not set up yet", located=False, updated=None))
+            idx.append(dict(key=key, name=c[0], region=c[1], calibration="not set up yet", located=False, updated=None))
     from catalog import CATALOG
     order = {k: i for i, k in enumerate(CATALOG)}
     idx.sort(key=lambda x: order.get(x["key"], 1e9))  # catalog order = grouped by region for search
@@ -514,18 +511,15 @@ def data_age_h(key):
 
 
 def main(keys=None, scheduled=False, group=None, index=True):
-    """Default: refresh favorites. scheduled=True (GitHub Actions): favorites every run, every
-    other resort once its data is older than OTHERS_EVERY_H, oldest first; stops cleanly on quota."""
-    from sources import QuotaExceeded
+    """Refresh the given resorts (default: all). scheduled=True (GitHub Actions): only resorts whose
+    data is older than REFRESH_EVERY_H, oldest first. Stops cleanly on Open-Meteo quota."""
     os.makedirs(OUT, exist_ok=True)
-    pool = [k for k in RESORTS if not group or RESORTS[k]["region"] in GROUPS[group]]
+    todo = keys or [k for k in RESORTS if not group or RESORTS[k]["region"] in GROUPS[group]]
     if scheduled:
-        others = [k for k in pool if k not in FAVORITES]
-        stale = [k for k in others if (data_age_h(k) is None or data_age_h(k) > OTHERS_EVERY_H)]
-        keys = [k for k in FAVORITES if k in pool] + sorted(stale, key=lambda k: -(data_age_h(k) or 1e9))
-        print(f"group={group or 'all'}: refreshing {keys or 'nothing (all fresh)'}")
-    todo = list(keys if scheduled else (keys or FAVORITES))
-    for attempt in (1, 2):  # second pass retries resorts that failed for non-quota reasons
+        age = {k: data_age_h(k) for k in todo}
+        todo = sorted((k for k in todo if age[k] is None or age[k] > REFRESH_EVERY_H), key=lambda k: -(age[k] or 1e9))
+        print(f"group={group or 'all'}: refreshing {todo or 'nothing (all fresh)'}")
+    for _ in (1, 2):  # second pass retries resorts that failed for non-quota reasons
         failed = []
         for key in todo:
             if key not in RESORTS:

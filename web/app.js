@@ -3,7 +3,7 @@ const $ = (s) => document.querySelector(s);
 const NS = "http://www.w3.org/2000/svg";
 const ELEVS = ["base", "mid", "summit"];
 const ELEV_NAME = { base: "Base", mid: "Mid-mountain", summit: "Summit" };
-const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "summit", poll: null };
+const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "summit" };
 
 const MODEL_NAMES = {
   ecmwf_ifs: "ECMWF IFS 9 km", ecmwf_ifs025: "ECMWF IFS 0.25°", ecmwf_aifs025_single: "ECMWF AIFS",
@@ -604,8 +604,6 @@ function render() {
   if (!d) return;
   const e = state.elev;
   $("#r-name").textContent = d.name;
-  $("#r-pass").textContent = d.pass_ || "";
-  $("#r-sub").textContent = [d.sub, d.region].filter(Boolean).join(" · ");
   $("#updated").textContent = `updated ${new Date(d.updated).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
   renderElevToggle(d);
   renderAlerts(d);
@@ -629,37 +627,16 @@ async function fetchData(key) {
 
 async function load(key) {
   state.key = key;
-  clearInterval(state.poll);
-  const info = state.index.find((r) => r.key === key);
   localStorage.setItem("resort", key);
   $("#q").value = "";
-  let d = await fetchData(key);
-  if (d && !d.next) d = null;  // pre-v2 file: treat as missing so it refreshes
-  if (key !== state.key) return;
-  if (d) { state.data = d; $("#loading").hidden = true; $("#content").hidden = false; render(); }
-  else {
-    state.data = null; $("#content").hidden = true; $("#loading").hidden = false;
-    $("#r-name").textContent = info?.name || key; $("#r-pass").textContent = info?.pass_ || ""; $("#r-sub").textContent = info?.region || "";
-    $("#elev-toggle").replaceChildren();
-  }
-  // ask the local server to refresh if missing/stale; poll until the file changes
-  let st;
-  try { st = await (await fetch(`api/refresh?key=${key}`)).json(); }
-  catch {  // static hosting (GitHub Pages): no refresh endpoint, data arrives on the schedule
-    if (!d) $("#loading").textContent = "No forecast for this resort yet. It refreshes automatically every 12 hours; check back soon.";
-    return;
-  }
-  if (st.status !== "refreshing") return;
-  $("#updated").textContent = "refreshing…";
-  const before = d?.updated;
-  state.poll = setInterval(async () => {
-    const s = await (await fetch(`api/refresh?key=${key}`)).json().catch(() => ({}));
-    if (s.status?.startsWith("error")) { clearInterval(state.poll); $("#updated").textContent = "refresh failed"; $("#loading").textContent = `Could not fetch this resort: ${s.status}`; return; }
-    if (s.status !== "fresh") return;
-    clearInterval(state.poll);
-    const nd = await fetchData(key);
-    if (nd && key === state.key && nd.updated !== before) { state.data = nd; $("#loading").hidden = true; $("#content").hidden = false; render(); }
-  }, 4000);
+  const d = await fetchData(key);
+  if (key !== state.key) return;  // user switched resorts while this loaded
+  state.data = d && d.next ? d : null;
+  $("#content").hidden = !state.data;
+  $("#loading").hidden = !!state.data;
+  if (state.data) return render();
+  $("#r-name").textContent = state.index.find((r) => r.key === key)?.name || key;
+  $("#elev-toggle").replaceChildren();
 }
 
 // ---------------------------------------------------------------- search combobox
@@ -669,13 +646,12 @@ function setupSearch() {
   const close = () => { list.hidden = true; q.setAttribute("aria-expanded", "false"); active = -1; };
   const draw = () => {
     const term = q.value.trim().toLowerCase();
-    const hits = state.index.filter((r) => r.located !== false).filter((r) => !term || [r.name, r.sub, r.region, r.pass_].join(" ").toLowerCase().includes(term));
+    const hits = state.index.filter((r) => r.located !== false && (!term || `${r.name} ${r.region}`.toLowerCase().includes(term)));
     list.replaceChildren(); opts = [];
     let grp = null;
     for (const r of hits) {
       if (r.region !== grp) { grp = r.region; list.append(el("li", { class: "grp", role: "presentation" }, grp)); }
-      const li = el("li", { class: "opt", role: "option", id: `opt-${r.key}` });
-      li.append(el("span", { class: "nm" }, r.name), el("span", { class: "ds" }, [r.sub, r.pass_].filter(Boolean).join(" · ")));
+      const li = el("li", { class: "opt", role: "option", id: `opt-${r.key}` }, r.name);
       li.addEventListener("mousedown", (ev) => { ev.preventDefault(); location.hash = r.key; close(); q.blur(); });
       list.append(li); opts.push({ li, r });
     }

@@ -23,7 +23,7 @@ def load(p):
 
 
 def run(group=None, out=None):
-    keys = [k for k, c in CATALOG.items() if not group or c[2] in update.GROUPS[group]]
+    keys = [k for k, c in CATALOG.items() if not group or c[1] in update.GROUPS[group]]
     resorts = load(RES_PATH)
     missing = [k for k in keys if k not in resorts]
     if missing:  # locate.main([]) means "all missing", so only call it with real work
@@ -73,7 +73,7 @@ def write_report(resorts, cal):
     for k, c in CATALOG.items():
         r, cl = resorts.get(k), cal.get(k)
         if not r:
-            lines.append(f"| {c[0]} | {c[2]} | not located yet | | | | |"); continue
+            lines.append(f"| {c[0]} | {c[1]} | not located yet | | | | |"); continue
         o = r.get("obs")
         if cl and not cl.get("uncalibrated"):
             st, err = "calibrated", f"{cl['blend_mae72'] / 25.4:.2f}"

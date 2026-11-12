@@ -11,12 +11,11 @@ import json, os
 FT = 0.3048
 ELEVS = ["base", "mid", "summit"]
 
-# Deterministic models blended for the central forecast (Open-Meteo ids); per-resort subset
-# is whatever locate.py found has data there.
+# Deterministic models blended for the central forecast (Open-Meteo ids); each resort uses
+# the subset locate.py found has data there.
 BASE_MODELS = ["ecmwf_ifs", "ecmwf_ifs025", "ecmwf_aifs025_single", "gfs_seamless",
                "ncep_nbm_conus", "gem_seamless", "icon_seamless"]
 EXTRA_MODELS = ["gem_hrdps_continental"]  # 2.5 km Canadian; covers BC/Alberta + northern US
-DET_MODELS = BASE_MODELS + EXTRA_MODELS
 # Models with pressure-level profiles, used for snow level / snow quality.
 PROFILE_MODELS = ["ecmwf_ifs025", "gfs_seamless", "gem_seamless", "icon_seamless"]
 LEVELS = [1000, 925, 850, 800, 750, 700, 650, 600, 550, 500]

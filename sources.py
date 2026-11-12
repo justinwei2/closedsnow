@@ -59,36 +59,33 @@ def get_json(url, params=None, retries=6):
     raise RuntimeError(f"failed: {url[:200]}")
 
 
-def _snotel(triplet, start, end, duration="DAILY", elements="PREC,WTEQ,SNWD,TAVG"):
+def _snotel(triplet, start, end):
     j = get_json("https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/data",
-                 dict(stationTriplets=triplet, elements=elements, duration=duration,
+                 dict(stationTriplets=triplet, elements="PREC,WTEQ,SNWD,TAVG", duration="DAILY",
                       beginDate=start, endDate=end))
     return {e["stationElement"]["elementCode"]: [(v["date"], v.get("value")) for v in e["values"]]
             for e in j[0]["data"]}
 
 
-def _cdec(station, start, end, dur="D"):
-    # 2 = accumulated precip (in), 3 = SWE (in), 18 = snow depth (in), 30 = avg air temp (F), 4 = air temp
-    sensors = "2,3,18,30" if dur == "D" else "2,3,18,4"
+def _cdec(station, start, end):
+    # daily sensors: 2 = accumulated precip (in), 3 = SWE (in), 18 = snow depth (in), 30 = avg air temp (F)
     rows = get_json("https://cdec.water.ca.gov/dynamicapp/req/JSONDataServlet",
-                    dict(Stations=station, SensorNums=sensors, dur_code=dur, Start=start, End=end))
-    name = {2: "PREC", 3: "WTEQ", 18: "SNWD", 30: "TAVG", 4: "TOBS"}
+                    dict(Stations=station, SensorNums="2,3,18,30", dur_code="D", Start=start, End=end))
+    name = {2: "PREC", 3: "WTEQ", 18: "SNWD", 30: "TAVG"}
     out = {}
     for r in rows:
         v = r["value"]
-        if v is None or v <= -9000:
-            v = None
         out.setdefault(name[r["SENSOR_NUM"]], []).append(
-            (datetime.strptime(r["date"], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d %H:%M"), v))
+            (datetime.strptime(r["date"], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d"), None if v is None or v <= -9000 else v))
     return out
 
 
-def obs_raw(obs, start, end, hourly=False):
+def obs_raw(obs, start, end):
+    """Daily station series {element: [(date, value)]} from SNOTEL or CDEC."""
     kind, sid = obs[0], obs[1]
     if kind == "snotel":
-        return _snotel(sid, start, end, "HOURLY" if hourly else "DAILY",
-                       "PREC,WTEQ,SNWD,TOBS" if hourly else "PREC,WTEQ,SNWD,TAVG")
-    return _cdec(sid, start, end, "H" if hourly else "D")
+        return _snotel(sid, start, end)
+    return _cdec(sid, start, end)
 
 
 def obs_daily(obs, start, end):

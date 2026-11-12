@@ -97,7 +97,7 @@ def usable_models(lat, lon):
 
 
 def locate(key):
-    name, pss, region, tz, b, s, sub = CATALOG[key]
+    name, region, tz, b, s = CATALOG[key]
     man = MANUAL.get(key, {})
     if man:
         base = (b[0], b[1], b[2])
@@ -114,7 +114,7 @@ def locate(key):
         mlabel = "Mid-mountain"
         dem_ft = dict(base=bb[2], mid=mp[2], summit=sb[2])
     obs = man.get("obs") or (snotel_near(mid[0], mid[1], b[2], s[2], STATES[region]) if region in STATES else None)
-    r = dict(name=name, sub=sub, region=region, pass_=pss, tz=tz,
+    r = dict(name=name, region=region, tz=tz,
              base=dict(lat=round(base[0], 4), lon=round(base[1], 4), ft=base[2], label=b[3]),
              mid=dict(lat=round(mid[0], 4), lon=round(mid[1], 4), ft=mid[2], label=mlabel),
              summit=dict(lat=round(summit[0], 4), lon=round(summit[1], 4), ft=summit[2], label=s[3]),
