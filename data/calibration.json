@@ -244,5 +244,128 @@
    1.67,
    1.46
   ]
+ },
+ "whistler": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 0.951,
+    "weight": 0.19,
+    "mae72": 10.07,
+    "raw_mae72": 10.46,
+    "n": 155,
+    "weight_ext": 0.167,
+    "mae_ext": 6.7
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.387,
+    "weight": 0.143,
+    "mae72": 11.61,
+    "raw_mae72": 11.46,
+    "n": 345,
+    "weight_ext": 0.139,
+    "mae_ext": 7.34
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.202,
+    "weight": 0.144,
+    "mae72": 11.54,
+    "raw_mae72": 10.29,
+    "n": 249,
+    "weight_ext": 0.155,
+    "mae_ext": 6.95
+   },
+   "gfs_seamless": {
+    "factor": 0.998,
+    "weight": 0.13,
+    "mae72": 12.18,
+    "raw_mae72": 12.2,
+    "n": 345,
+    "weight_ext": 0.135,
+    "mae_ext": 7.46
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.212,
+    "weight": 0.157,
+    "mae72": 11.07,
+    "raw_mae72": 10.17,
+    "n": 345,
+    "weight_ext": 0.142,
+    "mae_ext": 7.28
+   },
+   "gem_seamless": {
+    "factor": 1.202,
+    "weight": 0.116,
+    "mae72": 12.87,
+    "raw_mae72": 11.65,
+    "n": 345,
+    "weight_ext": 0.129,
+    "mae_ext": 7.63
+   },
+   "icon_seamless": {
+    "factor": 1.049,
+    "weight": 0.121,
+    "mae72": 12.59,
+    "raw_mae72": 12.19,
+    "n": 340,
+    "weight_ext": 0.132,
+    "mae_ext": 7.53
+   }
+  },
+  "station": "Callaghan Creek (BC snow pillow)",
+  "blend_mae72": 10.17,
+  "n_windows": 345,
+  "n_wet": 201,
+  "ratio_q": {
+   "0.05": 0.49,
+   "0.25": 0.712,
+   "0.5": 0.874,
+   "0.75": 1.125,
+   "0.95": 1.693
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 54,
+    "q": {
+     "0.05": 0.388,
+     "0.25": 0.692,
+     "0.5": 0.899,
+     "0.75": 1.192,
+     "0.95": 1.791
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 78,
+    "q": {
+     "0.05": 0.516,
+     "0.25": 0.703,
+     "0.5": 0.944,
+     "0.75": 1.158,
+     "0.95": 1.675
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 69,
+    "q": {
+     "0.05": 0.499,
+     "0.25": 0.753,
+     "0.5": 0.87,
+     "0.75": 1.017,
+     "0.95": 1.351
+    }
+   }
+  ],
+  "temp_bias_c": 0.87,
+  "temp_bias_wet_c": 0.63,
+  "temp_n_wet": 170,
+  "temp_mae_c": [
+   1.15,
+   0.79
+  ]
  }
 }

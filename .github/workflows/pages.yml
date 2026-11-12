@@ -23,6 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/restore-data
+      # stamp asset URLs with the commit so browsers never pair a cached old style.css with a new app.js
+      - run: sed -i -E "s/(app\.js|style\.css)\"/\1?v=${GITHUB_SHA::8}\"/g" web/*.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: web }

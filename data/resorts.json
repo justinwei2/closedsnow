@@ -88,5 +88,51 @@
    "gem_seamless",
    "icon_seamless"
   ]
+ },
+ "whistler": {
+  "name": "Whistler",
+  "region": "Coastal BC",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.115,
+   "lon": -122.9548,
+   "ft": 2214,
+   "label": "Village"
+  },
+  "mid": {
+   "lat": 50.0817,
+   "lon": -122.9563,
+   "ft": 5000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.058,
+   "lon": -122.9573,
+   "ft": 7160,
+   "label": "Whistler Peak"
+  },
+  "dem_ft": {
+   "base": 2228,
+   "mid": 4980,
+   "summit": 7087
+  },
+  "obs": [
+   "bcasws",
+   "3A20P",
+   "Callaghan Creek (BC snow pillow)",
+   3337,
+   50.137056,
+   -123.102889
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
  }
 }

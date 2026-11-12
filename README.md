@@ -7,7 +7,7 @@ Site: https://justinwei2.github.io/opensnow/ · Methodology: https://justinwei2.
 
 Each resort has base, mid and summit points. For each point the site shows:
 
-- snowfall for the past 7 days and next 10 days (6am–6am days, split into morning / afternoon / night)
+- snowfall for the past 7 days and next 10 days (6am–6am days, split into daytime / nighttime)
 - likely ranges: middle 50% (25–75%) and middle 90% (5–95%) from ensembles plus the resort's historical forecast error
 - snow quality and snow ratio, rain/snow line, freezing level
 - hourly forecast, and 12 h snow / rain bars with forecast spread (current and history views)
@@ -17,7 +17,7 @@ Each resort has base, mid and summit points. For each point the site shows:
 ## How it works
 
 1. **Setup (once per resort, `calibrate.py`).** Snap the catalog coordinates to a 90 m DEM. Pick
-   the nearest SNOTEL/CDEC gauge and the models that have data there. Compare two winters of
+   the nearest gauge (SNOTEL/CDEC in the US, a BC snow pillow, or an Alberta Rivers station) and the models that have data there. Compare two winters of
    as-issued forecasts (lead days 1–7) against the gauge to get, per model: a precipitation bias
    factor, blend weights for lead days 1–3 and 4+, and the resort's temperature bias on storm days.
 2. **Refresh (`update.py`).** Pull 7–8 deterministic models, pressure-level profiles, 5 ensembles
@@ -70,4 +70,6 @@ default factors borrowed from calibrated resorts, and the page says it isn't cal
 ## Data
 
 Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC and DWD models), api.weather.gov, NRCS SNOTEL, California
-CDEC. Documented APIs only. Known limitations are listed on the methodology page.
+CDEC, BC River Forecast Centre automated snow weather stations (public data files) and Alberta
+Rivers (AEP). The Alberta endpoints are the ones the rivers.alberta.ca site itself uses: not a
+published API, and the data are provisional. Known limitations are listed on the methodology page.

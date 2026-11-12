@@ -228,7 +228,7 @@ def process(r, cal):
             res[lo], res[hi] = min(res[lo], snow), max(res[hi], snow)
         return res
 
-    # ---- ski days: 6am to 6am, split into morning (6-12), afternoon (12-6pm) and night (6pm-6am)
+    # ---- ski days: 6am to 6am, split into daytime (6am-6pm) and nighttime (6pm-6am)
     def quality_of(hrs, min_liq=1.0, wet_mm=0.2):
         wet = [h for h in hrs if (h.precip_mm or 0) > wet_mm and h.frac is not None]
         liq = sum(h.precip_mm for h in wet)
@@ -275,7 +275,8 @@ def process(r, cal):
         return out
 
     today = (datetime.fromisoformat(now) - timedelta(hours=6)).strftime("%Y-%m-%d")  # current ski day
-    starts = {t[:10]: i for i, t in enumerate(times) if t.endswith("T06:00")}
+    # hourly precipitation is stamped at the end of its hour, so a 6am-6am ski day is 07:00..06:00
+    starts = {t[:10]: i for i, t in enumerate(times) if t.endswith("T07:00")}
     obs_by_day = {x["date"]: x for x in (obs or {}).get("days", [])}
     daily = []
     for d, first in sorted(starts.items()):
@@ -286,8 +287,6 @@ def process(r, cal):
             hrs = hours[e][first:i1]
             b = window(first if d < today else i0, i1, e)
             b.update(quality_of(hrs))
-            b["periods"] = [dict(snow_in=sum(h.snow_in or 0 for h in part), rain_in=sum(h.rain_in or 0 for h in part),
-                                 **quality_of(part, 0.0, 0.0)) for part in (hrs[:6], hrs[6:12], hrs[12:24])]
             b["halves"] = [half(name, range(a, min(z, i1)), e, d) for name, a, z in
                            (("day", first, first + 12), ("night", first + 12, first + 24)) if a < i1]
             temps = [h.temp_f for h in hrs if h.temp_f is not None]
@@ -354,7 +353,8 @@ def process(r, cal):
                 out[k]["fc"].append(round(fc[k], 2))
                 for p in QS:
                     out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]) if p > 0.5 else q[p], 2))
-        plume[e] = dict(t=[times[b[0]] for b in bins], **out)
+        plume[e] = dict(t=[(datetime.fromisoformat(times[b[0]]) - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
+                           for b in bins], **out)  # labelled by period start (6am / 6pm)
 
     hourly = [dict(t=t, precip_chance=precip_chance(range(i, i + 1)) if i >= now_i else None, **{k: rnd(v) for k, v in levels[i].items()},
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})

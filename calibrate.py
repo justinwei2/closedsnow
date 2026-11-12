@@ -75,7 +75,8 @@ def nearest_bcasws(lat, lon, lo_ft, hi_ft):
             typeName="WHSE_WATER_MANAGEMENT.SSL_SNOW_ASWS_STNS_SP"))
         with_pc = set(src.get_json(src.BC_ASWS + "PC.csv", parse=lambda fh: [c.split(" ")[0] for c in fh.readline().decode().split(",")]))
         _stations["bc"] = [f["properties"] for f in j["features"]
-                           if f["properties"]["STATUS"] == "Active" and f["properties"]["LOCATION_ID"] in with_pc]
+                           if f["properties"]["STATUS"] == "Active" and f["properties"]["ELEVATION"]
+                           and f["properties"]["LOCATION_ID"] in with_pc]
     cands = []
     for s in _stations["bc"]:
         d, ft = km(lat, lon, s["LATITUDE"], s["LONGITUDE"]), s["ELEVATION"] / FT
@@ -255,12 +256,12 @@ def save(resorts, cal):
 
 def run(group=None, out=None, force=False, only=None):
     """Locate and calibrate resorts that aren't done (force: recalibrate them too); always save
-    progress. only: specific resort keys; group: a region group."""
+    progress. only: specific resort keys; group: a region group. Gauge-less resorts are located again."""
     keys = only or [k for k, c in CATALOG.items() if not group or c[1] in GROUPS[group]]
     resorts, cal = load_resorts(), load_calibration()
     try:
         for k in keys:
-            if k not in resorts:
+            if k not in resorts or resorts[k].gauge is None:  # gauge-less: retry (new gauge networks)
                 try:
                     resorts[k] = locate(k)
                 except src.QuotaExceeded:

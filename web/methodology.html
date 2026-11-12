@@ -47,7 +47,7 @@
 
     <section class="card" id="calibration">
       <h2>3. Calibration</h2>
-      <p>One-time, per resort, against a nearby automated gauge (NRCS SNOTEL or California CDEC). It uses forecasts <b>as they were actually issued</b> (Open-Meteo Previous Runs API) over winters 2024–25 and 2025–26, so there's no look-ahead.</p>
+      <p>One-time, per resort, against a nearby automated gauge (NRCS SNOTEL, California CDEC, a BC snow pillow, or an Alberta Rivers station). It uses forecasts <b>as they were actually issued</b> (Open-Meteo Previous Runs API) over winters 2024–25 and 2025–26, so there's no look-ahead.</p>
       <div class="eq">72 h forecast window starting day D = lead-1 day D + lead-2 day D+1 + lead-3 day D+2</div>
       <div class="eq">f<sub>m</sub> = Σ observed / Σ forecast<sub>m</sub> &nbsp; (clamped to 0.4–2.0)</div>
       <div class="eq">w<sub>m</sub> ∝ 1 / MAE<sub>m</sub>², &nbsp; MAE<sub>m</sub> = mean |f<sub>m</sub>·forecast − observed| over 72 h windows (lead days 1–3)</div>
@@ -128,7 +128,7 @@
     <section class="card" id="past">
       <h2>9. Days, Past Snowfall &amp; Spread Charts</h2>
       <ul>
-        <li><b>Ski day</b> = 6am to 6am the next morning, split into morning (6–12), afternoon (12–6pm) and night (6pm–6am). Each part's bar is coloured by the precipitation type (§7) of that part's hours.</li>
+        <li><b>Ski day</b> = 6am to 6am the next morning, split into daytime (6am–6pm) and nighttime (6pm–6am). Each half's bar is coloured by the precipitation type (§7) of that part's hours.</li>
         <li><b>Summary</b>: last 7 ski days, last 24 hours, next 1–5 days (the rest of today plus 4 days) and next 6–10 days.</li>
         <li><b>Snow &amp; rain chart</b>: amounts per 12-hour period (daytime 6am–6pm, nighttime 6pm–6am), matching the daily overview, for the last 7 days (model estimate) and the next 10. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. Whiskers show the members' weighted middle 50% (thick) and middle 90% (thin) per period, widened if needed to include the forecast.</li>
         <li><b>Model estimate</b>: the same blend and phase/ratio maths applied to the last 7 days of the models' short-range forecasts. An estimate, not a measurement.</li>
@@ -164,7 +164,7 @@
       <ul>
         <li><a href="https://open-meteo.com/">Open-Meteo</a> forecast, ensemble and previous-runs APIs (CC BY 4.0). Models from ECMWF, NOAA/NCEP, ECCC and DWD.</li>
         <li><a href="https://www.weather.gov/documentation/services-web-api">api.weather.gov</a>: NWS active alerts and Area Forecast Discussions.</li>
-        <li>NRCS AWDB / SNOTEL and California CDEC station observations.</li>
+        <li>NRCS AWDB / SNOTEL and California CDEC station observations; BC River Forecast Centre automated snow weather stations (hourly precipitation, temperature, snow depth; daily SWE); Alberta Rivers (AEP) precipitation and air temperature, provisional data via the endpoints the rivers.alberta.ca site uses.</li>
       </ul>
       <p class="fine">Unofficial open-source project; not affiliated with or endorsed by OpenSnow. Forecasts can be wrong. Check the resort's own report and avalanche forecast before heading out.</p>
     </section>

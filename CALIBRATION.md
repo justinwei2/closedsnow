@@ -16,15 +16,15 @@ the median factors of calibrated resorts in their region.
 | Snowbird | Utah | not located yet | | | | |
 | Solitude | Utah | not located yet | | | | |
 | Snowbasin | Utah | not located yet | | | | |
-| Jackson Hole | Wyoming · Montana · Idaho | not located yet | | | | |
-| Big Sky | Wyoming · Montana · Idaho | not located yet | | | | |
+| Jackson Hole | Northern Rockies | not located yet | | | | |
+| Big Sky | Northern Rockies | not located yet | | | | |
 | Arapahoe Basin | Colorado | not located yet | | | | |
 | Copper Mountain | Colorado | not located yet | | | | |
 | Steamboat | Colorado | not located yet | | | | |
 | Telluride | Colorado | not located yet | | | | |
 | Crested Butte | Colorado | not located yet | | | | |
-| Whistler | British Columbia | not located yet | | | | |
-| Blackcomb | British Columbia | not located yet | | | | |
-| Revelstoke | British Columbia | not located yet | | | | |
-| Kicking Horse | British Columbia | not located yet | | | | |
-| Lake Louise | Alberta | not located yet | | | | |
+| Whistler | Coastal BC | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 345 | 0.40 |
+| Blackcomb | Coastal BC | not located yet | | | | |
+| Revelstoke | Interior BC | not located yet | | | | |
+| Kicking Horse | Interior BC | not located yet | | | | |
+| Lake Louise | Canadian Rockies | not located yet | | | | |

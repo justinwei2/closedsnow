@@ -3,7 +3,7 @@ const $ = (s) => document.querySelector(s);
 const NS = "http://www.w3.org/2000/svg";
 const ELEVS = ["base", "mid", "summit"];
 const ELEV_NAME = { base: "Base", mid: "Mid-mountain", summit: "Summit" };
-const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "base", tab: { hourly: "current", daily: "current", level: "current", plume: "current" } };
+const state = { index: [], key: null, data: null, elev: localStorage.getItem("elev") || "base" };
 
 const MODEL_NAMES = {
   ecmwf_ifs: "ECMWF IFS 9 km", ecmwf_ifs025: "ECMWF IFS 0.25°", ecmwf_aifs025_single: "ECMWF AIFS",
@@ -33,15 +33,6 @@ const dayLabel = (d) => {
   return { dow: dt.toLocaleDateString(undefined, { weekday: "short" }), dom: dt.getDate(), mon: dt.toLocaleDateString(undefined, { month: "short" }) };
 };
 const today = () => state.data.today;  // current ski day (resort-local)
-function tabs(id, which) {  // Current / History toggle for a section
-  const box = $(id);
-  box.replaceChildren();
-  for (const [k, label] of [["current", "Current"], ["history", "History"]]) {
-    const b = el("button", { type: "button", class: state.tab[which] === k ? "on" : "" }, label);
-    b.addEventListener("click", () => { state.tab[which] = k; render(); });
-    box.append(b);
-  }
-}
 const window17 = (d) => [...d.daily.filter((x) => x.past).slice(-7), ...d.daily.filter((x) => !x.past).slice(0, 10)];  // last 7 + next 10 days
 const el = (tag, attrs = {}, text) => {
   const e = document.createElement(tag);
@@ -187,11 +178,11 @@ function renderSummary(d, e) {
     { label: "Next 1–5 Days", days: next.slice(0, 5), tot: s.next1_5 },
     { label: "Next 6–10 Days", days: next.slice(5, 10), tot: s.next6_10 },
   ];
-  const total = (v) => v.periods.reduce((a, p) => a + (p.snow_in || 0), 0);  // 6am-6am, sum of the 3 parts
-  const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].periods.map((p) => p.snow_in || 0))));
+  const sum = (v, k) => v.halves.reduce((a, h) => a + (h[k] || 0), 0);  // 6am-6am: daytime + nighttime
+  const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].halves.map((h) => h.snow_in || 0))));
   const box = $("#summary");
   box.replaceChildren();
-  $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · a day runs 6am to 6am (overnight snow counts toward the day it fell)`;
+  $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · days run 6am to 6am; night is 6pm to 6am the next morning`;
   for (const g of groups) {
     if (g.center) {
       const c = el("div", { class: "scenter" });
@@ -217,7 +208,7 @@ function renderSummary(d, e) {
       const v = x[e], dl = dayLabel(x.date), weekend = /Sat|Sun/.test(dl.dow);
       const col = el("div", { class: "sday" + (x.past ? " past" : ""), tabindex: 0 });
       const stack = el("div", { class: "sstack" });
-      v.periods.forEach((p) => {  // morning, afternoon, night left to right
+      v.halves.forEach((p) => {  // daytime, nighttime left to right
         const seg = el("span", { class: "sseg" });
         seg.style.height = p.snow_in >= 0.05 ? `${p.snow_in / vmax * 100}%` : "0";
         seg.style.background = `var(${qual(p.quality).sw})`;
@@ -225,16 +216,16 @@ function renderSummary(d, e) {
       });
       const wrap = el("div", { class: "sbar-wrap" });
       wrap.append(stack);
-      const rain = v.periods.reduce((a, p) => a + (p.rain_in || 0), 0);
+      const rain = sum(v, "rain_in");
       const label = el("div", { class: "sday-l" + (weekend ? " wk" : "") + (x.date === t0 ? " today" : "") });
       label.append(el("span", {}, x.date === t0 ? "Today" : dl.dow.slice(0, 2)), el("span", {}, String(dl.dom)));
-      col.append(wrap, label);
+      col.append(el("div", { class: "sval" }, fmtSnow(sum(v, "snow_in"))), wrap, label);
       days.append(col);
       hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
-        { name: x.past ? "Model estimate" : "Forecast", value: amount(total(v), rain) },
+        { name: x.past ? "Model estimate" : "Forecast", value: amount(sum(v, "snow_in"), rain) },
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
-        ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => {
-          const p = v.periods[k];
+        ...["Daytime 6a–6p", "Nighttime 6p–6a"].map((nm, k) => {
+          const p = v.halves[k] || {};
           return { name: nm, value: amount(p.snow_in, p.rain_in) + (p.quality === "mixed" ? ` · ${qual("mixed").text}` : "") };
         }),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
@@ -258,11 +249,9 @@ function conditions(h) {
 function renderHourly(d, e) {
   const tb = $("#hourly-table"), wrap = $("#hourly-wrap");
   tb.replaceChildren();
-  tabs("#hourly-tabs", "hourly");
-  const history = state.tab.hourly === "history";
-  const hrs = d.hourly.filter((h) => history ? h.t < d.now : h.t >= d.now);
-  const ni = history ? -1 : 0;
-  $("#hourly-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · ${history ? "last 7 days (model estimate)" : "next 10 days"}`;
+  const hrs = d.hourly, ni = hrs.findIndex((h) => h.t >= d.now);
+  const cls = (i) => i === ni ? "now" : i < ni ? "past" : "";
+  $("#hourly-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · last 7 days (model estimate) and next 10`;
   const hl = (t) => { const h = +t.slice(11, 13); return `${h % 12 || 12}${h < 12 ? "a" : "p"}`; };
   const rows = [  // [label, unit, value(hour, elevation data)]
     ["Precip Chance", "%", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}`],
@@ -280,7 +269,7 @@ function renderHourly(d, e) {
   ];
   const head = el("tr"); head.append(el("th", { class: "rowh" }, ""));
   hrs.forEach((h, i) => {
-    const th = el("th", { class: (i === ni ? "now" : ""), "data-i": i });
+    const th = el("th", { class: cls(i) });
     th.append(el("div", {}, hl(h.t)), el("div", { class: "muted" }, dayLabel(h.t.slice(0, 10)).dow));
     head.append(th);
   });
@@ -289,10 +278,11 @@ function renderHourly(d, e) {
     const tr = el("tr");
     const th = el("td", { class: "rowh" }); th.append(el("b", {}, label), document.createTextNode(unit ? ` ${unit}` : ""));
     tr.append(th);
-    hrs.forEach((h, i) => tr.append(el("td", { class: (i === ni ? "now" : "") }, String(fn(h, h[e])))));
+    hrs.forEach((h, i) => tr.append(el("td", { class: cls(i) }, String(fn(h, h[e])))));
     tb.append(tr);
   }
-  requestAnimationFrame(() => { wrap.scrollLeft = history ? wrap.scrollWidth : 0; });  // history: start at the latest hour
+  const now = head.children[ni + 1];  // open at the current hour; the past is to the left
+  if (now) wrap.scrollLeft = now.offsetLeft - head.children[0].offsetWidth;
 }
 
 const DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
@@ -302,8 +292,7 @@ function renderDailyTable(d, e) {
   const tb = $("#daily-table");
   tb.replaceChildren();
   tb.className = "grid days";
-  tabs("#daily-tabs", "daily");
-  const days = state.tab.daily === "history" ? d.daily.filter((x) => x.past).slice(-7) : d.daily.filter((x) => !x.past).slice(0, 10);
+  const days = window17(d);
   $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft · rows: 6am–6pm, 6pm–6am`;
   // daytime rows also carry the day's report notes (powder morning, rain line, sleet, flat light);
   // wind-hold / wind-chill notes are already row alerts
@@ -357,11 +346,12 @@ function renderDailyTable(d, e) {
     if (cols[k - 1]?.[3] !== grp) head1.append(el("th", { colspan: cols.filter((c) => c[3] === grp).length, class: "grp" }, grp));
     head2.append(el("th", {}, name));
   });
-  tb.append(head1, head2);
+  const thead = el("thead"); thead.append(head1, head2);
+  tb.append(thead);
   for (const x of days) {
     const dl = dayLabel(x.date);
     x[e].halves.forEach((h, k) => {
-      const tr = el("tr", { class: `${k ? "night" : "dayrow"}${h.past ? " past" : ""}` });
+      const tr = el("tr", { class: `${k ? "night" : "dayrow"}${h.past ? " past" : ""}`, "data-date": x.date });
       if (!k) {
         const td = el("td", { class: "dlabel", rowspan: x[e].halves.length });
         td.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", {}, `${dl.mon} ${dl.dom}`));
@@ -376,84 +366,83 @@ function renderDailyTable(d, e) {
       tb.append(tr);
     });
   }
+  const t0 = tb.querySelector(`tr.dayrow[data-date="${today()}"]`);  // open at today; the past is above
+  if (t0) $("#daily-wrap").scrollTop = t0.offsetTop - thead.offsetHeight;
+  legend("#alert-legend", Object.keys(ALERT).map((k) => ({ label: ALERT_NAME[k], color: `var(${ALERT[k]})`, kind: "key-rect" })));
 }
 
-function timeChart(container, hours, opts) {
-  if (hours.length < 2) { container.replaceChildren(el("div", { class: "muted" }, "No hourly data.")); return; }
-  const f = frame(container, opts.margin || { t: 10, r: 74, b: 24, l: 48 });
-  const n = hours.length;
-  const X = (i) => f.m.l + (i / (n - 1)) * f.iw;
+const VISIBLE_DAYS = 7;  // scrolling time charts show about a week; scroll for the rest
+function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (perDay per day)
+  if (pts.length < 2) { container.replaceChildren(el("div", { class: "muted" }, "No data.")); return; }
+  const m = { t: 14, b: 24, l: 48, r: 74, ...opts.margin }, H = opts.height || 240, ih = H - m.t - m.b;
+  container.replaceChildren(); container.classList.add("scroll");
+  const vis = Math.max(200, container.clientWidth - m.l - m.r), n = pts.length;
+  const dx = vis / (VISIBLE_DAYS * (opts.perDay || 24)), pad = 2, W = Math.max(vis, dx * (n - 1) + 2 * pad);
+  const left = svgEl("svg", { width: m.l, height: H }), right = svgEl("svg", { width: m.r, height: H });
+  const svg = svgEl("svg", { width: W, height: H, role: "img" });
+  const sc = el("div", { class: "xscroll" }); sc.append(svg);
+  container.append(left, sc, right);
+  const X = (i) => pad + i * dx;
   const { min = 0, max, step, fmt } = opts.y;
-  const Y = (v) => f.m.t + f.ih - ((v - min) / (max - min)) * f.ih;
-  const clampY = (v) => Y(Math.max(min, Math.min(max, v)));
+  const Y = (v) => m.t + ih - ((Math.max(min, Math.min(max, v)) - min) / (max - min)) * ih;
   for (let v = min; v <= max + 1e-9; v += step) {
-    f.svg.append(svgEl("line", { x1: f.m.l, x2: f.m.l + f.iw, y1: Y(v), y2: Y(v), class: v === min ? "baseline" : "gridline" }));
-    f.svg.append(svgText({ x: f.m.l - 6, y: Y(v) + 4, "text-anchor": "end" }, fmt(v)));
+    svg.append(svgEl("line", { x1: 0, x2: W, y1: Y(v), y2: Y(v), class: v === min ? "baseline" : "gridline" }));
+    left.append(svgText({ x: m.l - 6, y: Y(v) + 4, "text-anchor": "end" }, fmt(v)));
   }
-  hours.forEach((h, i) => {
-    if (h.t.endsWith("T00:00")) {
-      const dl = dayLabel(h.t.slice(0, 10));
-      f.svg.append(svgEl("line", { x1: X(i), x2: X(i), y1: f.m.t, y2: f.m.t + f.ih, class: "gridline" }));
-      f.svg.append(svgText({ x: X(i) + 4, y: f.H - 6 }, `${dl.dow} ${dl.dom}`));
-    }
+  const tick = opts.tick || ((p) => p.t.endsWith("T00:00"));
+  pts.forEach((p, i) => {
+    if (!tick(p)) return;
+    const day = p.t.slice(0, 10), dl = dayLabel(day);
+    svg.append(svgEl("line", { x1: X(i), x2: X(i), y1: m.t, y2: m.t + ih, class: "gridline" }),
+      svgText({ x: X(i) + 4, y: H - 6, class: day === state.data.today ? "today" : "" }, day === state.data.today ? `Today ${dl.dom}` : `${dl.dow} ${dl.dom}`));
   });
+  const path = (get) => {  // polyline through non-null values
+    let d = "", pen = false;
+    pts.forEach((p, i) => {
+      const v = get(p);
+      if (v == null) { pen = false; return; }
+      d += `${pen ? "L" : "M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`; pen = true;
+    });
+    return d;
+  };
   for (const b of opts.bands || []) {
     let d = "", back = "";
-    hours.forEach((h, i) => {
-      const lo = b.lo(h), hi = b.hi(h);
+    pts.forEach((p, i) => {
+      const lo = b.lo(p), hi = b.hi(p);
       if (lo == null || hi == null) return;
-      d += `${d ? "L" : "M"}${X(i)},${clampY(hi)}`; back = `L${X(i)},${clampY(lo)}` + back;
+      d += `${d ? "L" : "M"}${X(i)},${Y(hi)}`; back = `L${X(i)},${Y(lo)}` + back;
     });
-    if (d) f.svg.append(svgEl("path", { d: d + back + "Z", fill: b.color, opacity: b.opacity ?? 0.12 }));
-  }
-  for (const b of opts.bars || []) {
-    const bw = Math.max(1, f.iw / n - 1);
-    hours.forEach((h, i) => {
-      let base = 0;
-      for (const s of b) {
-        const v = s.get(h) || 0;
-        if (v <= 0) continue;
-        const y0 = Y(Math.min(max, base)), y1 = Y(Math.min(max, base + v));
-        f.svg.append(svgEl("rect", { x: X(i) - bw / 2, y: y1, width: bw, height: Math.max(0, y0 - y1), fill: s.color }));
-        base += v;
-      }
-    });
+    if (d) svg.append(svgEl("path", { d: d + back + "Z", fill: b.color, opacity: b.opacity ?? 0.12 }));
   }
   for (const r of opts.refs || []) {
     if (r.v < min || r.v > max) continue;
-    f.svg.append(svgEl("line", { x1: f.m.l, x2: f.m.l + f.iw, y1: Y(r.v), y2: Y(r.v), class: "ref" }));
-    f.svg.append(svgText({ x: f.m.l + f.iw + 6, y: Y(r.v) + 4, class: "reflabel" + (r.strong ? " today" : "") }, r.label));
+    svg.append(svgEl("line", { x1: 0, x2: W, y1: Y(r.v), y2: Y(r.v), class: "ref" }));
+    right.append(svgText({ x: 6, y: Y(r.v) + 4, class: "reflabel" + (r.strong ? " today" : "") }, r.label));
   }
-  for (const s of opts.lines || []) {
-    let d = "", pen = false;
-    hours.forEach((h, i) => {
-      const v = s.get(h);
-      if (v == null) { pen = false; return; }
-      d += `${pen ? "L" : "M"}${X(i).toFixed(1)},${clampY(v).toFixed(1)}`; pen = true;
-    });
-    f.svg.append(svgEl("path", { d, fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  for (const s of opts.lines || [])
+    svg.append(svgEl("path", { d: path(s.get), fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  const hrs = (t) => (new Date(t) - new Date(pts[0].t)) / 36e5;  // hours since the first point
+  const xNow = pad + hrs(state.data.now) * dx * (opts.perDay || 24) / 24;
+  if (xNow > pad && xNow < W - pad) {  // past (model estimate) | forecast, placed by time
+    svg.append(svgEl("line", { x1: xNow, x2: xNow, y1: m.t - 4, y2: m.t + ih, class: "divider" }),
+      svgText({ x: xNow - 4, y: m.t + 6, "text-anchor": "end" }, "past"), svgText({ x: xNow + 4, y: m.t + 6 }, "forecast"));
   }
-  const ni = hours.findIndex((h) => h.t >= state.data.now);
-  if (ni > 0) {  // past (model estimate) | forecast
-    f.svg.append(svgEl("line", { x1: X(ni), x2: X(ni), y1: f.m.t - 4, y2: f.m.t + f.ih, class: "divider" }));
-    f.svg.append(svgText({ x: X(ni) - 4, y: f.m.t + 10, "text-anchor": "end" }, "past"), svgText({ x: X(ni) + 4, y: f.m.t + 10 }, "forecast"));
-  }
-  const xh = svgEl("line", { class: "xhair", y1: f.m.t, y2: f.m.t + f.ih, visibility: "hidden" });
-  const hit = svgEl("rect", { class: "hit", x: f.m.l, y: f.m.t, width: f.iw, height: f.ih });
-  f.svg.append(xh, hit);
+  const xh = svgEl("line", { class: "xhair", y1: m.t, y2: m.t + ih, visibility: "hidden" });
+  const hit = svgEl("rect", { class: "hit", x: 0, y: m.t, width: W, height: ih });
+  svg.append(xh, hit);
   hit.addEventListener("pointermove", (ev) => {
-    const r = f.svg.getBoundingClientRect();
-    const px = (ev.clientX - r.left) * (f.W / r.width);
-    const i = Math.max(0, Math.min(n - 1, Math.round(((px - f.m.l) / f.iw) * (n - 1))));
+    const i = Math.max(0, Math.min(n - 1, Math.round((ev.clientX - svg.getBoundingClientRect().left - pad) / dx)));
     xh.setAttribute("x1", X(i)); xh.setAttribute("x2", X(i)); xh.setAttribute("visibility", "visible");
-    showTip(ev, new Date(hours[i].t).toLocaleString(undefined, { weekday: "short", hour: "numeric", month: "short", day: "numeric" }), opts.tip(hours[i]));
+    showTip(ev, opts.tipHead ? opts.tipHead(pts[i]) :
+      new Date(pts[i].t).toLocaleString(undefined, { weekday: "short", hour: "numeric", month: "short", day: "numeric" }), opts.tip(pts[i]));
   });
   hit.addEventListener("pointerleave", () => { xh.setAttribute("visibility", "hidden"); hideTip(); });
+  const s0 = pts.findIndex((p) => p.t >= `${state.data.today}T06:00`);  // open at the start of today
+  sc.scrollLeft = s0 > 0 ? X(s0) - pad : 0;
 }
 
 function levelCharts(d, e) {
-  tabs("#level-tabs", "level");
-  const hours = d.hourly.filter((h) => state.tab.level === "history" ? h.t < d.now : h.t >= d.now);
+  const hours = d.hourly;
   const p = d.points;
   const vals = hours.flatMap((h) => [h.snow_level_ft, h.freezing_level_ft, h.snow_level_hi_ft, h.snow_level_lo_ft]).filter((v) => v != null);
   const lo = Math.max(0, Math.floor((Math.min(p.base.requested.ft, ...vals) - 500) / 2000) * 2000);
@@ -480,61 +469,31 @@ function levelCharts(d, e) {
   ]);
 }
 
-function plumeChart(d, e) {  // snow + rain per 12 h period (6a-6p, 6p-6a) with spread whiskers
-  tabs("#plume-tabs", "plume");
-  const history = state.tab.plume === "history";
-  const all = d.plume[e];
-  const keep = all.t.map((t, i) => [t, i]).filter(([t, i]) => history ? (all.t[i + 1] || "9") <= d.now : (all.t[i + 1] || "9") > d.now).map(([, i]) => i);
-  const pick = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, keep.map((i) => v[i])]));
-  const p = { t: keep.map((i) => all.t[i]), snow: pick(all.snow), rain: pick(all.rain) };
+function plumeChart(d, e) {  // snow and rain per 12 h period (6a-6p, 6p-6a): forecast lines with spread bands
+  const p = d.plume[e];
+  const pts = p.t.map((t, i) => ({ t, i }));
   const kinds = [["snow", "var(--q-snow)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
-  const n = p.t.length;
-  const c = $("#plume");
-  const f = frame(c, { t: 16, r: 12, b: 34, l: 40 });
-  const top = Math.max(2, ...p.snow["0.95"], ...p.rain["0.95"]);
-  const { max, step } = niceMax(top);
-  yAxis(f, max, step, (v) => `${v}"`);
-  const band = f.iw / n, bw = Math.max(3, Math.min(10, band * 0.32));
-  const Y = (v) => f.m.t + f.ih - (Math.min(v, max) / max) * f.ih;
-  const ni = p.t.findIndex((t) => t >= d.now.slice(0, 13));
-  p.t.forEach((t, i) => {
-    const cx = f.m.l + band * i + band / 2, past = t < d.now && (p.t[i + 1] || "9") <= d.now;
-    const g = svgEl("g", { class: "col" });
-    kinds.forEach(([k, color], j) => {
-      const v = p[k].fc[i], x = cx + (j ? 1 : -1) * (bw / 2 + 1) - bw / 2;
-      if (v >= 0.05) g.append(column(x, Y(v), bw, f.m.t + f.ih - Y(v), past ? "var(--muted)" : color));
-      if (!past && p[k]["0.95"][i] > p[k]["0.05"][i] + 0.05) {
-        const xm = x + bw / 2;
-        g.append(svgEl("line", { x1: xm, x2: xm, y1: Y(p[k]["0.05"][i]), y2: Y(p[k]["0.95"][i]), stroke: "var(--text-secondary)", "stroke-width": 1 }),
-          svgEl("line", { x1: xm, x2: xm, y1: Y(p[k]["0.25"][i]), y2: Y(p[k]["0.75"][i]), stroke: "var(--text-secondary)", "stroke-width": 3, "stroke-linecap": "round" }));
-      }
-    });
-    if (t.endsWith("T06:00")) {  // label each day under its daytime + nighttime pair
-      const dl = dayLabel(t.slice(0, 10));
-      f.svg.append(svgText({ x: cx + band / 2, y: f.H - 18, "text-anchor": "middle", class: t.slice(0, 10) === d.today ? "today" : "" },
-        t.slice(0, 10) === d.today ? "Today" : dl.dow.slice(0, 2)), svgText({ x: cx + band / 2, y: f.H - 5, "text-anchor": "middle" }, String(dl.dom)));
-      if (i) f.svg.append(svgEl("line", { x1: cx - band / 2, x2: cx - band / 2, y1: f.m.t, y2: f.m.t + f.ih, class: "gridline" }));
-    }
-    const hit = svgEl("rect", { class: "hit", x: cx - band / 2, y: f.m.t, width: band, height: f.ih + 30 });
-    const dl = dayLabel(t.slice(0, 10)), night = t.endsWith("T18:00");
-    hover(hit, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${night ? "6pm–6am" : "6am–6pm"}`, kinds.flatMap(([k, color, name, dp]) => [
-      { name, value: `${p[k].fc[i].toFixed(dp)}"`, color },
-      ...(past ? [] : [{ name: "  middle 50% · 90%", value: `${p[k]["0.25"][i].toFixed(dp)}–${p[k]["0.75"][i].toFixed(dp)} · ${p[k]["0.05"][i].toFixed(dp)}–${p[k]["0.95"][i].toFixed(dp)}"` }]),
-    ])));
-    g.append(hit);
-    f.svg.append(g);
+  const { max, step } = niceMax(Math.max(2, ...p.snow["0.95"], ...p.rain["0.95"]));
+  const q = (k, s) => (x) => p[k][s][x.i];
+  timeChart($("#plume"), pts, {
+    perDay: 2, tick: (x) => x.t.endsWith("T06:00"), margin: { r: 12 },
+    y: { max, step, fmt: (v) => `${v}"` },
+    bands: kinds.flatMap(([k, color]) => [{ lo: q(k, "0.05"), hi: q(k, "0.95"), color, opacity: 0.1 },
+                                         { lo: q(k, "0.25"), hi: q(k, "0.75"), color, opacity: 0.2 }]),
+    lines: kinds.map(([k, color]) => ({ get: q(k, "fc"), color })),
+    tipHead: (x) => { const dl = dayLabel(x.t.slice(0, 10)); return `${dl.dow} ${dl.mon} ${dl.dom} · ${x.t.endsWith("T18:00") ? "6pm–6am" : "6am–6pm"}`; },
+    tip: (x) => kinds.flatMap(([k, color, name, dp]) => [
+      { name, value: `${p[k].fc[x.i].toFixed(dp)}"`, color },
+      ...(p[k]["0.95"][x.i] > p[k]["0.05"][x.i] ? [{ name: "middle 50% · 90%",
+        value: `${p[k]["0.25"][x.i].toFixed(dp)}–${p[k]["0.75"][x.i].toFixed(dp)} · ${p[k]["0.05"][x.i].toFixed(dp)}–${p[k]["0.95"][x.i].toFixed(dp)}"` }] : []),
+    ]),
   });
-  if (ni > 0) {
-    const xd = f.m.l + band * ni;
-    f.svg.append(svgEl("line", { x1: xd, x2: xd, y1: f.m.t - 6, y2: f.m.t + f.ih, class: "divider" }),
-      svgText({ x: xd - 6, y: f.m.t - 4, "text-anchor": "end" }, "past"), svgText({ x: xd + 6, y: f.m.t - 4 }, "forecast"));
-  }
-  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h · ${history ? "last 7 days (model estimate)" : "next 10 days"}`;
+  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h (6am–6pm, 6pm–6am)`;
   legend("#plume-legend", [
-    { label: "Snow (in)", color: "var(--q-snow)", kind: "key-rect" },
-    { label: "Rain (in of water)", color: "var(--q-rain)", kind: "key-rect" },
-    { label: "Past (model estimate)", color: "var(--muted)", kind: "key-rect" },
-    { label: "Middle 50% (thick) · 90% (thin)", glyph: "┃" },
+    { label: "Snow (in)", color: "var(--q-snow)" },
+    { label: "Rain (in of water)", color: "var(--q-rain)" },
+    { label: "Middle 50%", color: "var(--text-secondary)", kind: "key-band" },
+    { label: "Middle 90%", color: "var(--text-secondary)", kind: "key-band light" },
   ]);
 }
 

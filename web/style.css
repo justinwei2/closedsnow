@@ -132,6 +132,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .sbar-wrap { height: 110px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
 .sstack { width: 80%; height: 100%; display: flex; align-items: flex-end; gap: 1px; }
 .sseg { display: block; flex: 1; border-radius: 3px 3px 0 0; }
+.sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sday-l { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
 .sday-l.wk { color: var(--text-primary); font-weight: 600; }
 .sday-l.today { color: var(--text-primary); font-weight: 700; }
@@ -148,6 +149,10 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 /* ---- charts */
 .chart { width: 100%; height: 240px; position: relative; }
 .chart.short { height: 140px; }
+/* scrolling time charts: axis labels pinned in their own svgs either side of the scroller */
+.chart.scroll { display: flex; height: auto; }
+.chart.scroll > svg, .chart .xscroll svg { flex: none; width: auto; height: auto; }
+.xscroll { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; }
 .chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .chart text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .chart text.today { fill: var(--text-primary); font-weight: 600; }
@@ -223,6 +228,9 @@ details[open] summary::before { content: "▾ "; }
 
 /* ---- daily overview (12 h rows) */
 table.days td, table.days th { padding: 6px 8px; }
+.vscroll { max-height: 540px; overflow: auto; }
+table.days thead { position: sticky; top: 0; z-index: 3; }
+table.days thead th { background: var(--surface-1); }
 table.days tr.night td { background: color-mix(in srgb, var(--page) 60%, transparent); }
 table.days tr.dayrow td { border-top: 1px solid var(--axis); }
 table.days td.dlabel { text-align: left; font-weight: 600; color: var(--text-primary); vertical-align: middle; position: sticky; left: 0; z-index: 2; background: var(--surface-1); }
@@ -249,7 +257,5 @@ table.hourly td.rowh { min-width: 150px; color: var(--muted); font-size: 11px; w
 table.hourly td.rowh b { color: var(--text-primary); font-size: 12px; font-weight: 600; }
 table.hourly .past { opacity: .5; }
 table.hourly .now { background: color-mix(in srgb, var(--q-snow) 10%, transparent); }
-.tabs-seg { margin-bottom: 10px; }
-.tabs-seg button { padding: 5px 14px; }
 .asq { cursor: default; outline: none; }
 .asq:hover, .asq:focus { outline: 2px solid var(--text-secondary); outline-offset: 1px; }
