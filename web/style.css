@@ -172,6 +172,7 @@ table.grid th { color: var(--text-secondary); font-weight: 500; }
 /* sticky first column sits above faded (opacity) cells, which otherwise paint over it */
 table.grid .rowh { text-align: left; color: var(--text-secondary); position: sticky; left: 0; z-index: 2; background: var(--surface-1); }
 table.grid .strong { font-weight: 650; color: var(--text-primary); }
+table.grid tr.grp td { text-align: left; font-weight: 600; color: var(--text-secondary); padding-top: 12px; }
 
 /* ---- appendix */
 .appendix { margin-top: 28px; }

@@ -14,6 +14,8 @@ const QUALITY = {  // one colour per label everywhere: orange = snow, purple = m
   "mixed": { sw: "--q-mixed", text: "Mixed / sleet" },
   "rain": { sw: "--q-rain", text: "Rain" },
 };
+const COUNTRY = { US: "United States", CA: "Canada" };  // lists group by country, alphabetical within
+const byCountry = (rs) => [...rs].sort((a, b) => Object.keys(COUNTRY).indexOf(a.country) - Object.keys(COUNTRY).indexOf(b.country) || a.name.localeCompare(b.name));
 const qual = (q) => QUALITY[q] || { sw: "--muted", text: q || "–" };  // unknown labels (older data) stay grey
 const ALERT = { powder: "--q-snow", wet: "--q-mixed", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
@@ -665,7 +667,12 @@ function renderCalCoverage() {
   ["Resort", "Status", "Gauge", "Error (in / 72 h)", "Data updated"].forEach((h, i) => head.append(el("th", { class: i ? "" : "rowh" }, h)));
   tb.append(head);
   const LABEL = { calibrated: "✓ Calibrated", pending: "◐ Pending", "raw models": "Raw models", "not set up yet": "○ Setting up" };
-  for (const r of state.index) {
+  let grp;
+  for (const r of byCountry(state.index)) {
+    if (r.country !== grp) {
+      grp = r.country;
+      const g = el("tr", { class: "grp" }); g.append(el("td", { colspan: 5 }, COUNTRY[grp] || grp)); tb.append(g);
+    }
     const tr = el("tr");
     const name = el("td", { class: "rowh" });
     name.append(r.located === false ? document.createTextNode(r.name) : el("a", { href: `#${r.key}` }, r.name));
@@ -759,9 +766,11 @@ function setupSearch() {
   const close = () => { list.hidden = true; q.setAttribute("aria-expanded", "false"); active = -1; };
   const draw = () => {
     const term = q.value.trim().toLowerCase();
-    const hits = state.index.filter((r) => r.located !== false && (!term || r.name.toLowerCase().includes(term)));
+    const hits = byCountry(state.index.filter((r) => r.located !== false && (!term || r.name.toLowerCase().includes(term))));
     list.replaceChildren(); opts = [];
+    let grp;
     for (const r of hits) {
+      if (r.country !== grp) { grp = r.country; list.append(el("li", { class: "grp", role: "presentation" }, COUNTRY[grp] || grp)); }
       const li = el("li", { class: "opt", role: "option", id: `opt-${r.key}` }, r.name);
       li.addEventListener("mousedown", (ev) => { ev.preventDefault(); location.hash = r.key; close(); q.blur(); });
       list.append(li); opts.push({ li, r });

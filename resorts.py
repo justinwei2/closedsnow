@@ -24,6 +24,14 @@ SEASONS = [("2024-11-01", "2025-04-30"), ("2025-11-01", "2026-04-30")]  # calibr
 EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weights
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
+COUNTRIES = {"US": "United States", "CA": "Canada"}  # display order for lists grouped by country
+
+
+def by_country(keys):
+    """Catalog keys grouped by country (COUNTRIES order), alphabetical within: [(country, [keys])]."""
+    return [(c, sorted((k for k in keys if CATALOG[k][1] == c), key=lambda k: CATALOG[k][0])) for c in COUNTRIES]
+
+
 PT, MT = "America/Los_Angeles", "America/Denver"
 VAN, EDM = "America/Vancouver", "America/Edmonton"
 # key: (name, country, tz, (base lat, lon, ft, label), (summit lat, lon, ft, label)); rough coordinates.

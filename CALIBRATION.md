@@ -5,26 +5,33 @@ nearby gauge using two winters (2024-26) of as-issued forecasts. Error = mean ab
 72 h liquid precipitation for the blend, after correction. Resorts not calibrated yet run on
 the raw models with equal weights.
 
+## United States
+
 | Resort | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
 |---|---|---|---|---|---|
-| Palisades Tahoe | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 356 | 0.49 |
 | Alpine Meadows | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 356 | 0.57 |
+| Alta | calibrated | Atwater SNOTEL | 8,750 ft | 356 | 0.39 |
+| Arapahoe Basin | calibrated | Grizzly Peak SNOTEL | 11,110 ft | 356 | 0.19 |
+| Big Sky | calibrated | Lone Mountain SNOTEL | 8,820 ft | 356 | 0.20 |
+| Copper Mountain | calibrated | Copper Mountain SNOTEL | 10,500 ft | 356 | 0.16 |
+| Crested Butte | calibrated | Butte SNOTEL | 10,190 ft | 356 | 0.14 |
+| Jackson Hole | calibrated | Phillips Bench SNOTEL | 8,170 ft | 356 | 0.26 |
 | Kirkwood | calibrated | Carson Pass SNOTEL | 8,360 ft | 356 | 0.32 |
 | Mammoth Mountain | calibrated | Mammoth Pass (CDEC) | 9,400 ft | 356 | 0.41 |
 | Mt. Bachelor | calibrated | Three Creeks Meadow SNOTEL | 5,680 ft | 356 | 0.37 |
-| Alta | calibrated | Atwater SNOTEL | 8,750 ft | 356 | 0.39 |
+| Palisades Tahoe | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 356 | 0.49 |
+| Snowbasin | calibrated | Ben Lomond Peak SNOTEL | 7,690 ft | 356 | 0.41 |
 | Snowbird | calibrated | Snowbird SNOTEL | 9,170 ft | 356 | 0.37 |
 | Solitude | calibrated | Brighton SNOTEL | 8,790 ft | 356 | 0.27 |
-| Snowbasin | calibrated | Ben Lomond Peak SNOTEL | 7,690 ft | 356 | 0.41 |
-| Jackson Hole | calibrated | Phillips Bench SNOTEL | 8,170 ft | 356 | 0.26 |
-| Big Sky | calibrated | Lone Mountain SNOTEL | 8,820 ft | 356 | 0.20 |
-| Arapahoe Basin | calibrated | Grizzly Peak SNOTEL | 11,110 ft | 356 | 0.19 |
-| Copper Mountain | calibrated | Copper Mountain SNOTEL | 10,500 ft | 356 | 0.16 |
 | Steamboat | calibrated | Dry Lake SNOTEL | 8,240 ft | 356 | 0.23 |
 | Telluride | calibrated | Alta Lakes SNOTEL | 11,290 ft | 178 | 0.17 |
-| Crested Butte | calibrated | Butte SNOTEL | 10,190 ft | 356 | 0.14 |
-| Whistler | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
+
+## Canada
+
+| Resort | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
+|---|---|---|---|---|---|
 | Blackcomb | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
-| Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
 | Kicking Horse | calibrated | Caribou Creek (BC snow pillow) | 7,221 ft | 349 | 0.19 |
 | Lake Louise | calibrated | Pika Run (Alberta Rivers) | 7,382 ft | 356 | 0.12 |
+| Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
+| Whistler | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
