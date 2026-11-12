@@ -832,13 +832,6 @@ async function boot() {
   let resizeT;
   addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(render, 150); });
   setInterval(() => { if (state.data && clock(state.data)) render(); }, 60e3);  // keep "now" current while open
-  $("#theme").addEventListener("click", () => {
-    const root = document.documentElement;
-    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-    root.dataset.theme = dark ? "light" : "dark";
-    localStorage.setItem("theme", root.dataset.theme);
-  });
-  if (localStorage.getItem("theme")) document.documentElement.dataset.theme = localStorage.getItem("theme");
   pick();
 }
 boot().catch((err) => { $("#app").prepend(el("p", { class: "err" }, `Failed to load: ${err.message}. Run update.py first.`)); });

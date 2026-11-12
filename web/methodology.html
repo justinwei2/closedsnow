@@ -14,7 +14,6 @@
       <a href="./">Forecast</a>
       <a href="methodology.html" class="on" aria-current="page">Methodology</a>
     </nav>
-    <div class="top-right"><button id="theme" type="button" aria-label="Toggle dark mode">◐</button></div>
   </header>
 
   <main class="doc">
@@ -170,14 +169,5 @@
     </section>
   </main>
 </div>
-<script>
-  if (localStorage.getItem("theme")) document.documentElement.dataset.theme = localStorage.getItem("theme");
-  document.getElementById("theme").addEventListener("click", () => {
-    const root = document.documentElement;
-    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
-    root.dataset.theme = dark ? "light" : "dark";
-    localStorage.setItem("theme", root.dataset.theme);
-  });
-</script>
 </body>
 </html>

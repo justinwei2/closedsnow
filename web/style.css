@@ -18,26 +18,6 @@
   --q-snow: #eb6834; --q-mixed: #6250d6; --q-rain: #2a78d6;
   --q-snow-dry: #b8461b; --q-snow-wet: #f5ab85;  /* snow shaded by snow ratio: darker = drier */
 }
-/* dark: OS setting unless the toggle says light; toggle wins both ways */
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) .viz-root {
-    color-scheme: dark;
-    --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
-    --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-    --series-1: #3987e5; --series-2: #d95926;
-    --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
-    --q-snow-dry: #f5895a; --q-snow-wet: #9a4421;  /* dark mode: drier = more vivid */
-  }
-}
-:root[data-theme="dark"] .viz-root {
-  color-scheme: dark;
-  --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
-  --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
-  --series-1: #3987e5; --series-2: #d95926;
-  --q-snow: #d95926; --q-mixed: #9085e9; --q-rain: #3987e5;
-    --q-snow-dry: #f5895a; --q-snow-wet: #9a4421;  /* dark mode: drier = more vivid */
-}
-
 /* ---- base */
 * { box-sizing: border-box; }
 body { margin: 0; }
@@ -64,7 +44,6 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .tabs a:hover { background: var(--grid); }
 .tabs a.on { color: var(--text-primary); background: var(--grid); font-weight: 600; }
 .top-right { margin-left: auto; display: flex; gap: 12px; align-items: center; font-size: 12px; }
-#theme { background: none; border: 1px solid var(--border); color: var(--text-primary); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
 .search { position: relative; flex: 1; max-width: 420px; }
 .search input {
   width: 100%; padding: 7px 10px; border-radius: 7px; border: 1px solid var(--border);
