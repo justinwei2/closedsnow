@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology · Snow Report</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="viz-root">
+  <header class="top">
+    <div class="brand">Snow Report</div>
+    <nav class="tabs" aria-label="Pages">
+      <a href="./">Forecast</a>
+      <a href="methodology.html" class="on" aria-current="page">Methodology</a>
+    </nav>
+    <div class="top-right"><button id="theme" type="button" aria-label="Toggle dark mode">◐</button></div>
+  </header>
+
+  <main class="doc">
+    <h1>Formulas &amp; methodology</h1>
+    <p class="lede">How every number on the forecast page is produced. Constants marked <span class="tag">rule of thumb</span> are judgment calls, not fit to data; <span class="tag ok">sourced</span> ones come from published research. Code: <a href="https://github.com/justinwei2/opensnow">github.com/justinwei2/opensnow</a>.</p>
+
+    <nav class="toc card">
+      <a href="#points">1. Forecast points</a><a href="#blend">2. Precipitation blend</a><a href="#calibration">3. Calibration</a>
+      <a href="#ranges">4. Likely range</a><a href="#phase">5. Rain vs snow &amp; snow level</a><a href="#slr">6. Snow-to-water ratio</a>
+      <a href="#quality">7. Snow-quality labels</a><a href="#report">8. Weather report</a><a href="#past">9. Past snowfall</a>
+      <a href="#refresh">10. Refresh &amp; reliability</a><a href="#limits">11. Limitations</a><a href="#data">12. Data sources</a>
+    </nav>
+
+    <section class="card" id="points">
+      <h2>1. Forecast points</h2>
+      <p>Each resort has three named points on the mountain: <b>base</b>, <b>mid-mountain</b> and <b>summit</b>. They're snapped to Open-Meteo's 90 m terrain model, and the published lift elevation is passed explicitly, because the terrain model smooths peaks. Requests use the <b>nearest</b> model grid cell. Open-Meteo's default can jump several km to a cell of similar height, which is how you end up with town weather.</p>
+      <ul>
+        <li>Temperature, wet-bulb, snow fraction and snow ratio are computed <b>at each point's elevation</b>.</li>
+        <li>Precipitation is the model grid cell's value. No free model resolves individual ridges (cells are 2.5–25 km).</li>
+        <li>Summit wind uses the free-air wind interpolated to summit height from the pressure levels, not the model's 10 m wind, which is smoothed over terrain. Base and mid use the 10 m wind.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="blend">
+      <h2>2. Precipitation blend</h2>
+      <p>Up to eight models: ECMWF IFS 9 km and 0.25°, ECMWF AIFS, GFS + HRRR, NBM 2.5 km, GEM, ICON, plus HRDPS 2.5 km in Canada and the northern US. For each hour <i>t</i>:</p>
+      <div class="eq">P<sub>blend</sub>(t) = Σ<sub>m</sub> w<sub>m</sub> · f<sub>m</sub> · P<sub>m</sub>(t) &nbsp;/&nbsp; Σ<sub>m</sub> w<sub>m</sub></div>
+      <p><b>f<sub>m</sub></b> = the model's bias factor and <b>w<sub>m</sub></b> = its weight (§3). The sum covers only models with data at that hour, so the blend renormalises as short-range models drop out: HRDPS after 2 days, ICON after 7, GEM after 10, NBM after 11.</p>
+    </section>
+
+    <section class="card" id="calibration">
+      <h2>3. Calibration</h2>
+      <p>One-time, per resort, against a nearby automated gauge (NRCS SNOTEL or California CDEC). It uses forecasts <b>as they were actually issued</b> (Open-Meteo Previous Runs API) over winters 2024–25 and 2025–26, so there's no look-ahead.</p>
+      <div class="eq">72 h forecast window starting day D = lead-1 day D + lead-2 day D+1 + lead-3 day D+2</div>
+      <div class="eq">f<sub>m</sub> = Σ observed / Σ forecast<sub>m</sub> &nbsp; (clamped to 0.4–2.0)</div>
+      <div class="eq">w<sub>m</sub> ∝ 1 / MAE<sub>m</sub>², &nbsp; MAE<sub>m</sub> = mean |f<sub>m</sub>·forecast − observed| over 72 h windows</div>
+      <ul>
+        <li><b>Observed precipitation</b> is the daily gauge increment. When the gauge clearly missed a storm (snow water gain &gt; 0.3" and gauge &lt; half of it), the snowpack's water gain is used instead. Storage gauges cap and freeze; Mammoth Pass caught 12" vs 31" of snow-water gain in 2024–25.</li>
+        <li><b>Resorts without a gauge</b> (Canada): f<sub>m</sub> = the median of calibrated resorts in the same region (else all US resorts), with equal weights.</li>
+        <li><b>Error bins</b> for the range (§4): the observed/forecast ratio for the blend, split by forecast storm size per 72 h: 10–25 mm, 25–50 mm, &gt; 50 mm (each bin needs ≥ 15 windows).</li>
+      </ul>
+      <p>Per-resort status, gauge and error: <a href="./#calcov">Calibration coverage</a> (in each resort's Details) and <a href="https://github.com/justinwei2/opensnow/blob/main/CALIBRATION.md">CALIBRATION.md</a>.</p>
+    </section>
+
+    <section class="card" id="ranges">
+      <h2>4. Likely range (25–75%)</h2>
+      <p>Two independent uncertainty estimates, averaged percentile by percentile (quantile averaging):</p>
+      <div class="eq">q<sub>p</sub> = ½ · [ ensemble q<sub>p</sub> · r + forecast · ratio<sub>p</sub>(storm size) ]</div>
+      <ul>
+        <li><b>Ensembles</b>: about 190 members (ECMWF ENS 51, AIFS ENS 51, GEFS 31, ICON EPS 40, GEM 21). Each ensemble is bias-corrected with its parent model's f<sub>m</sub> and weighted equally. Window totals use members covering ≥ 90% of the hours. Liquid is converted to snow with the blend's snow/liquid ratio <i>r</i> for that window, and base/mid are scaled by the blend's elevation/summit liquid ratio.</li>
+        <li><b>Historical error</b>: ratio<sub>p</sub> is the p-th percentile of observed/forecast at this resort for storms of that size. Window liquid is normalised to 72 h before picking the bin.</li>
+        <li>The headline number is the blend itself (the center, not the median). The 10–90% range is in each resort's Details.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="phase">
+      <h2>5. Rain vs snow, snow level, freezing level</h2>
+      <p>An hourly consensus profile averages temperature, humidity, height and wind from ECMWF IFS 0.25°, GFS, GEM and ICON at 10 pressure levels (1000–500 hPa), interpolated linearly in height.</p>
+      <div class="eq">T<sub>w</sub> = Stull (2011) wet-bulb from T and RH</div>
+      <div class="eq">snow fraction = 1 / (1 + e<sup>(T<sub>w</sub> − 0.5 °C) / 0.35</sup>) &nbsp; → 90% at −0.3 °C, 50% at +0.5 °C, 10% at +1.3 °C</div>
+      <ul>
+        <li><b>Snow level</b> = highest height where T<sub>w</sub> crosses +0.5 °C (≈ 50% snow). The band on the chart is the range across the four models. <span class="tag ok">sourced</span> Jennings et al. 2018 put the Sierra's 50% rain/snow threshold at ≈ 0.6–1.5 °C air temperature. A wet-bulb of +0.5 °C sits in that range for moist air.</li>
+        <li><b>Freezing level</b> = highest height where T crosses 0 °C.</li>
+        <li>The daily snow level averages the hours with precipitation, so dry hours don't skew it.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="slr">
+      <h2>6. Snow-to-water ratio (Kuchera method)</h2>
+      <p><b>T<sub>max</sub></b> = warmest temperature between the elevation and 500 hPa (≈ 18,000 ft).</p>
+      <div class="eq">if T<sub>max</sub> &gt; −2 °C: &nbsp; SLR = 12 − 2 · (T<sub>max</sub> + 2)<br>
+        if T<sub>max</sub> ≤ −2 °C: &nbsp; SLR = 12 + (−2 − T<sub>max</sub>)</div>
+      <div class="eq">× wind penalty = max(0.7, 1 − 0.0025 · (wind<sub>km/h</sub> − 30)) for wind &gt; 30 km/h (≈ 19 mph) &nbsp;<span class="tag">rule of thumb</span></div>
+      <div class="eq">clamped to 4 – 25; &nbsp; sleet hours (§7) use 2:1; &nbsp; density = 100 / SLR %</div>
+      <table class="grid narrow"><tr><th>T<sub>max</sub></th><th>SLR</th><th>Density</th></tr>
+        <tr><td>−15 °C</td><td>25:1</td><td>4%</td></tr><tr><td>−8 °C</td><td>18:1</td><td>5.5%</td></tr>
+        <tr><td>−4 °C</td><td>14:1</td><td>7%</td></tr><tr><td>−2 °C</td><td>12:1</td><td>8%</td></tr>
+        <tr><td>0 °C</td><td>8:1</td><td>12.5%</td></tr><tr><td>+1 °C</td><td>6:1</td><td>17%</td></tr></table>
+      <div class="eq">snow (in) = P<sub>blend</sub> (mm) × snow fraction × SLR / 25.4</div>
+      <p>The daily ratio averages the hourly ratios, weighted by how much snow fell each hour.</p>
+    </section>
+
+    <section class="card" id="quality">
+      <h2>7. Snow-quality labels</h2>
+      <p>One label per elevation per day, only when there's more than 1 mm of liquid. Checks run top to bottom; the first match wins. Snow fraction is precipitation-weighted.</p>
+      <table class="grid"><tr><th>Label</th><th>Rule</th><th>Meaning</th></tr>
+        <tr><td>☂ Rain</td><td>snow fraction &lt; 20%</td><td>Mostly rain at this elevation</td></tr>
+        <tr><td>⚠ Sleet / ZR</td><td>any wet hour with a warm-nose sounding</td><td>Snow forms aloft (a layer &lt; −5 °C above), melts in a layer &gt; +2 °C, then falls into air with T<sub>w</sub> ≤ 0 °C: ice pellets or freezing rain</td></tr>
+        <tr><td>⚠ Mixed</td><td>snow fraction 20–80%</td><td>Snow level near this elevation: wet snow and rain</td></tr>
+        <tr><td>Blower</td><td>density &lt; 6% (SLR &gt; 16.7)</td><td>Cold, dry, deep</td></tr>
+        <tr><td>Light &amp; dry</td><td>6–8% (SLR 12.5–16.7)</td><td>Classic powder</td></tr>
+        <tr><td>Medium</td><td>8–11% (SLR 9–12.5)</td><td>Supportive powder</td></tr>
+        <tr><td>Dense</td><td>11–15% (SLR 6.7–9)</td><td>Rimed, heavy powder</td></tr>
+        <tr><td>Heavy / wet</td><td>&gt; 15% (SLR &lt; 6.7)</td><td>Partly melted "Sierra cement"</td></tr></table>
+      <p><span class="tag">rule of thumb</span> The density cutoffs aren't yet calibrated against measured new-snow density (e.g. Central Sierra Snow Lab). Heavy/wet comes from warmth near the surface, physically closer to rain. Sleet needs warm air <i>above</i> cold air.</p>
+    </section>
+
+    <section class="card" id="report">
+      <h2>8. Weather report (daily notes)</h2>
+      <p>Lift hours = 8am–4pm resort time. Ridge wind = free-air wind at summit height. Estimated gust = max(model gust, 1.4 × sustained). A "snow day" has ≥ 1" summit snow or ≥ 0.1" liquid. <span class="tag">rule of thumb</span> for all thresholds.</p>
+      <table class="grid"><tr><th>Note</th><th>Severity</th><th>Trigger</th></tr>
+        <tr><td>Upper-lift wind holds likely</td><td>warn</td><td>ridge ≥ 45 mph sustained or ≈ 65 mph gust (lift hours)</td></tr>
+        <tr><td>Upper-lift wind holds possible</td><td>watch</td><td>ridge ≥ 30 mph sustained or ≈ 45 mph gust</td></tr>
+        <tr><td>Powder morning</td><td>info</td><td>≥ 8" summit snow from 4pm the day before to 9am</td></tr>
+        <tr><td>Rain to the summit</td><td>warn</td><td>snow day and max snow level (wet hours) &gt; summit</td></tr>
+        <tr><td>Rain/snow line between base and summit</td><td>watch</td><td>snow day and base &lt; snow level ≤ summit</td></tr>
+        <tr><td>Sleet / freezing rain possible</td><td>warn</td><td>any elevation labelled Sleet / ZR</td></tr>
+        <tr><td>Low visibility / flat light</td><td>info</td><td>≥ 4 lift hours with precip &gt; 0.3 mm and cloud ≥ 90%</td></tr>
+        <tr><td>Wind chill</td><td>watch</td><td>min summit wind chill ≤ −10 °F (lift hours; NWS formula)</td></tr></table>
+      <p><b>Alerts</b> are the NWS's own active alerts for the summit point, in their own words (US only). "Unavailable" means the alert fetch failed. It does not mean there are no alerts.</p>
+    </section>
+
+    <section class="card" id="past">
+      <h2>9. Past snowfall</h2>
+      <ul>
+        <li><b>Model estimate</b>: the same blend and phase/ratio maths applied to the last 7 days of the models' short-range forecasts. An estimate, not a measurement.</li>
+        <li><b>Station measured</b>: the gauge's daily snow-depth gain. Settling makes this under-read new snow, and the station sits at one elevation (shown).</li>
+      </ul>
+    </section>
+
+    <section class="card" id="refresh">
+      <h2>10. Refresh &amp; reliability</h2>
+      <ul>
+        <li>GitHub Actions every 3 h, as four parallel region jobs, each on its own runner and staggered 2 min apart. A resort refreshes when its data is &gt; 7.5 h old (≈ every 9 h), about 7.5k of Open-Meteo's free 10k calls/day.</li>
+        <li>HTTP: 6 attempts with exponential backoff and jitter. Permanent 4xx errors aren't retried. On a rate limit, the region stops and keeps its previous data. Failed resorts get a second pass after 60 s. Mostly-empty forecasts are never published.</li>
+        <li>Publishing: data restore/push 3 attempts, Pages deploy 3 attempts, and failed jobs re-run once automatically. Publishing is refused if the resort count drops.</li>
+        <li>Health check after every refresh, plus a daily outside-in watchdog. Either one failing emails the repo owner.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="limits">
+      <h2>11. Limitations</h2>
+      <ul>
+        <li>Precipitation is at model-grid resolution. Orographic peaks between grid cells aren't resolved.</li>
+        <li>At high resorts the lowest pressure levels lie below the model terrain, so the snow level may read "below base".</li>
+        <li>Calibration is fit and scored on the same two winters, so the error shown is optimistic. ECMWF IFS 9 km and AIFS have one winter of history.</li>
+        <li>SNOTEL gauges under-catch snow in wind, so calibrated totals may run low. Canadian factors are borrowed from US resorts.</li>
+        <li>Models historically under-forecast the biggest storms 1–3 days out. Watch the top of the range.</li>
+        <li>Thin warm layers (&lt; ~1,500 ft) are missed by the sleet check.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="data">
+      <h2>12. Data sources</h2>
+      <ul>
+        <li><a href="https://open-meteo.com/">Open-Meteo</a> forecast, ensemble and previous-runs APIs (CC BY 4.0). Models from ECMWF, NOAA/NCEP, ECCC and DWD.</li>
+        <li><a href="https://www.weather.gov/documentation/services-web-api">api.weather.gov</a>: NWS gridpoint snowfall and snow level, active alerts, Area Forecast Discussions.</li>
+        <li>NRCS AWDB / SNOTEL and California CDEC station observations.</li>
+      </ul>
+      <p class="fine">Unofficial open-source project; not affiliated with or endorsed by OpenSnow. Forecasts can be wrong. Check the resort's own report and avalanche forecast before heading out.</p>
+    </section>
+  </main>
+</div>
+<script>
+  if (localStorage.getItem("theme")) document.documentElement.dataset.theme = localStorage.getItem("theme");
+  document.getElementById("theme").addEventListener("click", () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    localStorage.setItem("theme", root.dataset.theme);
+  });
+</script>
+</body>
+</html>

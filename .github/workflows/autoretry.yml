@@ -3,7 +3,7 @@
 name: autoretry
 on:
   workflow_run:
-    workflows: [refresh, backfill]
+    workflows: [refresh, backfill, pages]
     types: [completed]
 permissions:
   actions: write

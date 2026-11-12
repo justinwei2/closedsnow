@@ -565,20 +565,6 @@ function renderPoints(d) {
   }
 }
 
-function renderMethod(d) {
-  const m = $("#method");
-  m.replaceChildren();
-  const sec = (h, p) => { m.append(el("h3", {}, h), el("p", {}, p)); };
-  const big = (d.calibration.ratio_bins || []).at(-1);
-  sec("Location", "Every number is for named points on the mountain (base, mid-mountain, summit), never the nearest town. Points are snapped to a 90 m terrain model, requests use the nearest model grid cell, and the published lift elevation is used. That way temperature, snow level and the rain/snow split are computed at real lift heights. Precipitation still comes from the model grid cell: no free model resolves individual ridges.");
-  sec("Snow amount", "Up to eight models (ECMWF IFS 9 km and 0.25°, ECMWF AIFS, GFS/HRRR, NBM, GEM, ICON, plus HRDPS in Canada) are bias-corrected against a nearby SNOTEL/CDEC gauge using two winters of as-issued forecasts. They are then averaged with weights based on each model's error. Liquid becomes snow through the hourly rain/snow fraction and snow-to-liquid ratio at each elevation. Past days use the same models' short-range forecasts (an estimate, not a measurement).");
-  sec("Likely range", "The middle 50% of outcomes (25th–75th percentile). It averages two distributions percentile by percentile: the five bias-corrected ensembles (≈190 members: ECMWF ENS, AIFS ENS, GEFS, GEM, ICON) and the blend times this resort's historical forecast error for a storm of that size." +
-    (big ? ` For big storms (>2" of liquid in 72 h forecast) the gauge measured ${big.q["0.25"]}×–${big.q["0.75"]}× the forecast half the time.` : ""));
-  sec("Rain vs snow", "Wet-bulb temperature at each elevation from a consensus ECMWF/GFS/GEM/ICON profile; 50% snow at +0.5 °C wet-bulb (Jennings et al. 2018 found ≈0.6–1.5 °C air temperature for the Sierra). Sleet/freezing rain is flagged only for the classic sounding: snow forming aloft, a melting layer above +2 °C, sub-freezing air at the elevation.");
-  sec("Snow quality", "Snow-to-liquid ratio by the Kuchera method (warmest temperature between the elevation and ~18,000 ft), reduced up to 30% in strong wind. Density = 1/ratio: <6% blower, 6–8% light & dry, 8–11% medium, 11–15% dense, >15% heavy/wet. These cutoffs and the wind penalty are rules of thumb, not yet calibrated against snow-density observations.");
-  sec("Weather report", "Wind holds use the free-air wind at summit height during lift hours (8am–4pm): likely at ≥45 mph sustained or ≈65 mph gusts, possible at ≥30 / ≈45 mph. Lifts differ (gondolas and exposed upper chairs close first), and these thresholds are rules of thumb, not fit to lift-status history. A powder morning is ≥8\" at the summit between 4pm and 9am. Alerts are the NWS's own.");
-  sec("Data", "Open-Meteo (CC-BY 4.0; ECMWF, NOAA, ECCC, DWD models), NWS gridpoint forecasts, alerts and Area Forecast Discussions, NRCS SNOTEL and California CDEC observations.");
-}
 
 function renderCalCoverage() {
   const tb = $("#calcov-table");
@@ -633,7 +619,6 @@ function render() {
   renderAfd(d);
   renderWide(d, e);
   renderPoints(d);
-  renderMethod(d);
   renderCalCoverage();
 }
 

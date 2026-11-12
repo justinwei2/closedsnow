@@ -208,3 +208,30 @@ details[open] summary::before { content: "▾ "; }
 
 .foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; max-width: 90ch; }
 .foot a { color: var(--text-secondary); }
+
+/* ---- tabs + methodology page */
+.tabs { display: flex; gap: 2px; }
+.tabs a { padding: 6px 10px; border-radius: 6px; color: var(--text-secondary); text-decoration: none; white-space: nowrap; }
+.tabs a:hover { background: var(--grid); }
+.tabs a.on { color: var(--text-primary); background: var(--grid); font-weight: 600; }
+.method-link { display: block; color: var(--text-secondary); text-decoration: none; font-weight: 500; }
+.method-link:hover { color: var(--text-primary); }
+.doc { max-width: 900px; }
+.doc h1 { margin-bottom: 6px; }
+.doc .lede { color: var(--text-secondary); margin: 0 0 16px; max-width: 75ch; }
+.doc h2 { font-size: 16px; margin-bottom: 10px; }
+.doc p, .doc li { color: var(--text-secondary); max-width: 80ch; }
+.doc b { color: var(--text-primary); }
+.doc a { color: var(--series-1); }
+.doc ul { padding-left: 18px; margin: 8px 0; }
+.doc li { margin: 4px 0; }
+.doc .card { scroll-margin-top: 70px; }
+.eq { font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--text-primary); background: var(--page);
+  border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; margin: 8px 0; overflow-x: auto; }
+.tag { font-size: 11px; border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; color: var(--text-secondary); white-space: nowrap; }
+.tag.ok { border-color: var(--good); }
+.toc { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 16px; }
+.toc a { color: var(--text-secondary); text-decoration: none; font-size: 13px; }
+.toc a:hover { color: var(--text-primary); }
+.doc table.grid td, .doc table.grid th { text-align: left; white-space: normal; }
+.doc table.grid.narrow { width: auto; }
