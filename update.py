@@ -325,16 +325,15 @@ def process(r, cal):
             for e in ELEVS:
                 summary[e][key]["station_in"] = sum(vals) if vals else None
 
-    # ---- snow and rain per 12 h (daytime 6a-6p / nighttime 6p-6a), last 7 + next 10 days: forecast +
-    # ensemble spread (future only; each member's precip split
-    # with the forecast's hourly phase and snow ratio); bands widened to include the forecast
+    # ---- snow and rain per hour, last 7 + next 10 days: forecast + ensemble spread (future only; each
+    # member's precip split with the forecast's hourly phase and snow ratio); bands widened to include the forecast
     today_minus = lambda n: (datetime.fromisoformat(today) - timedelta(n)).strftime("%Y-%m-%d")
     plume = {}
     for e in ELEVS:
         hrs = hours[e]
         out = {k: {q: [] for q in ("fc", *(str(p) for p in QS if p != 0.5))} for k in ("snow", "rain")}
         span = [d for d in sorted(starts) if today_minus(7) <= d < today_minus(-10)]
-        bins = [range(a, min(a + 12, len(times))) for d in span for a in (starts[d], starts[d] + 12) if a < len(times)]
+        bins = [range(i, i + 1) for i in range(starts[span[0]], min(len(times), starts[span[-1]] + 24))]
         for b in bins:
             s_liq = sum(hours["summit"][i].precip_mm or 0 for i in b)
             liq = sum(hrs[i].precip_mm or 0 for i in b)
@@ -349,12 +348,12 @@ def process(r, cal):
                 vals["rain"].append((sum(mm[times[i]] * scale * (1 - hrs[i].frac) / IN for i in ok), w))
             for k in ("snow", "rain"):
                 q = wquantiles(vals[k], QS) if vals[k] else {p: fc[k] for p in QS}
-                out[k]["fc"].append(round(fc[k], 2))
+                out[k]["fc"].append(round(fc[k], 3))
                 for p in QS:  # bands widened to include the forecast; the median isn't drawn
                     if p != 0.5:
-                        out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]), 2))
+                        out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]), 3))
         plume[e] = dict(t=[(datetime.fromisoformat(times[b[0]]) - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M")
-                           for b in bins], **out)  # labelled by period start (6am / 6pm)
+                           for b in bins], **out)  # labelled by the hour's start
 
     hourly = [dict(t=t, precip_chance=precip_chance(range(i, i + 1)) if i >= now_i else None, **{k: rnd(v) for k, v in levels[i].items()},
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
