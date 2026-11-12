@@ -33,27 +33,29 @@ def write_json(path, obj, **kw):
     os.replace(tmp, path)
 
 
-def get_json(url, params=None, retries=6, parse=json.load):
+def get_json(url, params=None, retries=6, parse=json.load, timeout=90):
     """GET JSON (or whatever `parse` makes of the response) with retries. SKISITE_REPLAY=dir records
     responses on first use and replays them afterwards (deterministic regression tests)."""
     if params:
         url += "?" + urllib.parse.urlencode(params)
     replay = os.environ.get("SKISITE_REPLAY")
     if not replay:
-        return _fetch(url, retries, parse)
+        return _fetch(url, retries, parse, timeout)
     path = os.path.join(replay, hashlib.sha1(url.encode()).hexdigest() + ".json")
     if not os.path.exists(path):
         os.makedirs(replay, exist_ok=True)
-        write_json(path, _fetch(url, retries, parse))
+        write_json(path, _fetch(url, retries, parse, timeout))
     return json.load(open(path))
 
 
-def _fetch(url, retries, parse=json.load):
+def _fetch(url, retries, parse=json.load, timeout=90):
+    """timeout (s) covers each socket operation, the TLS handshake included: keep it short so a
+    stalled connection is retried quickly; only the big BC archive downloads get longer."""
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})
     attempt = 0
     while attempt < retries:
         try:
-            with urllib.request.urlopen(req, timeout=300) as r:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
                 return parse(r)
         except urllib.error.HTTPError as e:
             try:
@@ -241,7 +243,8 @@ def bc_asws(element, sid, start):
     if start >= wy:
         return get_json(BC_ASWS + current, parse=_bc_column(sid, start))
     since = min(s for s, _ in SEASONS)  # cache per water year: the archive gains the last one each autumn
-    rows = cached(f"bcasws_{element}_{sid}_{since}_{wy}.json", lambda: get_json(BC_ASWS + archive, parse=_bc_column(sid, since)))
+    rows = cached(f"bcasws_{element}_{sid}_{since}_{wy}.json",
+                  lambda: get_json(BC_ASWS + archive, parse=_bc_column(sid, since), timeout=300))
     return [r for r in rows if r[0] >= start] + bc_asws(element, sid, wy)
 
 
