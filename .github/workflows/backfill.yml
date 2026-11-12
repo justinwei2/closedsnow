@@ -4,6 +4,8 @@
 name: backfill
 on:
   workflow_dispatch:
+    inputs:
+      force: { description: "Recalibrate every resort", type: boolean, default: false }
   schedule:
     - cron: "41 9 * * *"
 permissions:
@@ -27,7 +29,7 @@ jobs:
       - name: Locate + calibrate ${{ matrix.group }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
-        run: timeout 320m python -u calibrate.py --group ${{ matrix.group }} --out out || echo "stopped early; progress kept, next run continues"
+        run: timeout 320m python -u calibrate.py --group ${{ matrix.group }} --out out ${{ inputs.force && '--force' || '' }} || echo "stopped early; progress kept, next run continues"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

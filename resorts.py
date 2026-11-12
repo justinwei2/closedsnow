@@ -5,7 +5,7 @@ lift elevation is kept, since the DEM smooths peaks), picks a gauge and the mode
 there, and writes data/resorts.json + data/calibration.json.
 """
 import json, os
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
@@ -22,7 +22,6 @@ LEVELS = [1000, 925, 850, 800, 750, 700, 650, 600, 550, 500]
 ENSEMBLES = {"ecmwf_ifs025": "ecmwf_ifs025", "ecmwf_aifs025": "ecmwf_aifs025_single",
              "gfs05": "gfs_seamless", "gem_global": "gem_seamless", "icon_seamless": "icon_seamless"}
 SEASONS = [("2024-11-01", "2025-04-30"), ("2025-11-01", "2026-04-30")]  # calibration winters
-CAL_VERSION = 2  # bump to recalibrate every resort (2: lead-time weights + temperature bias)
 EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weights
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
@@ -147,7 +146,6 @@ class Calibration:
     ratio_bins: list = field(default_factory=list)  # [{lo_mm, hi_mm, n, q}] by forecast storm size
     peers: int | None = None
     peers_scope: str | None = None
-    version: int = 1
     temp_bias_c: float | None = None      # station minus model daily mean temperature, all days
     temp_bias_wet_c: float | None = None  # same on storm days: shifts the profile (phase, snow level, ratio)
     temp_n_wet: int = 0
@@ -156,10 +154,6 @@ class Calibration:
     @property
     def calibrated(self):
         return not self.uncalibrated
-
-    @property
-    def current(self):
-        return self.calibrated and self.version >= CAL_VERSION
 
     def weight(self, model, lead_days):
         m = self.models[model]
@@ -173,19 +167,15 @@ class Calibration:
     def error_quantiles(self, liq72_mm, qs):
         """obs/forecast ratio quantiles for a 72 h storm of this size (falls back to all storms)."""
         rq = next((b["q"] for b in self.ratio_bins if b["lo_mm"] <= liq72_mm < b["hi_mm"]), self.ratio_q)
-        return {q: ratio_at(rq, q) for q in qs}
+        return {q: rq.get(str(q), 1.0) for q in qs}
 
     @classmethod
     def from_json(cls, d):
-        return cls(**(d | {"models": {m: ModelCal(**v) for m, v in d["models"].items()}}))
+        known = lambda c, x: {k: v for k, v in x.items() if k in {f.name for f in fields(c)}}
+        return cls(**known(cls, d) | {"models": {m: ModelCal(**known(ModelCal, v)) for m, v in d["models"].items()}})
 
     def to_json(self):
         return {k: v for k, v in asdict(self).items() if v is not None}
-
-
-def ratio_at(rq, q):
-    """Quantile q from a {"0.25": ...} table; calibrations before v2 only had 10/90 for the tails."""
-    return rq.get(str(q), rq.get({"0.05": "0.1", "0.95": "0.9"}.get(str(q), ""), 1.0))
 
 
 def _load(name):

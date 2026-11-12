@@ -22,7 +22,6 @@ PAST_DAYS = 7
 TRIGGER_MODEL = "ecmwf_ifs025"  # refresh when its new run lands: it arrives last of the 6-hourly models
 SAFETY_H = 7           # ...or when data is older than this anyway
 MAX_AGE_H = 14         # freshness alarm: about 2 missed model cycles
-FORMAT = 2             # bump when the JSON layout changes: older files count as stale
 QS = (0.05, 0.25, 0.5, 0.75, 0.95)  # middle 50% and middle 90%
 HOURLY_OUT = ("temp_f", "wind_mph", "frac", "slr", "snow_in", "rain_in")  # fields the charts read
 _discussions = {}  # one NWS discussion per office per run
@@ -303,7 +302,7 @@ def process(r, cal):
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i <= i < now_i + 24 * 10]  # charts use the next 10 days
     return dict(
-        key=r.key, name=r.name, region=r.region, format=FORMAT, model_run=run, now=now, today=today,
+        key=r.key, name=r.name, region=r.region, model_run=run, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
         calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
@@ -334,9 +333,9 @@ def updated_at(key):
 
 
 def due(key, run):
-    """Needs a refresh: no data, an older file format, a newer model run, or older than SAFETY_H."""
+    """Needs a refresh: no data, a newer model run, or older than SAFETY_H."""
     d = saved(key)
-    if not d or d.get("format", 1) < FORMAT:
+    if not d:
         return True
     age = (datetime.now(timezone.utc) - datetime.fromisoformat(d["updated"])).total_seconds() / 3600
     return age > SAFETY_H or (run is not None and d.get("model_run") != run)

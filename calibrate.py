@@ -2,7 +2,7 @@
 there) -> calibrate (precip bias factors, weights and error quantiles from two winters of
 as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate limits.
 
-    python3 calibrate.py                        # every resort not set up yet (local)
+    python3 calibrate.py [resort ...] [--force] # resorts not set up yet (--force: recalibrate them)
     python3 calibrate.py --group west --out o   # CI: one region -> o/{resorts,calibration}.json
     python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, regional defaults, CALIBRATION.md
 """
@@ -10,8 +10,8 @@ import glob, json, math, os, sys, time
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 import sources as src
-from resorts import (BASE_MODELS, CAL_VERSION, CATALOG, DATA, ELEVS, EXTRA_MODELS, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
-                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts, ratio_at)
+from resorts import (BASE_MODELS, CATALOG, DATA, ELEVS, EXTRA_MODELS, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
+                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
 
 STEP = 0.003                        # deg, ~300 m DEM search grid
 FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't representative; cap, let weight fall
@@ -130,7 +130,7 @@ def hindcast(r, model, start, end):
             j = {}  # no history for this model/winter here: skip it, don't fail the resort
         time.sleep(4)  # stay well inside the free-tier per-minute limit
         return j
-    h = src.cached(f"hind2_{r.key}_{model}_{start}.json", fetch).get("hourly") or {}
+    h = src.cached(f"hind_{r.key}_{model}_{start}.json", fetch).get("hourly") or {}
     def daily(var, agg):
         per = {}
         for t, v in zip(h.get("time", []), h.get(var, [])):
@@ -208,7 +208,7 @@ def calibrate_one(r):
     return Calibration(cal, station=r.gauge.name, n_windows=len(blend),
                        blend_mae72=round(sum(abs(a - b) for a, b in blend) / len(blend), 2),
                        ratio_q={q: round(quantile(ratios, float(q)), 3) for q in QS}, ratio_bins=bins, n_wet=len(ratios),
-                       version=CAL_VERSION, temp_bias_c=round(bias, 2) if bias is not None else None,
+                       temp_bias_c=round(bias, 2) if bias is not None else None,
                        temp_bias_wet_c=round(sum(wet) / len(wet), 2) if len(wet) >= 15 else None, temp_n_wet=len(wet),
                        temp_mae_c=[round(sum(abs(x) for x, _ in diffs) / len(diffs), 2),
                                    round(sum(abs(x - bias) for x, _ in diffs) / len(diffs), 2)] if diffs else None)
@@ -223,7 +223,7 @@ def regional_default(cal, r, resorts):
     med = lambda xs: sorted(xs)[len(xs) // 2] if xs else 1.0
     return Calibration({m: ModelCal(round(med([p.models[m].factor for p in peers if m in p.models]), 3), round(1 / len(r.models), 3))
                         for m in r.models}, uncalibrated=True,
-                       ratio_q={q: round(med([ratio_at(p.ratio_q, q) for p in peers]), 3) for q in QS}, peers=len(peers), peers_scope=scope)
+                       ratio_q={q: round(med([p.ratio_q.get(q, 1.0) for p in peers]), 3) for q in QS}, peers=len(peers), peers_scope=scope)
 
 
 # ---------------------------------------------------------------- orchestration
@@ -233,9 +233,10 @@ def save(resorts, cal):
     src.write_json(os.path.join(DATA, "calibration.json"), {k: c.to_json() for k, c in cal.items()}, indent=1)
 
 
-def run(group=None, out=None):
-    """Locate and calibrate this group's resorts that aren't done; always save progress."""
-    keys = [k for k, c in CATALOG.items() if not group or c[1] in GROUPS[group]]
+def run(group=None, out=None, force=False, only=None):
+    """Locate and calibrate resorts that aren't done (force: recalibrate them too); always save
+    progress. only: specific resort keys; group: a region group."""
+    keys = only or [k for k, c in CATALOG.items() if not group or c[1] in GROUPS[group]]
     resorts, cal = load_resorts(), load_calibration()
     try:
         for k in keys:
@@ -248,7 +249,7 @@ def run(group=None, out=None):
                     print(f"  locate failed {k}: {e}", file=sys.stderr)
                 save(resorts, cal)
             r = resorts.get(k)
-            if r and r.gauge and (k not in cal or not cal[k].current):
+            if r and r.gauge and (force or k not in cal or not cal[k].calibrated):
                 try:
                     cal[k] = calibrate_one(r)
                     print(k, "blend MAE72", cal[k].blend_mae72, {m: c.factor for m, c in cal[k].models.items()})
@@ -316,6 +317,7 @@ if __name__ == "__main__":
     if "--merge" in a:
         merge(opt("--merge"))
     else:
-        run(opt("--group"), opt("--out"))
+        only = [k for k in a if k in CATALOG]
+        run(opt("--group"), opt("--out"), force="--force" in a, only=only)
         if not opt("--group"):
             merge(os.path.join(HERE, "__none__"))

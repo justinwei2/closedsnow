@@ -33,7 +33,7 @@ Stdlib Python only. No server: everything runs in GitHub Actions and is served b
 |---|---|---|
 | `refresh` | hourly check | refresh a resort once a new ECMWF run has landed (~4×/day, within ~1 h) or its data is > 7 h old; parallel region jobs; save to the `data` branch, freshness check, trigger `pages` |
 | `pages` | after refresh / on `web/` changes | deploy the site |
-| `backfill` | nightly | set up or recalibrate resorts (no-op when everything is current) |
+| `backfill` | nightly | set up new catalog resorts (no-op when all are set up); run manually with `force` to recalibrate every resort |
 | `watchdog` | daily | check the live site is fresh |
 | `autoretry` | on failure | re-run failed jobs once |
 
@@ -53,7 +53,7 @@ refresh costs ~65–85 calls per resort (~7k/day for 21 resorts); calibration ~2
 ## Usage
 
 ```
-python3 calibrate.py                # set up / recalibrate resorts that need it
+python3 calibrate.py [--force]      # set up new resorts (--force: recalibrate all)
 python3 update.py alta              # refresh one resort -> web/data/alta.json
 python3 -m http.server -d web 8000  # preview
 SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, replay on later runs

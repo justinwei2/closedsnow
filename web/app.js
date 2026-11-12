@@ -630,7 +630,7 @@ async function load(key) {
   $("#q").value = "";
   const d = await fetchData(key);
   if (key !== state.key) return;  // user switched resorts while this loaded
-  state.data = d && d.summary ? d : null;  // older file formats: treat as missing
+  state.data = d;
   $("#content").hidden = !state.data;
   $("#loading").hidden = !!state.data;
   if (state.data) return render();

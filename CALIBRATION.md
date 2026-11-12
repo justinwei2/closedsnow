@@ -8,23 +8,23 @@ the median factors of calibrated resorts in their region.
 | Resort | Region | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
 |---|---|---|---|---|---|---|
 | Palisades Tahoe | California | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 358 | 0.49 |
-| Alpine Meadows | California | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 358 | 0.58 |
-| Kirkwood | California | calibrated | Carson Pass SNOTEL | 8,360 ft | 358 | 0.32 |
-| Mammoth Mountain | California | calibrated | Mammoth Pass (CDEC) | 9,400 ft | 358 | 0.41 |
+| Alpine Meadows | California | not located yet | | | | |
+| Kirkwood | California | not located yet | | | | |
+| Mammoth Mountain | California | not located yet | | | | |
 | Mt. Bachelor | Pacific Northwest | not located yet | | | | |
 | Alta | Utah | not located yet | | | | |
-| Snowbird | Utah | pending (regional default for now) | Snowbird SNOTEL | 9,170 ft |  |  |
-| Solitude | Utah | pending (regional default for now) | Brighton SNOTEL | 8,790 ft |  |  |
+| Snowbird | Utah | not located yet | | | | |
+| Solitude | Utah | not located yet | | | | |
 | Snowbasin | Utah | not located yet | | | | |
-| Jackson Hole | Wyoming · Montana · Idaho | pending (regional default for now) | Phillips Bench SNOTEL | 8,170 ft |  |  |
-| Big Sky | Wyoming · Montana · Idaho | pending (regional default for now) | Lone Mountain SNOTEL | 8,820 ft |  |  |
+| Jackson Hole | Wyoming · Montana · Idaho | not located yet | | | | |
+| Big Sky | Wyoming · Montana · Idaho | not located yet | | | | |
 | Arapahoe Basin | Colorado | not located yet | | | | |
 | Copper Mountain | Colorado | not located yet | | | | |
 | Steamboat | Colorado | not located yet | | | | |
 | Telluride | Colorado | not located yet | | | | |
 | Crested Butte | Colorado | not located yet | | | | |
-| Whistler | British Columbia | regional default (no gauge) | – | – |  |  |
-| Blackcomb | British Columbia | regional default (no gauge) | – | – |  |  |
-| Revelstoke | British Columbia | regional default (no gauge) | – | – |  |  |
-| Kicking Horse | British Columbia | regional default (no gauge) | – | – |  |  |
-| Lake Louise | Alberta | regional default (no gauge) | – | – |  |  |
+| Whistler | British Columbia | not located yet | | | | |
+| Blackcomb | British Columbia | not located yet | | | | |
+| Revelstoke | British Columbia | not located yet | | | | |
+| Kicking Horse | British Columbia | not located yet | | | | |
+| Lake Louise | Alberta | not located yet | | | | |
