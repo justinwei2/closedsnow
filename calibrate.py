@@ -33,7 +33,12 @@ def hindcast(key, model, start, end):
         q = dict(latitude=lat, longitude=lon, models=model, start_date=start, end_date=end,
                  timezone=std_tz(r["tz"]), cell_selection="nearest",  # station days are local standard time
                  hourly=",".join(f"precipitation_previous_day{n}" for n in (1, 2, 3)))
-        j = get_json("https://previous-runs-api.open-meteo.com/v1/forecast", q)
+        try:
+            j = get_json("https://previous-runs-api.open-meteo.com/v1/forecast", q)
+        except RuntimeError as e:
+            if "HTTP 4" not in str(e):
+                raise
+            j = {}  # no history for this model/winter here: skip it, don't fail the resort
         json.dump(j, open(path, "w"))
         time.sleep(4)  # stay well inside Open-Meteo's free-tier per-minute limit
     j = json.load(open(path))
@@ -114,11 +119,11 @@ def calibrate_one(key, r):
         for lo, hi in RATIO_BINS:
             rb = [o / f for f, o in blend_pairs if lo <= f < hi]
             if len(rb) >= 15:
-                bins.append(dict(lo_mm=lo, hi_mm=hi, n=len(rb), q={q: round(quantile(rb, q), 3) for q in qs}))
+                bins.append(dict(lo_mm=lo, hi_mm=hi, n=len(rb), q={str(q): round(quantile(rb, q), 3) for q in qs}))
         return dict(
             station=r["obs"][2], n_windows=len(blend_pairs), models=per_model,
             blend_mae72=round(bmae, 2),
-            ratio_q={q: round(quantile(ratios, q), 3) for q in qs},
+            ratio_q={str(q): round(quantile(ratios, q), 3) for q in qs},  # str keys, as after a JSON round-trip
             ratio_bins=bins, n_wet=len(ratios),
         )
 

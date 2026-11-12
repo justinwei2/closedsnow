@@ -63,6 +63,8 @@ def snotel_near(lat, lon, lo_ft, hi_ft, state_codes):
         for s in _stations[st]:
             d = km(lat, lon, s["latitude"], s["longitude"])
             active = (s.get("endDate") or "2100") >= date.today().isoformat()  # skip discontinued gauges
+            if not s["stationTriplet"].endswith(":SNTL"):  # the API also returns snow courses, reservoirs...
+                continue
             if d <= 25 and lo_ft - 1500 <= s["elevation"] <= hi_ft + 500 and active:
                 # prefer close and within the lift-served elevation band
                 pen = d + (0 if lo_ft <= s["elevation"] <= hi_ft else 4)
@@ -107,6 +109,8 @@ def locate(key):
         dem_ft = dict(zip(("base", "mid", "summit"), dem([base[:2], mid[:2], summit[:2]])))
     else:
         sb = snap(s[0], s[1], s[2], 2.0)
+        if abs(sb[2] - s[2]) > 600:  # rough guess too far off: search wider
+            sb = snap(s[0], s[1], s[2], 4.0)
         bb = snap(b[0], b[1], b[2], 1.2)
         base, summit = (bb[0], bb[1], b[2]), (sb[0], sb[1], s[2])
         mp = mid_point((bb[0], bb[1], b[2]), (sb[0], sb[1], s[2]))

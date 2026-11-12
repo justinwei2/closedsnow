@@ -33,14 +33,16 @@ def run(group=None, out=None):
     cal = load(CAL_PATH)
     todo = [k for k in keys if k in resorts and resorts[k].get("obs")
             and (k not in cal or cal[k].get("uncalibrated"))]
-    if todo:
-        calibrate.main(todo)
-    cal = load(CAL_PATH)
-    if out:
-        os.makedirs(out, exist_ok=True)
-        json.dump({k: resorts[k] for k in keys if k in resorts}, open(os.path.join(out, "resorts.json"), "w"), indent=1)
-        json.dump({k: cal[k] for k in keys if k in cal and not cal[k].get("uncalibrated")},
-                  open(os.path.join(out, "calibration.json"), "w"), indent=1)
+    try:
+        if todo:
+            calibrate.main(todo)
+    finally:  # always hand back progress (located resorts, finished calibrations), even on a crash
+        cal = load(CAL_PATH)
+        if out:
+            os.makedirs(out, exist_ok=True)
+            json.dump({k: resorts[k] for k in keys if k in resorts}, open(os.path.join(out, "resorts.json"), "w"), indent=1)
+            json.dump({k: cal[k] for k in keys if k in cal and not cal[k].get("uncalibrated")},
+                      open(os.path.join(out, "calibration.json"), "w"), indent=1)
     print(f"backfill {group or 'all'}: located {sum(k in resorts for k in keys)}/{len(keys)}, "
           f"calibrated {sum(k in cal and not cal[k].get('uncalibrated') for k in keys)}")
 

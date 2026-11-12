@@ -64,7 +64,7 @@ def _snotel(triplet, start, end):
                  dict(stationTriplets=triplet, elements="PREC,WTEQ,SNWD,TAVG", duration="DAILY",
                       beginDate=start, endDate=end))
     return {e["stationElement"]["elementCode"]: [(v["date"], v.get("value")) for v in e["values"]]
-            for e in j[0]["data"]}
+            for e in (j[0]["data"] if j else [])}  # [] = station has no data for the range
 
 
 def _cdec(station, start, end):

@@ -188,54 +188,6 @@
   ],
   "afd_office": "REV"
  },
- "bachelor": {
-  "name": "Mt. Bachelor",
-  "sub": "",
-  "region": "Pacific Northwest",
-  "pass_": "Ikon",
-  "tz": "America/Los_Angeles",
-  "base": {
-   "lat": 44.0022,
-   "lon": -121.6675,
-   "ft": 6300,
-   "label": "West Village"
-  },
-  "mid": {
-   "lat": 43.9867,
-   "lon": -121.6816,
-   "ft": 7700,
-   "label": "Mid-mountain"
-  },
-  "summit": {
-   "lat": 43.979,
-   "lon": -121.6886,
-   "ft": 9065,
-   "label": "Summit"
-  },
-  "dem_ft": {
-   "base": 6322,
-   "mid": 7733,
-   "summit": 9022
-  },
-  "obs": [
-   "snotel",
-   "21E26:OR:SNOW",
-   "New Dutchman #3 SNOTEL",
-   6300,
-   44.01048,
-   -121.66385
-  ],
-  "models": [
-   "ecmwf_ifs",
-   "ecmwf_ifs025",
-   "ecmwf_aifs025_single",
-   "gfs_seamless",
-   "ncep_nbm_conus",
-   "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
-  ]
- },
  "snowbird": {
   "name": "Snowbird",
   "sub": "",
@@ -369,99 +321,6 @@
   ],
   "models": [
    "ecmwf_ifs",
-   "ecmwf_ifs025",
-   "ecmwf_aifs025_single",
-   "gfs_seamless",
-   "ncep_nbm_conus",
-   "gem_seamless",
-   "icon_seamless"
-  ]
- },
- "alta": {
-  "name": "Alta",
-  "sub": "",
-  "region": "Utah",
-  "pass_": "Ikon",
-  "tz": "America/Denver",
-  "base": {
-   "lat": 40.5885,
-   "lon": -111.638,
-   "ft": 8530,
-   "label": "Wildcat base"
-  },
-  "mid": {
-   "lat": 40.5808,
-   "lon": -111.6335,
-   "ft": 9600,
-   "label": "Mid-mountain"
-  },
-  "summit": {
-   "lat": 40.568,
-   "lon": -111.6261,
-   "ft": 10550,
-   "label": "Upper mountain"
-  },
-  "dem_ft": {
-   "base": 8550,
-   "mid": 9590,
-   "summit": 10528
-  },
-  "obs": [
-   "snotel",
-   "11J61:UT:SNOW",
-   "Alta Central SNOTEL",
-   8750,
-   40.59115,
-   -111.63767
-  ],
-  "models": [
-   "ecmwf_ifs",
-   "ecmwf_ifs025",
-   "ecmwf_aifs025_single",
-   "gfs_seamless",
-   "ncep_nbm_conus",
-   "gem_seamless",
-   "icon_seamless"
-  ]
- },
- "snowbasin": {
-  "name": "Snowbasin",
-  "sub": "",
-  "region": "Utah",
-  "pass_": "Ikon",
-  "tz": "America/Denver",
-  "base": {
-   "lat": 41.2163,
-   "lon": -111.857,
-   "ft": 6400,
-   "label": "Base"
-  },
-  "mid": {
-   "lat": 41.2085,
-   "lon": -111.8727,
-   "ft": 8000,
-   "label": "Mid-mountain"
-  },
-  "summit": {
-   "lat": 41.203,
-   "lon": -111.884,
-   "ft": 9350,
-   "label": "Needles"
-  },
-  "dem_ft": {
-   "base": 6391,
-   "mid": 7995,
-   "summit": 9301
-  },
-  "obs": [
-   "snotel",
-   "10139000:UT:BOR",
-   "Pineview Reservoir SNOTEL",
-   4900,
-   41.2555,
-   -111.84105
-  ],
-  "models": [
    "ecmwf_ifs025",
    "ecmwf_aifs025_single",
    "gfs_seamless",
@@ -785,47 +644,6 @@
    "gem_hrdps_continental"
   ]
  },
- "revelstoke": {
-  "name": "Revelstoke",
-  "sub": "",
-  "region": "British Columbia",
-  "pass_": "Ikon",
-  "tz": "America/Vancouver",
-  "base": {
-   "lat": 50.958,
-   "lon": -118.1636,
-   "ft": 1680,
-   "label": "Base"
-  },
-  "mid": {
-   "lat": 50.9347,
-   "lon": -118.2396,
-   "ft": 3200,
-   "label": "Mid-mountain"
-  },
-  "summit": {
-   "lat": 50.93,
-   "lon": -118.2548,
-   "ft": 7300,
-   "label": "Summit"
-  },
-  "dem_ft": {
-   "base": 1690,
-   "mid": 3235,
-   "summit": 5361
-  },
-  "obs": null,
-  "models": [
-   "ecmwf_ifs",
-   "ecmwf_ifs025",
-   "ecmwf_aifs025_single",
-   "gfs_seamless",
-   "ncep_nbm_conus",
-   "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
-  ]
- },
  "kickinghorse": {
   "name": "Kicking Horse",
   "sub": "",
@@ -977,47 +795,6 @@
    "base": 3799,
    "mid": 5853,
    "summit": 7779
-  },
-  "obs": null,
-  "models": [
-   "ecmwf_ifs",
-   "ecmwf_ifs025",
-   "ecmwf_aifs025_single",
-   "gfs_seamless",
-   "ncep_nbm_conus",
-   "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
-  ]
- },
- "sunpeaks": {
-  "name": "Sun Peaks",
-  "sub": "",
-  "region": "British Columbia",
-  "pass_": "Ikon",
-  "tz": "America/Vancouver",
-  "base": {
-   "lat": 50.881,
-   "lon": -119.8882,
-   "ft": 4100,
-   "label": "Village"
-  },
-  "mid": {
-   "lat": 50.9032,
-   "lon": -119.8625,
-   "ft": 5500,
-   "label": "Mid-mountain"
-  },
-  "summit": {
-   "lat": 50.909,
-   "lon": -119.8558,
-   "ft": 6824,
-   "label": "Tod Mountain"
-  },
-  "dem_ft": {
-   "base": 4114,
-   "mid": 5548,
-   "summit": 5925
   },
   "obs": null,
   "models": [
