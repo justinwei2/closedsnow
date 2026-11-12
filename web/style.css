@@ -112,7 +112,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .legend-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 10px; font-size: 11px; }
 .qkey { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); }
 .qkey .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
-@media (max-width: 900px) { .summary { overflow-x: auto; } .sgroup { min-width: 220px; } }
+@media (max-width: 900px) and (min-width: 641px) { .summary { overflow-x: auto; } .sgroup { min-width: 220px; } }
 .plume-head { margin-top: 20px; }
 .key-band.light { opacity: .12; }
 
@@ -242,3 +242,32 @@ table.hourly td.rowh b { color: var(--text-primary); font-size: 12px; font-weigh
 table.hourly .past { opacity: .5; }
 table.hourly .now { background: color-mix(in srgb, var(--q-snow) 10%, transparent); }
 .asq:hover, .asq:focus { outline: 2px solid var(--text-secondary); outline-offset: 1px; }
+
+/* ---- phones */
+@media (max-width: 640px) {
+  .top { flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; }
+  .tabs a { padding: 5px 8px; }
+  .search { order: 3; flex: 1 0 100%; max-width: none; }
+  .top-right { display: none; }
+  main { padding: 12px 12px 40px; }
+  h1 { font-size: 22px; }
+  .title-row { flex-direction: column; align-items: stretch; gap: 10px; margin-bottom: 12px; }
+  .seg { display: flex; } .seg button { flex: 1; padding: 6px 8px; }
+  .card { padding: 12px; border-radius: 8px; }
+  .card-head { flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 8px; }
+  .card-head .muted { font-size: 12px; }
+  /* snow summary: groups stack, each full width; the 24 h box becomes a row */
+  .summary { flex-direction: column; gap: 16px; }
+  .sgroup { flex: none !important; min-width: 0; }
+  .scenter { flex: none; flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 4px 14px; }
+  .scenter .sbig { font-size: 34px; margin: 0; }
+  .scenter .legend-col { flex-direction: row; gap: 10px; margin-top: 0; }
+  .sbar-wrap { height: 90px; }
+  .sdays { gap: 6px; }
+  .map-main { padding: 10px 12px 12px; }
+  .map-bar { gap: 6px; margin-bottom: 8px; }
+  .map-bar .legend { margin: 0; }
+  #map { height: calc(100vh - 200px); }
+  .mpin .mname { font-size: 10px; }
+  .pill { font-size: 11px; padding: 1px 6px; }
+}

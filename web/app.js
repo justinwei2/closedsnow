@@ -388,13 +388,13 @@ function renderDailyTable(d, e) {
   legend("#alert-legend", Object.keys(ALERT).map((k) => ({ label: ALERT_NAME[k], color: `var(${ALERT[k]})`, kind: "key-rect" })));
 }
 
-const VISIBLE_DAYS = 7;  // scrolling time charts show about a week; scroll for the rest
+const visibleDays = () => innerWidth < 640 ? 3 : 7;  // scrolling time charts show ~a week (~3 days on phones)
 function timeChart(container, pts, opts) {  // pts: [{t, ...}] at a fixed step (perDay per day)
   if (pts.length < 2) { container.replaceChildren(el("div", { class: "muted" }, "No data.")); return; }
   const m = { t: 14, b: 24, l: 48, r: 74, ...opts.margin }, H = 240, ih = H - m.t - m.b;
   container.replaceChildren(); container.classList.add("scroll");
   const vis = Math.max(200, container.clientWidth - m.l - m.r), n = pts.length;
-  const dx = vis / (VISIBLE_DAYS * (opts.perDay || 24)), pad = 2, W = Math.max(vis, dx * (n - 1) + 2 * pad);
+  const dx = vis / (visibleDays() * (opts.perDay || 24)), pad = 2, W = Math.max(vis, dx * (n - 1) + 2 * pad);
   const left = svgEl("svg", { width: m.l, height: H }), right = svgEl("svg", { width: m.r, height: H });
   const svg = svgEl("svg", { width: W, height: H, role: "img" });
   const sc = el("div", { class: "xscroll" }); sc.append(svg);
