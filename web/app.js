@@ -176,7 +176,7 @@ function renderSummary(d, e) {
     { label: "Next 6–10 Days", days: next.slice(5, 10), tot: s.next6_10 },
   ];
   const sum = (v, k) => v.halves.reduce((a, h) => a + (h[k] || 0), 0);  // 6am-6am: daytime + nighttime
-  const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].halves.map((h) => h.snow_in || 0))));
+  const vmax = Math.max(2, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].halves.map((h) => (h.snow_in || 0) + (h.rain_in || 0)))));
   const box = $("#summary");
   box.replaceChildren();
   $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · days run 6am to 6am; night is 6pm to 6am the next morning`;
@@ -185,6 +185,7 @@ function renderSummary(d, e) {
       const c = el("div", { class: "scenter" });
       c.append(el("div", { class: "slabel" }, "Last 24 Hours"), el("div", { class: "sbig" }, fmtIn(s.last24.p50)),
         el("div", { class: "muted" }, s.last24.station_in != null ? `station, yesterday ${fmtIn(s.last24.station_in)}` : "model estimate"));
+      if (s.last24.rain_in >= 0.05) c.append(el("div", { class: "muted" }, `${s.last24.rain_in.toFixed(2)}" rain`));
       const lg = el("div", { class: "legend-col" });
       qualityKeys(lg);
       c.append(lg);
@@ -199,17 +200,22 @@ function renderSummary(d, e) {
       tot.style.color = `var(${QUALITY[type].sw})`;
       sub.replaceChildren(snowRatio(type));
     }
+    if (g.tot.rain_in >= 0.05)  // "Rain 4.60"", or "… · 0.34" rain" next to another type / the station figure
+      sub.append(document.createTextNode(type === "rain" ? ` ${g.tot.rain_in.toFixed(2)}"` : ` · ${g.tot.rain_in.toFixed(2)}" rain`));
     grp.append(el("div", { class: "slabel" }, g.label), tot, sub);
     const days = el("div", { class: "sdays" });
     for (const x of g.days) {
       const v = x[e], dl = dayLabel(x.date), weekend = [0, 6].includes(new Date(x.date + "T12:00:00").getDay());
       const col = el("div", { class: "sday" + (x.past ? " past" : ""), tabindex: 0 });
       const stack = el("div", { class: "sstack" });
-      v.halves.forEach((p) => {  // daytime, nighttime left to right, each with its snowfall on top
-        const half = el("span", { class: "shalf" }), seg = el("span", { class: "sseg" });
-        seg.style.height = p.snow_in >= 0.05 ? `${p.snow_in / vmax * 82}%` : "0";  // headroom for the number
-        seg.style.background = `var(${qual(p.quality).sw})`;
-        half.append(el("span", { class: "sval" }, fmtSnow(p.snow_in)), seg);
+      v.halves.forEach((p) => {  // daytime, nighttime left to right: snow, with any rain (in of water) on top
+        const half = el("span", { class: "shalf" });
+        const h = (v) => v >= 0.05 ? `${v / vmax * 82}%` : "0";  // headroom for the number
+        const rainSeg = el("span", { class: "sseg" }), snowSeg = el("span", { class: "sseg" });
+        rainSeg.style.height = h(p.rain_in); rainSeg.style.background = "var(--q-rain)";
+        snowSeg.style.height = h(p.snow_in); snowSeg.style.background = `var(${qual(p.quality === "rain" ? "mixed" : p.quality).sw})`;
+        const n = p.snow_in >= 0.25 || !(p.rain_in >= 0.05) ? fmtSnow(p.snow_in) : p.rain_in.toFixed(1);  // rain-only: its amount
+        half.append(el("span", { class: "sval" }, n), ...(p.rain_in >= 0.05 ? [rainSeg] : []), snowSeg);
         stack.append(half);
       });
       const wrap = el("div", { class: "sbar-wrap" });
