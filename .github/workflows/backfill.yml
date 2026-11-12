@@ -27,7 +27,7 @@ jobs:
       - name: Locate + calibrate ${{ matrix.group }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
-        run: timeout 320m python -u backfill.py --group ${{ matrix.group }} --out out || echo "stopped early; progress kept, next run continues"
+        run: timeout 320m python -u calibrate.py --group ${{ matrix.group }} --out out || echo "stopped early; progress kept, next run continues"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -51,7 +51,7 @@ jobs:
           pattern: bf-*
           path: parts
       - name: Merge
-        run: python backfill.py --merge parts
+        run: python calibrate.py --merge parts
       - name: Commit
         run: |
           git config user.name "opensnow-bot"

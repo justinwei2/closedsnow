@@ -23,13 +23,17 @@ free tier (10k calls/day) is the budget: a refresh is ~65–80 calls per resort;
 ~200 per US resort, once.
 
 ## Files
-`catalog.py` resorts · `locate.py` snap points to terrain, pick gauge and models · `calibrate.py`
-bias factors from as-issued forecasts · `update.py` live forecast → JSON, `--check` freshness alarm · `physics.py` rain/snow,
-snow level, snow ratio, labels · `report.py` weather-report notes ·
-`backfill.py` locate + calibrate orchestration · `sources.py` HTTP/retries and station data.
+| File | What |
+|---|---|
+| `resorts.py` | catalog, constants, typed records (`Resort`, `Point`, `Gauge`, `Calibration`) |
+| `sources.py` | HTTP (retries, quota, replay) and source adapters → `ModelGrid`, `StationSeries`, `NwsGrid`, `Alert` |
+| `conditions.py` | rain/snow, snow level, snow ratio, quality labels, weather-report notes |
+| `calibrate.py` | one-time setup: locate points/gauge/models, calibrate bias factors, merge regions |
+| `update.py` | live forecast → JSON, index, `--check` freshness alarm |
 
-Add a resort: one line in `catalog.py`; the next backfill sets it up.
+Add a resort: one line in `CATALOG` (`resorts.py`); the next nightly setup run handles it.
 Local preview: `python3 update.py alta && python3 -m http.server -d web 8000`.
+Regression testing: set `SKISITE_REPLAY=dir` to record API responses once and replay them.
 
 ## Data
 Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC, DWD models), api.weather.gov, NRCS SNOTEL, California

@@ -1,229 +1,94 @@
-"""Pull live forecasts + observations for every resort and write web/data/<resort>.json.
+"""Live forecast for each resort -> web/data/<resort>.json, plus the index and a freshness check.
 
-Central forecast: per-resort bias-corrected, skill-weighted blend of deterministic models
-(factors/weights from calibrate.py). Phase, snow level and snow-to-liquid ratio come from a
-consensus pressure-level profile. Ranges (25-75% shown, 10-90% in the appendix) average the
-quantiles of (a) the pooled, bias-corrected ensembles and (b) the blend times its historical
-obs/forecast error quantiles for that storm size. Includes the past 7 days (model-estimated) and
-a daily weather report (report.py).
+Snow: per-resort bias-corrected, skill-weighted blend of deterministic models (calibrate.py).
+Phase, snow level and snow-to-liquid ratio come from a consensus pressure-level profile.
+Ranges average the quantiles of (a) the pooled bias-corrected ensembles and (b) the blend times
+this resort's historical obs/forecast error for that storm size.
+
+    python3 update.py [resort ...] [--scheduled] [--group G] [--no-index]
+    python3 update.py --check [--url SITE]
 """
-import json, os, re, sys, time
-from collections import defaultdict
+import json, os, sys, time, traceback
+from dataclasses import asdict
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-from config import RESORTS, FT, ELEVS, PROFILE_MODELS, LEVELS, ENSEMBLES
-from sources import get_json, cache_path, obs_raw, IN, QuotaExceeded
-import physics as ph
-import report
+import conditions as cx
+import sources as src
+from resorts import CATALOG, ELEVS, ENSEMBLES, FT, GROUPS, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, load_calibration
 
-HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "web", "data")
-OM = "https://api.open-meteo.com/v1/forecast"
-ENS = "https://ensemble-api.open-meteo.com/v1/ensemble"
-DAYS = 16
-PAST = 7
+PAST_DAYS = 7
+REFRESH_EVERY_H = 7.5  # ~every 9 h on the 3-hourly schedule: ~7.5k of Open-Meteo's 10k calls/day
+MAX_AGE_H = 20         # freshness alarm: about 2 missed refreshes
+QS = (0.1, 0.25, 0.5, 0.75, 0.9)
 HOURLY_OUT = ("temp_f", "wind_mph", "frac", "slr", "snow_in", "rain_in")  # fields the charts read
-NON_US = {"British Columbia", "Alberta"}  # no NWS products there
-# Regions refresh as separate parallel CI jobs (own runner each), so a rate limit in one
-# doesn't stall the rest.
-GROUPS = {"sierra": ["California"], "west": ["Pacific Northwest", "Utah", "Wyoming · Montana · Idaho"],
-          "rockies": ["Colorado", "New Mexico"], "north": ["British Columbia", "Alberta", "Alaska"]}
-REFRESH_EVERY_H = 7.5  # refresh when older than this: ~every 9 h on the 3-hourly schedule, ~7.5k of 10k calls/day
-# per-resort context, set at the start of process()
-CTX = dict(tz="America/Los_Angeles", local=ZoneInfo("America/Los_Angeles"), models=[])
-KMH_MPH = 0.621371
+_discussions = {}  # one NWS discussion per office per run
 
 
-def om_point(pt, **extra):
-    return dict(latitude=pt["lat"], longitude=pt["lon"], elevation=round(pt["ft"] * FT),
-                cell_selection="nearest", timezone=CTX["tz"], forecast_days=DAYS, **extra)
-
-
-# ---------------------------------------------------------------- fetch
-
-def fetch_det(pt):
-    vars_ = ["precipitation", "temperature_2m", "relative_humidity_2m", "wind_speed_10m",
-             "wind_gusts_10m", "wind_direction_10m", "cloud_cover", "freezing_level_height"]
-    return get_json(OM, om_point(pt, hourly=",".join(vars_), models=",".join(CTX["models"]), past_days=PAST))
-
-
-def fetch_profiles(pt):
-    vars_ = [f"{v}_{p}hPa" for p in LEVELS for v in
-             ("temperature", "relative_humidity", "geopotential_height", "wind_speed")]
-    return get_json(OM, om_point(pt, hourly=",".join(vars_), models=",".join(PROFILE_MODELS), past_days=PAST))
-
-
-def fetch_ens(pt, model):
+def attempt(what, fn, default=None):
+    """Optional data source: log and fall back on failure, but never swallow quota limits."""
     try:
-        return get_json(ENS, om_point(pt, hourly="precipitation", models=model))
-    except QuotaExceeded:
-        raise  # don't publish a "fresh" file with the ensembles silently missing
-    except RuntimeError as e:
-        print("  ensemble failed", model, e, file=sys.stderr)
-        return None
-
-
-def fetch_alerts(pt):
-    try:
-        j = get_json("https://api.weather.gov/alerts/active", dict(point=f"{pt['lat']},{pt['lon']}"))
+        return fn()
+    except src.QuotaExceeded:
+        raise
     except Exception as e:
-        print("  alerts failed", e, file=sys.stderr)
-        return None  # unknown, not "no alerts": the page says so
-    return [dict(event=p["event"], severity=p.get("severity"), headline=p.get("headline"),
-                 onset=p.get("onset") or p.get("effective"), ends=p.get("ends") or p.get("expires"),
-                 description=(p.get("description") or "")[:1500])
-            for p in (f["properties"] for f in j.get("features", []))]
+        print(f"  {what} failed: {e}", file=sys.stderr)
+        return default
 
 
-def nws_point(pt):
-    path = cache_path(f"nws_point_{pt['lat']}_{pt['lon']}.json")
-    if not os.path.exists(path):
-        p = get_json(f"https://api.weather.gov/points/{pt['lat']},{pt['lon']}")["properties"]
-        json.dump(dict(office=p["gridId"], x=p["gridX"], y=p["gridY"]), open(path, "w"))
-    return json.load(open(path))
-
-
-DUR = re.compile(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?)?")
-
-
-def nws_hourly(values, per_hour_split):
-    """Expand NWS ISO8601 interval values to {local hour string: value}."""
-    out = {}
-    for v in values:
-        start, dur = v["validTime"].split("/")
-        m = DUR.match(dur)
-        hours = max(1, int(m.group(1) or 0) * 24 + int(m.group(2) or 0))
-        t0 = datetime.fromisoformat(start).astimezone(timezone.utc)
-        for k in range(hours):  # step in UTC, then label in local time (DST-safe)
-            t = (t0 + timedelta(hours=k)).astimezone(CTX["local"]).strftime("%Y-%m-%dT%H:00")
-            out[t] = (v["value"] or 0) / hours if per_hour_split else v["value"]
-    return out
-
-
-def fetch_nws(pt):
-    try:
-        g = nws_point(pt)
-        p = get_json(f"https://api.weather.gov/gridpoints/{g['office']}/{g['x']},{g['y']}")["properties"]
-        return dict(office=g["office"], elev_m=p["elevation"]["value"],
-                    snow=nws_hourly(p["snowfallAmount"]["values"], True),
-                    snow_level=nws_hourly(p["snowLevel"]["values"], False))
-    except Exception as e:
-        print("  NWS failed", e, file=sys.stderr)
-        return None
-
-
-_afd_cache = {}
-
-
-def fetch_afd(office):
-    if office in _afd_cache:
-        return _afd_cache[office]
-    try:
-        g = get_json(f"https://api.weather.gov/products/types/AFD/locations/{office}")["@graph"][0]
-        p = get_json(g["@id"])
-        _afd_cache[office] = dict(office=office, issued=p["issuanceTime"], text=p["productText"])
-    except Exception as e:
-        print("  AFD failed", e, file=sys.stderr)
-        _afd_cache[office] = None
-    return _afd_cache[office]
-
-
-def fetch_obs(obs):
-    if not obs:
-        return None
-    end = date.today() + timedelta(1)
-    start = end - timedelta(15)
-    try:
-        raw = obs_raw(obs, start.isoformat(), end.isoformat())
-    except Exception as e:
-        print("  obs failed", e, file=sys.stderr)
-        return None
-    by = defaultdict(dict)
-    for el, vals in raw.items():
-        for d, v in vals:
-            if v is not None:
-                by[d[:10]][el] = v
-    days = sorted(by)
-    rows = []
-    for a, b in zip(days, days[1:]):
-        A, B = by[a], by[b]
-        row = dict(date=a, depth_in=A.get("SNWD"))
-        if "SNWD" in A and "SNWD" in B:
-            row["new_snow_in"] = max(0.0, B["SNWD"] - A["SNWD"])
-        if "WTEQ" in A and "WTEQ" in B:
-            row["swe_in"] = round(B["WTEQ"] - A["WTEQ"], 2)
-        if "PREC" in A and "PREC" in B and 0 <= B["PREC"] - A["PREC"] < 10:
-            row["precip_in"] = round(B["PREC"] - A["PREC"], 2)
-        rows.append(row)
-    latest = lambda el: next((by[d][el] for d in reversed(days) if el in by[d]), None)
-    return dict(station=obs[2], elev_ft=obs[3], days=rows,
-                depth_in=latest("SNWD"), swe_in=latest("WTEQ"))
-
-
-# ---------------------------------------------------------------- processing
-
-def build_profiles(pj):
-    """-> per hour: consensus Profile and per-model Profiles."""
-    h = pj["hourly"]
-    times = h["time"]
-    cons, per_model = [], defaultdict(list)
-    for i in range(len(times)):
+def soundings(grid):
+    """Per hour: consensus Profile (mean of the profile models) and each model's Profile."""
+    cons, per_model = [], {m: [] for m in PROFILE_MODELS}
+    for i in range(len(grid.times)):
         stacks = []
         for m in PROFILE_MODELS:
-            try:
-                z = [h[f"geopotential_height_{p}hPa_{m}"][i] for p in LEVELS]
-                t = [h[f"temperature_{p}hPa_{m}"][i] for p in LEVELS]
-                rh = [h[f"relative_humidity_{p}hPa_{m}"][i] for p in LEVELS]
-                w = [h[f"wind_speed_{p}hPa_{m}"][i] for p in LEVELS]
-            except KeyError:
-                continue
-            if None in z or None in t or None in rh or None in w:
-                per_model[m].append(None)
-                continue
-            stacks.append((z, t, rh, w))
-            per_model[m].append(ph.Profile(z, t, rh, w))
-        if stacks:
-            n = len(stacks)
-            avg = [[sum(s[k][j] for s in stacks) / n for j in range(len(LEVELS))] for k in range(4)]
-            cons.append(ph.Profile(*avg))
-        else:
-            cons.append(None)
-    return times, cons, per_model
+            cols = [[grid.at(f"{v}_{p}hPa", m, i) for p in LEVELS]
+                    for v in ("geopotential_height", "temperature", "relative_humidity", "wind_speed")]
+            ok = all(None not in c for c in cols)
+            per_model[m].append(cx.Profile(*cols) if ok else None)
+            if ok:
+                stacks.append(cols)
+        cons.append(cx.Profile(*[[sum(s[k][j] for s in stacks) / len(stacks) for j in range(len(LEVELS))]
+                                 for k in range(4)]) if stacks else None)
+    return cons, per_model
 
 
-def col(h, var, m):
-    """Hourly series for model m; Open-Meteo drops the _model suffix when one model is requested."""
-    v = h.get(f"{var}_{m}")
-    if v is None and len(CTX["models"]) == 1:
-        v = h.get(var)
-    return v
-
-
-def blend_precip(dj, cal):
-    """Bias-corrected, weighted blend of hourly precip; renormalised over models present."""
-    h = dj["hourly"]
-    models = cal["models"]
-    out, contrib = [], defaultdict(list)
-    for i in range(len(h["time"])):
+def blend(grid, cal):
+    """Bias-corrected, weighted hourly precip blend (renormalised over models present) and
+    each model's corrected series."""
+    precip, contrib = [], {m: [] for m in grid.models}
+    for i in range(len(grid.times)):
         num = den = 0.0
-        for m in CTX["models"]:
-            v = (col(h, "precipitation", m) or [None] * (i + 1))[i]
-            if v is None or m not in models:
-                continue
-            c = v * models[m]["factor"]
+        for m in grid.models:
+            v = grid.at("precipitation", m, i)
+            c = None if v is None else v * cal.models[m].factor
             contrib[m].append(c)
-            num += models[m]["weight"] * c
-            den += models[m]["weight"]
-        out.append(num / den if den else None)
-        for m in CTX["models"]:
-            if len(contrib[m]) < i + 1:
-                contrib[m].append(None)
-    return out, contrib
+            if c is not None:
+                num += cal.models[m].weight * c; den += cal.models[m].weight
+        precip.append(num / den if den else None)
+    return precip, contrib
 
 
-def mean_of(h, var, i):
-    vs = [s[i] for s in (col(h, var, m) for m in CTX["models"]) if s and s[i] is not None]
-    return sum(vs) / len(vs) if vs else None
+def hours_at(r, e, grid, cons, precip):
+    z = r.point(e).ft * FT
+    out = []
+    for i, t in enumerate(grid.times):
+        tc, w10, g10 = (grid.mean(v, i) for v in ("temperature_2m", "wind_speed_10m", "wind_gusts_10m"))
+        h = cx.Hour(t, precip[i], None if tc is None else tc * 9 / 5 + 32, None if w10 is None else w10 * KMH_MPH,
+                    None if g10 is None else g10 * KMH_MPH, grid.wind_dir(i), grid.mean("cloud_cover", i))
+        p = cons[i]
+        if p is not None:
+            at = p.at(z)
+            h.frac, h.slr, h.warm_nose, h.tw_c = cx.snow_fraction(at["tw"]), cx.slr_at(p, z), p.warm_nose(z), at["tw"]
+            if e == "summit":  # exposed ridge: free-air wind at summit height, not smoothed 10 m wind
+                h.wind_mph = at["wind"] * KMH_MPH
+            if h.warm_nose:  # refrozen sleet / ice pellets, not fluffy snow
+                h.slr = 2.0
+            if h.precip_mm is not None:
+                h.snow_in = h.precip_mm * h.frac * h.slr / IN
+                h.rain_in = h.precip_mm * (1 - h.frac) / IN
+        out.append(h)
+    return out
 
 
 def wquantiles(vals_w, qs):
@@ -237,122 +102,74 @@ def wquantiles(vals_w, qs):
     return out
 
 
-QS = (0.1, 0.25, 0.5, 0.75, 0.9)
-
-
-def qkey(q):
-    return f"p{int(round(q * 100))}"
-
-
-def mean_dir(h, i):
-    """Vector-mean 10 m wind direction across models (degrees)."""
-    import math
-    sx = sy = 0.0
-    n = 0
-    for m in CTX["models"]:
-        d, s = (col(h, "wind_direction_10m", m) or [None] * (i + 1))[i], (col(h, "wind_speed_10m", m) or [None] * (i + 1))[i]
-        if d is None or s is None:
-            continue
-        sx += s * math.sin(math.radians(d)); sy += s * math.cos(math.radians(d)); n += 1
-    return (math.degrees(math.atan2(sx, sy)) % 360) if n else None
+def mean(xs):
+    return sum(xs) / len(xs) if xs else None
 
 
 def rnd(v):
     return round(v, 3) if isinstance(v, float) else v
 
 
-def process(key, r, cal):
-    print("resort", key)
-    CTX.update(tz=r["tz"], local=ZoneInfo(r["tz"]), models=[m for m in r["models"] if m in cal["models"]])
-    det = {e: fetch_det(r[e]) for e in ELEVS}
-    times, cons, per_model_prof = build_profiles(fetch_profiles(r["summit"]))
-    ens = {m: fetch_ens(r["summit"], m) for m in ENSEMBLES}
-    us = r["region"] not in NON_US
-    nws = {e: fetch_nws(r[e]) if us else None for e in ELEVS}
-    alerts = fetch_alerts(r["summit"]) if us else []
-    obs = fetch_obs(r["obs"])
-    office = (r.get("afd_office") or (nws["summit"] or {}).get("office")) if us else None
-    afd = fetch_afd(office) if office else None
-    now = datetime.now(CTX["local"]).strftime("%Y-%m-%dT%H:00")
+def process(r, cal):
+    print("resort", r.key)
+    local = ZoneInfo(r.tz)
+    models = [m for m in r.models if m in cal.models]
+    grids = {e: src.forecast(r.point(e), r.tz, models, PAST_DAYS) for e in ELEVS}
+    times = grids["summit"].times
+    cons, per_model = soundings(src.profiles(r.summit, r.tz, PAST_DAYS))
+    ens = {m: attempt(f"ensemble {m}", lambda m=m: src.ensemble(r.summit, r.tz, m)) for m in ENSEMBLES}
+    nws = {e: attempt("NWS", lambda e=e: src.nws_grid(r.point(e), local)) if r.us else None for e in ELEVS}
+    alerts = attempt("alerts", lambda: [asdict(a) for a in src.nws_alerts(r.summit)]) if r.us else []
+    office = (r.afd_office or (nws["summit"].office if nws["summit"] else None)) if r.us else None
+    if office and office not in _discussions:
+        _discussions[office] = attempt("discussion", lambda: asdict(src.nws_discussion(office)))
+    afd = _discussions.get(office) if office else None
+    obs = None
+    if r.gauge:
+        end = date.today() + timedelta(1)
+        st = attempt("obs", lambda: src.StationSeries.fetch(r.gauge, (end - timedelta(15)).isoformat(), end.isoformat()))
+        if st:
+            obs = dict(station=r.gauge.name, elev_ft=r.gauge.ft, days=st.daily(), depth_in=st.latest("depth"),
+                       swe_in=st.latest("swe"))
+    now = datetime.now(local).strftime("%Y-%m-%dT%H:00")
     now_i = next((i for i, t in enumerate(times) if t >= now), len(times) - 1)
 
     # ---- hourly per elevation
-    elev = {}
+    hours, model_snow = {}, {}
     for e in ELEVS:
-        dj = det[e]; h = dj["hourly"]
-        assert h["time"] == times, "time axes differ"
-        precip, contrib = blend_precip(dj, cal)
-        z = r[e]["ft"] * FT
-        rows = []
-        for i, t in enumerate(times):
-            p = cons[i]
-            tc, w10, g10 = (mean_of(h, v, i) for v in ("temperature_2m", "wind_speed_10m", "wind_gusts_10m"))
-            row = dict(t=t, precip_mm=precip[i], temp_f=None if tc is None else tc * 9 / 5 + 32,
-                       wind_mph=None if w10 is None else w10 * KMH_MPH,
-                       gust_mph=None if g10 is None else g10 * KMH_MPH,
-                       wind_dir=mean_dir(h, i), cloud=mean_of(h, "cloud_cover", i))
-            if p is not None:
-                at = p.at(z)
-                frac, slr = ph.snow_fraction(at["tw"]), ph.slr_at(p, z)
-                row.update(frac=frac, slr=slr, warm_nose=p.warm_nose(z), tw_c=at["tw"])
-                if e == "summit":  # exposed ridge: free-air wind at summit height, not smoothed 10 m wind
-                    row["wind_mph"] = at["wind"] * KMH_MPH
-                if row["warm_nose"]:  # refrozen sleet/ice pellets, not fluffy snow (~2:1)
-                    slr = row["slr"] = 2.0
-                if precip[i] is not None:
-                    row["snow_in"] = precip[i] * frac * slr / IN
-                    row["rain_in"] = precip[i] * (1 - frac) / IN
-            rows.append(row)
-        model_snow = {m: [None if (c[i] is None or "frac" not in rows[i])
-                          else c[i] * rows[i]["frac"] * rows[i]["slr"] / IN for i in range(len(times))]
-                      for m, c in contrib.items()}
-        elev[e] = dict(rows=rows, model_snow=model_snow, grid=dict(lat=dj["latitude"], lon=dj["longitude"]))
-
+        assert grids[e].times == times, "time axes differ"
+        precip, contrib = blend(grids[e], cal)
+        hrs = hours[e] = hours_at(r, e, grids[e], cons, precip)
+        model_snow[e] = {m: [None if c[i] is None or hrs[i].frac is None else c[i] * hrs[i].frac * hrs[i].slr / IN
+                             for i in range(len(times))] for m, c in contrib.items()}
+    nws_sl = nws["summit"].snow_level if nws["summit"] else {}
     levels = []
-    sl_nws = (nws["summit"] or {}).get("snow_level", {})
     for i, p in enumerate(cons):
-        sl = [pm[i].snow_level() for pm in per_model_prof.values() if i < len(pm) and pm[i] is not None]
-        sl = [x for x in sl if x is not None]
-        lv = p.snow_level() if p else None
-        fz = p.freezing_level() if p else None
+        sl = [x for x in (pm[i].snow_level() for pm in per_model.values() if pm[i] is not None) if x is not None]
+        lv, fz, n = (p.snow_level() if p else None), (p.freezing_level() if p else None), nws_sl.get(times[i])
         levels.append(dict(snow_level_ft=None if lv is None else lv / FT, freezing_level_ft=None if fz is None else fz / FT,
                            snow_level_lo_ft=min(sl) / FT if sl else None, snow_level_hi_ft=max(sl) / FT if sl else None,
-                           nws_snow_level_ft=None if sl_nws.get(times[i]) is None else sl_nws[times[i]] / FT))
+                           nws_snow_level_ft=None if n is None else n / FT))
 
     # ---- ensembles (summit point), bias-corrected, each ensemble weighted equally
     members = []
-    for m, j in ens.items():
-        if not j or "hourly" not in j:
-            continue
-        h = j["hourly"]
-        f = cal["models"].get(ENSEMBLES[m], {}).get("factor", 1.0)
-        ks = [k for k in h if k.startswith("precipitation")]
-        for k in ks:
-            members.append((1.0 / len(ks), {t: v * f for t, v in zip(h["time"], h[k]) if v is not None}))
-
-    def emp_q(liq_mm):
-        """Historical obs/forecast ratio quantiles for a storm of this size at this resort."""
-        rq = cal.get("ratio_q", {})
-        for b in cal.get("ratio_bins", []):
-            if b["lo_mm"] <= liq_mm < b["hi_mm"]:
-                rq = b["q"]
-        return {q: rq.get(str(q), 1.0) for q in QS}
+    for m, g in ens.items():
+        series = g.members() if g else []
+        f = cal.models[ENSEMBLES[m]].factor if ENSEMBLES[m] in cal.models else 1.0
+        members += [(1.0 / len(series), {t: v * f for t, v in zip(g.times, s) if v is not None}) for s in series]
 
     def window(i0, i1, e):
         """Totals for hours [i0, i1) at elevation e; ranges only for future windows."""
         i0, i1 = max(0, i0), min(len(times), i1)
-        rows = elev[e]["rows"][i0:i1]
-        snow = sum(x.get("snow_in") or 0 for x in rows)
-        liq = sum(x["precip_mm"] or 0 for x in rows)
-        res = dict(p50=snow, liquid_in=liq / IN, rain_in=sum(x.get("rain_in") or 0 for x in rows))
+        hrs = hours[e][i0:i1]
+        snow = sum(h.snow_in or 0 for h in hrs)
+        liq = sum(h.precip_mm or 0 for h in hrs)
+        res = dict(p50=snow, liquid_in=liq / IN, rain_in=sum(h.rain_in or 0 for h in hrs))
         if i0 < now_i or i1 <= i0:
             return res
-        s_liq = sum(x["precip_mm"] or 0 for x in elev["summit"]["rows"][i0:i1])
-        if liq > 0.5:
-            ratio = snow / liq
-        else:  # dry blend: typical hourly snow/liquid so ensemble wet tails still show
-            rs = [x["frac"] * x["slr"] / IN for x in rows if "frac" in x]
-            ratio = sum(rs) / len(rs) if rs else 0
+        s_liq = sum(h.precip_mm or 0 for h in hours["summit"][i0:i1])
+        # snow per mm of liquid; in a dry blend use the typical hourly ratio so ensemble wet tails show
+        ratio = snow / liq if liq > 0.5 else (mean([h.frac * h.slr / IN for h in hrs if h.frac is not None]) or 0)
         scale = liq / s_liq if s_liq > 0.5 else 1.0  # ensembles are at the summit point
         ts = times[i0:i1]
         vals = []
@@ -360,173 +177,148 @@ def process(key, r, cal):
             got = [mm[t] for t in ts if t in mm]
             if got and len(got) >= 0.9 * len(ts):
                 vals.append((sum(got) * len(ts) / len(got) * scale, w))
-        eq = emp_q(s_liq * 72 / max(1, i1 - i0))  # bins were calibrated on 72 h totals
+        eq = cal.error_quantiles(s_liq * 72 / max(1, i1 - i0), QS)  # bins were calibrated on 72 h totals
         ensq = wquantiles(vals, QS) if vals else None
-        for q in QS:
-            emp = snow * eq[q]
-            # quantile averaging (Vincentization) of ensemble and historical-error distributions
-            res[qkey(q)] = (ensq[q] * ratio + emp) / 2 if ensq else emp
+        for q in QS:  # quantile averaging of ensemble and historical-error distributions
+            res[f"p{round(q * 100)}"] = (ensq[q] * ratio + snow * eq[q]) / 2 if ensq else snow * eq[q]
         res["p50"] = snow
         return res
 
     # ---- daily
-    day_of = [t[:10] for t in times]
-    days = sorted(set(day_of))
     today = now[:10]
     obs_by_day = {x["date"]: x for x in (obs or {}).get("days", [])}
     daily = []
-    for d in days:
-        idx = [i for i, t in enumerate(day_of) if t == d]
-        i0, i1 = idx[0], idx[-1] + 1
-        if d == today:
-            i0 = now_i  # rest of today
+    for d in sorted({t[:10] for t in times}):
+        idx = [i for i, t in enumerate(times) if t.startswith(d)]
+        first, i1 = idx[0], idx[-1] + 1
+        i0 = now_i if d == today else first  # today: rest of the day
         entry = dict(date=d, past=d < today)
         for e in ELEVS:
-            rows = elev[e]["rows"][idx[0]:i1]
-            b = window(idx[0] if d < today else i0, i1, e)
-            wet = [x for x in rows if (x["precip_mm"] or 0) > 0.2 and "frac" in x]
-            liq = sum(x["precip_mm"] for x in wet)
+            hrs = hours[e][first:i1]
+            b = window(first if d < today else i0, i1, e)
+            wet = [h for h in hrs if (h.precip_mm or 0) > 0.2 and h.frac is not None]
+            liq = sum(h.precip_mm for h in wet)
             if liq > 0:
-                snow_liq = sum(x["precip_mm"] * x["frac"] for x in wet)
-                frac = snow_liq / liq
-                slr = sum(x["precip_mm"] * x["frac"] * x["slr"] for x in wet) / snow_liq if snow_liq > 0 else None
-                nose = any(x.get("warm_nose") and x["precip_mm"] > 0.5 for x in wet)
-                b.update(slr=slr, quality=ph.quality(slr or 10, frac, nose) if liq > 1 else None)
-            temps = [x["temp_f"] for x in rows if x.get("temp_f") is not None]
-            lift = report.lift_hours(rows, d)
-            winds = [x["wind_mph"] for x in lift if x.get("wind_mph") is not None]
-            gusts = [x["gust_mph"] for x in lift if x.get("gust_mph") is not None]
-            dirs = [x["wind_dir"] for x in lift if x.get("wind_dir") is not None]
-            b.update(hi_f=max(temps) if temps else None, lo_f=min(temps) if temps else None,
-                     wind_mph=max(winds) if winds else None, gust_mph=max(gusts) if gusts else None,
-                     wind_dir=report.compass(report.circ_mean(dirs)) if dirs else None,
-                     models={m: (sum(v for v in s[idx[0]:i1] if v is not None)
-                                 if any(v is not None for v in s[idx[0]:i1]) else None)
-                             for m, s in elev[e]["model_snow"].items()})
+                snow_liq = sum(h.precip_mm * h.frac for h in wet)
+                slr = sum(h.precip_mm * h.frac * h.slr for h in wet) / snow_liq if snow_liq > 0 else None
+                nose = any(h.warm_nose and h.precip_mm > 0.5 for h in wet)
+                b.update(slr=slr, quality=cx.quality(slr or 10, snow_liq / liq, nose) if liq > 1 else None)
+            temps = [h.temp_f for h in hrs if h.temp_f is not None]
+            lift = cx.lift_hours(hrs, d)
+            winds = [h.wind_mph for h in lift if h.wind_mph is not None]
+            gusts = [h.gust_mph for h in lift if h.gust_mph is not None]
+            dirs = [h.wind_dir for h in lift if h.wind_dir is not None]
+            b.update(hi_f=max(temps, default=None), lo_f=min(temps, default=None), wind_mph=max(winds, default=None),
+                     gust_mph=max(gusts, default=None), wind_dir=cx.compass(cx.circ_mean(dirs)) if dirs else None,
+                     models={m: (sum(v for v in s[first:i1] if v is not None) if any(v is not None for v in s[first:i1]) else None)
+                             for m, s in model_snow[e].items()})
             if nws[e] and d >= today:
-                ns = [nws[e]["snow"].get(times[i]) for i in range(i0, i1)]
+                ns = [nws[e].snow.get(times[i]) for i in range(i0, i1)]
                 if any(v is not None for v in ns):
                     b["nws_snow_in"] = sum(v or 0 for v in ns) / IN
             entry[e] = b
-        wet_i = [i for i in range(idx[0], i1) if (elev["summit"]["rows"][i]["precip_mm"] or 0) > 0.2]
+        wet_i = [i for i in range(first, i1) if (hours["summit"][i].precip_mm or 0) > 0.2]
         sl_wet = [levels[i]["snow_level_ft"] for i in wet_i if levels[i]["snow_level_ft"] is not None]
-        sls = [levels[i]["snow_level_ft"] for i in range(idx[0], i1) if levels[i]["snow_level_ft"] is not None]
-        fz = [levels[i]["freezing_level_ft"] for i in range(idx[0], i1) if levels[i]["freezing_level_ft"] is not None]
-        entry.update(snow_level_ft=(sum(sl_wet) / len(sl_wet)) if sl_wet else (sum(sls) / len(sls) if sls else None),
-                     snow_level_max_ft=max(sl_wet) if sl_wet else None,
-                     freezing_level_ft=sum(fz) / len(fz) if fz else None)
-        o = obs_by_day.get(d)
-        if o:
+        sls = [levels[i]["snow_level_ft"] for i in range(first, i1) if levels[i]["snow_level_ft"] is not None]
+        fz = [levels[i]["freezing_level_ft"] for i in range(first, i1) if levels[i]["freezing_level_ft"] is not None]
+        entry.update(snow_level_ft=mean(sl_wet) if sl_wet else mean(sls), snow_level_max_ft=max(sl_wet, default=None),
+                     freezing_level_ft=mean(fz))
+        if d in obs_by_day:
+            o = obs_by_day[d]
             entry["obs"] = dict(new_snow_in=o.get("new_snow_in"), precip_in=o.get("precip_in"), swe_in=o.get("swe_in"))
         if d >= today:
-            entry["report"], entry["wind_hold"] = report.build(
-                d, entry, {e: elev[e]["rows"] for e in ELEVS}, {e: r[e]["ft"] for e in ELEVS})
+            entry["report"], entry["wind_hold"] = cx.report(d, entry, hours, {e: r.point(e).ft for e in ELEVS})
         daily.append(entry)
 
     # ---- summary windows (hour-based, from now)
-    nxt = {lbl: {e: window(now_i, now_i + h, e) for e in ELEVS}
-           for lbl, h in (("Next 24 hours", 24), ("Next 3 days", 72), ("Next 5 days", 120), ("Next 10 days", 240))}
-    past = {lbl: {e: window(now_i - h, now_i, e) for e in ELEVS}
-            for lbl, h in (("Last 24 hours", 24), ("Last 3 days", 72), ("Last 7 days", 168))}
+    nxt = {lbl: {e: window(now_i, now_i + n, e) for e in ELEVS}
+           for lbl, n in (("Next 24 hours", 24), ("Next 3 days", 72), ("Next 5 days", 120), ("Next 10 days", 240))}
+    past = {lbl: {e: window(now_i - n, now_i, e) for e in ELEVS}
+            for lbl, n in (("Last 24 hours", 24), ("Last 3 days", 72), ("Last 7 days", 168))}
     if obs:
         done = [x for x in obs["days"] if x["date"] < today]
         for lbl, n in (("Last 24 hours", 1), ("Last 3 days", 3), ("Last 7 days", 7)):
-            vals = [x.get("new_snow_in") for x in done[-n:]]
-            past[lbl]["station_in"] = sum(v for v in vals if v is not None) if any(v is not None for v in vals) else None
+            vals = [x["new_snow_in"] for x in done[-n:] if x.get("new_snow_in") is not None]
+            past[lbl]["station_in"] = sum(vals) if vals else None
 
     hourly = [dict(t=t, **{k: rnd(v) for k, v in levels[i].items()},
-                   **{e: {k: rnd(elev[e]["rows"][i].get(k)) for k in HOURLY_OUT} for e in ELEVS})
+                   **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i <= i < now_i + 24 * 7]  # charts use the next 7 days
     return dict(
-        key=key, name=r["name"], region=r["region"], now=now,
+        key=r.key, name=r.name, region=r.region, now=now,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
-        points={e: dict(requested=r[e], grid=elev[e]["grid"]) for e in ELEVS},
-        calibration={k: cal.get(k) for k in ("station", "uncalibrated", "peers", "peers_scope", "models")},
+        points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
+        calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
+                         models={m: asdict(v) for m, v in cal.models.items()}),
         daily=daily, hourly=hourly, next=nxt, past=past, obs=obs, afd=afd, alerts=alerts,
     )
 
 
-def _updated(path):
+# ---------------------------------------------------------------- files
+
+def updated_at(key):
     try:
-        return json.load(open(path))["updated"]
+        return json.load(open(os.path.join(OUT, f"{key}.json")))["updated"]
     except Exception:
         return None
 
 
+def age_h(key):
+    """Age from the JSON's own timestamp (file mtimes are reset by git checkouts)."""
+    t = updated_at(key)
+    return None if t is None else (datetime.now(timezone.utc) - datetime.fromisoformat(t)).total_seconds() / 3600
+
+
 def write_index():
-    try:
-        cal = json.load(open(os.path.join(HERE, "data", "calibration.json")))
-    except Exception:
-        cal = {}
+    cal = load_calibration()
     idx = []
-    for key, r in RESORTS.items():
-        p = os.path.join(OUT, f"{key}.json")
-        c = cal.get(key) or {}
-        status = ("calibrated" if c and not c.get("uncalibrated") else
-                  "pending" if r.get("obs") else "regional default")
-        idx.append(dict(key=key, name=r["name"], region=r["region"], calibration=status,
-                        station=(r.get("obs") or [None, None, None])[2],
-                        station_ft=(r.get("obs") or [None] * 4)[3],
-                        blend_mae72_in=round(c["blend_mae72"] / 25.4, 2) if c.get("blend_mae72") else None,
-                        windows=c.get("n_windows"), updated=_updated(p), located=True))
-    from catalog import CATALOG
-    for key, c in CATALOG.items():  # not located yet: listed in the coverage appendix, hidden from search
-        if key not in RESORTS:
-            idx.append(dict(key=key, name=c[0], region=c[1], calibration="not set up yet", located=False, updated=None))
-    from catalog import CATALOG
-    order = {k: i for i, k in enumerate(CATALOG)}
-    idx.sort(key=lambda x: order.get(x["key"], 1e9))  # catalog order = grouped by region for search
+    for key, (name, region, *_) in CATALOG.items():  # catalog order = grouped by region for search
+        r, c = RESORTS.get(key), cal.get(key)
+        if not r:  # not set up yet: listed in the coverage appendix, hidden from search
+            idx.append(dict(key=key, name=name, region=region, calibration="not set up yet", located=False, updated=None))
+            continue
+        status = "calibrated" if c and c.calibrated else "pending" if r.gauge else "regional default"
+        idx.append(dict(key=key, name=r.name, region=r.region, calibration=status,
+                        station=r.gauge.name if r.gauge else None, station_ft=r.gauge.ft if r.gauge else None,
+                        blend_mae72_in=round(c.blend_mae72 / IN, 2) if c and c.blend_mae72 else None,
+                        windows=c.n_windows if c else None, updated=updated_at(key), located=True))
     json.dump(dict(resorts=idx), open(os.path.join(OUT, "index.json"), "w"))
 
 
 def update_one(key):
-    cal_all = json.load(open(os.path.join(HERE, "data", "calibration.json")))
-    if key not in RESORTS or key not in cal_all:
-        raise KeyError(f"{key}: not located/calibrated (run locate.py, calibrate.py)")
-    data = process(key, RESORTS[key], cal_all[key])
-    nxt = [h for h in data["hourly"][:72]]
-    ok = sum(1 for h in nxt if h["summit"].get("snow_in") is not None and h["summit"].get("temp_f") is not None)
-    if len(nxt) < 48 or ok < 0.8 * len(nxt):  # mostly-blank forecast: keep the old file (health flags staleness)
+    cal = load_calibration()
+    if key not in RESORTS or key not in cal:
+        raise KeyError(f"{key}: not set up yet (run calibrate.py)")
+    data = process(RESORTS[key], cal[key])
+    nxt = data["hourly"][:72]
+    ok = sum(1 for h in nxt if h["summit"]["snow_in"] is not None and h["summit"]["temp_f"] is not None)
+    if len(nxt) < 48 or ok < 0.8 * len(nxt):  # mostly blank: keep the old file (--check flags staleness)
         raise RuntimeError(f"{key}: forecast mostly empty ({ok}/{len(nxt)} hours); not publishing")
-    tmp = os.path.join(OUT, f".{key}.json")
-    json.dump(data, open(tmp, "w"), separators=(",", ":"))
-    os.replace(tmp, os.path.join(OUT, f"{key}.json"))  # atomic: the page never reads half a file
-
-
-def data_age_h(key):
-    """Age from the JSON's own timestamp (file mtimes are reset by git checkouts)."""
-    p = os.path.join(OUT, f"{key}.json")
-    try:
-        t = json.load(open(p))["updated"]
-    except Exception:
-        return None
-    return (datetime.now(timezone.utc) - datetime.fromisoformat(t)).total_seconds() / 3600
+    src.write_json(os.path.join(OUT, f"{key}.json"), data, separators=(",", ":"))
 
 
 def main(keys=None, scheduled=False, group=None, index=True):
-    """Refresh the given resorts (default: all). scheduled=True (GitHub Actions): only resorts whose
-    data is older than REFRESH_EVERY_H, oldest first. Stops cleanly on Open-Meteo quota."""
+    """Refresh resorts (default: all, or a region group). scheduled: only those older than
+    REFRESH_EVERY_H, oldest first. Stops cleanly on Open-Meteo quota; failures get a second pass."""
     os.makedirs(OUT, exist_ok=True)
-    todo = keys or [k for k in RESORTS if not group or RESORTS[k]["region"] in GROUPS[group]]
+    todo = keys or [k for k, r in RESORTS.items() if not group or r.region in GROUPS[group]]
     if scheduled:
-        age = {k: data_age_h(k) for k in todo}
+        age = {k: age_h(k) for k in todo}
         todo = sorted((k for k in todo if age[k] is None or age[k] > REFRESH_EVERY_H), key=lambda k: -(age[k] or 1e9))
         print(f"group={group or 'all'}: refreshing {todo or 'nothing (all fresh)'}")
-    for _ in (1, 2):  # second pass retries resorts that failed for non-quota reasons
+    for _ in (1, 2):
         failed = []
         for key in todo:
-            if key not in RESORTS:
-                continue
             try:
                 update_one(key)
-            except QuotaExceeded as e:
+            except src.QuotaExceeded as e:
                 print(f"  quota reached ({e}); keeping existing data for the rest", file=sys.stderr)
                 failed = []
                 break
-            except KeyError as e:  # located but not calibrated yet: expected during backfill
+            except KeyError as e:  # located but not calibrated yet: expected while setting up
                 print(f"  skip {e}", file=sys.stderr)
             except Exception:
-                import traceback; traceback.print_exc()
+                traceback.print_exc()
                 failed.append(key)
             time.sleep(2)
         if not failed:
@@ -537,36 +329,32 @@ def main(keys=None, scheduled=False, group=None, index=True):
     if index:
         write_index()
 
-MAX_AGE_H = 20  # resorts refresh ~every 9 h: about 2 missed refreshes
-
 
 def check(url=None):
-    """Freshness check; exits 1 so the GitHub Actions run fails and GitHub emails the owner.
-    Alarms on a missing forecast or 3+ stale resorts; a single straggler is only a warning.
-    url: check the live site (watchdog) using its own published index."""
-    import urllib.request
+    """Freshness alarm: exit 1 (failing the GitHub run, which emails the owner) on a missing
+    forecast or 3+ stale resorts; a single straggler is only a warning. url: check the live site."""
     if url:
-        with urllib.request.urlopen(url.rstrip("/") + "/data/index.json", timeout=30) as f:
-            resorts = json.load(f)["resorts"]
+        resorts = src.get_json(url.rstrip("/") + "/data/index.json")["resorts"]
     else:
         resorts = json.load(open(os.path.join(OUT, "index.json")))["resorts"]
     now = datetime.now(timezone.utc)
     rows, stale, missing = [], [], []
     for r in resorts:
         if r.get("calibration") in (None, "not set up yet"):
-            rows.append(f"| {r['name']} | setting up | |"); continue
-        if not r.get("updated"):
-            missing.append(r["name"]); rows.append(f"| {r['name']} | MISSING | |"); continue
-        age = (now - datetime.fromisoformat(r["updated"])).total_seconds() / 3600
-        if age > MAX_AGE_H:
-            stale.append(r["name"])
-        rows.append(f"| {r['name']} | {'ok' if age <= MAX_AGE_H else 'STALE'} | {age:.1f} h |")
+            rows.append(f"| {r['name']} | setting up | |")
+        elif not r.get("updated"):
+            missing.append(r["name"]); rows.append(f"| {r['name']} | MISSING | |")
+        else:
+            age = (now - datetime.fromisoformat(r["updated"])).total_seconds() / 3600
+            if age > MAX_AGE_H:
+                stale.append(r["name"])
+            rows.append(f"| {r['name']} | {'ok' if age <= MAX_AGE_H else 'STALE'} | {age:.1f} h |")
     alarm = missing + (stale if len(stale) >= 3 else [])
-    report_md = (f"### Forecast health: {'❌' if alarm else '⚠️' if stale else '✅'} "
-                 f"{len(missing)} missing, {len(stale)} stale\n\n| Resort | Status | Age |\n|---|---|---|\n" + "\n".join(rows))
-    print(report_md)
+    md = (f"### Forecast health: {'❌' if alarm else '⚠️' if stale else '✅'} {len(missing)} missing, "
+          f"{len(stale)} stale\n\n| Resort | Status | Age |\n|---|---|---|\n" + "\n".join(rows))
+    print(md)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
-        open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(report_md + "\n")
+        open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(md + "\n")
     if alarm:
         print(f"::error::missing or stale forecasts: {', '.join(alarm)}")
         sys.exit(1)
@@ -578,5 +366,5 @@ if __name__ == "__main__":
     if "--check" in args:
         check(opt("--url"))
     else:
-        pos = [a for a in args if not a.startswith("--") and a not in (opt("--group"),)]
-        main(pos or None, scheduled="--scheduled" in args, group=opt("--group"), index="--no-index" not in args)
+        main([a for a in args if not a.startswith("--") and a != opt("--group")] or None,
+             scheduled="--scheduled" in args, group=opt("--group"), index="--no-index" not in args)
