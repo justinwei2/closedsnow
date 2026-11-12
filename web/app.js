@@ -727,7 +727,8 @@ function draw() {
     }
     dep.append(el("span", { class: "muted" }, " · gauge measurements"));
   }
-  $("#updated").textContent = `updated ${new Date(d.updated).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
+  $("#updated").textContent = `updated ${new Date(d.updated).toLocaleString(undefined,  // resort time, like every other time shown
+    { weekday: "short", hour: "numeric", minute: "2-digit", ...(d.tz ? { timeZone: d.tz, timeZoneName: "short" } : {}) })}`;
   renderElevToggle(d);
   renderAlerts(d);
   renderSummary(d, e);
