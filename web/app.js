@@ -191,10 +191,9 @@ function renderSummary(d, e) {
       continue;
     }
     const grp = el("div", { class: "sgroup" }); grp.style.flex = g.days.length;
-    const r = !g.past && fmtRange(g.tot.p25, g.tot.p75);
     grp.append(el("div", { class: "slabel" }, g.label),
       el("div", { class: "stotal" + (g.past ? " past" : "") }, fmtIn(g.tot.p50)),
-      el("div", { class: "muted srange" }, r ? `likely ${r}` : g.past && g.tot.station_in != null ? `station ${fmtIn(g.tot.station_in)}` : "\u00a0"));
+      el("div", { class: "muted srange" }, g.past && g.tot.station_in != null ? `station ${fmtIn(g.tot.station_in)}` : "\u00a0"));
     const days = el("div", { class: "sdays" });
     for (const x of g.days) {
       const v = x[e], dl = dayLabel(x.date), weekend = /Sat|Sun/.test(dl.dow);
@@ -218,7 +217,6 @@ function renderSummary(d, e) {
       days.append(col);
       hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
         { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(total(v)) },
-        ...(!x.past && fmtRange(v.p25, v.p75) ? [{ name: "Middle 50%", value: fmtRange(v.p25, v.p75) }] : []),
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
         ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => {
           const p = v.periods[k];
@@ -232,6 +230,68 @@ function renderSummary(d, e) {
     box.append(grp);
   }
 }
+
+function windChill(t, v) {
+  return t == null || v == null || t > 50 || v < 3 ? t : 35.74 + 0.6215 * t - 35.75 * v ** 0.16 + 0.4275 * t * v ** 0.16;
+}
+
+function conditions(h) {
+  if ((h.snow_in || 0) >= 0.05) return "Snow";
+  if ((h.rain_in || 0) >= 0.01) return (h.snow_in || 0) > 0.01 ? "Mixed" : "Rain";
+  return h.cloud == null ? "–" : h.cloud >= 75 ? "Cloudy" : h.cloud >= 30 ? "Partly" : "Clear";
+}
+
+function renderHourly(d, e) {
+  const tb = $("#hourly-table"), wrap = $("#hourly-wrap"), jump = $("#hourly-jump");
+  tb.replaceChildren(); jump.replaceChildren();
+  const hrs = d.hourly;
+  const ni = Math.max(0, hrs.findIndex((h) => h.t >= d.now));
+  $("#hourly-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · last 7 days (model estimate) and next 10`;
+  const hl = (t) => { const h = +t.slice(11, 13); return `${h % 12 || 12}${h < 12 ? "a" : "p"}`; };
+  const rows = [  // [label, unit, value(hour, elevation data)]
+    ["Precip Chance", "%", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}`],
+    ["Precipitation", "in", (h, v) => v.precip_mm == null ? "–" : (v.precip_mm / 25.4).toFixed(2)],
+    ["Snowfall", "in", (h, v) => v.snow_in == null ? "–" : v.snow_in.toFixed(1)],
+    ["Snow Ratio", "", (h, v) => (v.snow_in || 0) >= 0.05 && v.slr ? `${v.slr.toFixed(0)}:1` : "–"],
+    ["Snow Level", "ft", (h) => h.snow_level_ft == null ? "–" : (Math.round(h.snow_level_ft / 100) * 100).toLocaleString()],
+    ["Conditions", "", (h, v) => conditions(v)],
+    ["Temperature", "°F", (h, v) => v.temp_f == null ? "–" : Math.round(v.temp_f)],
+    ["Feels Like", "°F", (h, v) => { const f = windChill(v.temp_f, v.wind_mph); return f == null ? "–" : Math.round(f); }],
+    ["Rel. Humidity", "%", (h, v) => v.rh == null ? "–" : Math.round(v.rh)],
+    ["Wind Speed", "mph", (h, v) => v.wind_mph == null ? "–" : v.wind_mph < 3 ? "Calm" : `${compass(v.wind_dir) || ""}${Math.round(v.wind_mph)}`],
+    ["Wind Gust", "mph", (h, v) => v.gust_mph == null ? "–" : Math.round(v.gust_mph)],
+    ["Cloud Cover", "%", (h, v) => v.cloud == null ? "–" : Math.round(v.cloud)],
+  ];
+  const head = el("tr"); head.append(el("th", { class: "rowh" }, ""));
+  hrs.forEach((h, i) => {
+    const th = el("th", { class: (i === ni ? "now " : "") + (i < ni ? "past" : ""), "data-i": i });
+    th.append(el("div", {}, hl(h.t)), el("div", { class: "muted" }, dayLabel(h.t.slice(0, 10)).dow));
+    head.append(th);
+  });
+  tb.append(head);
+  for (const [label, unit, fn] of rows) {
+    const tr = el("tr");
+    const th = el("td", { class: "rowh" }); th.append(el("b", {}, label), document.createTextNode(unit ? ` ${unit}` : ""));
+    tr.append(th);
+    hrs.forEach((h, i) => tr.append(el("td", { class: (i === ni ? "now " : "") + (i < ni ? "past" : "") }, String(fn(h, h[e])))));
+    tb.append(tr);
+  }
+  const go = (i) => { const c = head.children[i + 1]; if (c) wrap.scrollLeft = c.offsetLeft - head.children[0].offsetWidth; };
+  jump.append(el("span", { class: "muted" }, "Jump to: "));
+  const starts = hrs.map((h, i) => [h, i]).filter(([h]) => h.t.endsWith("T00:00"));
+  for (const [h, i] of starts) {
+    const b = el("button", { type: "button" }, dayLabel(h.t.slice(0, 10)).dow.slice(0, 3) + " " + dayLabel(h.t.slice(0, 10)).dom);
+    b.addEventListener("click", () => go(i));
+    jump.append(b);
+  }
+  const now = el("button", { type: "button", class: "on" }, "Now");
+  now.addEventListener("click", () => go(ni));
+  jump.append(now);
+  requestAnimationFrame(() => go(ni));
+}
+
+const DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+const compass = (deg) => deg == null ? null : DIRS[Math.floor(((deg % 360) + 22.5) / 45) % 8];
 
 function renderDailyTable(d, e) {
   const tb = $("#daily-table");
@@ -657,6 +717,7 @@ function render() {
   renderElevToggle(d);
   renderAlerts(d);
   renderSummary(d, e);
+  renderHourly(d, e);
   renderDailyTable(d, e);
   levelCharts(d, e);
   plumeChart(d, e);

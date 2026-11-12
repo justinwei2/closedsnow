@@ -23,7 +23,7 @@ TRIGGER_MODEL = "ecmwf_ifs025"  # refresh when its new run lands: it arrives las
 SAFETY_H = 7           # ...or when data is older than this anyway
 MAX_AGE_H = 14         # freshness alarm: about 2 missed model cycles
 QS = (0.05, 0.25, 0.5, 0.75, 0.95)  # middle 50% and middle 90%
-HOURLY_OUT = ("temp_f", "wind_mph", "frac", "slr", "snow_in", "rain_in")  # fields the charts read
+HOURLY_OUT = ("precip_mm", "snow_in", "rain_in", "frac", "slr", "temp_f", "wind_mph", "gust_mph", "wind_dir", "rh", "cloud")
 _discussions = {}  # one NWS discussion per office per run
 
 
@@ -116,7 +116,7 @@ def mean(xs):
 
 
 def rnd(v):
-    return round(v, 3) if isinstance(v, float) else v
+    return round(v, 2) if isinstance(v, float) else v
 
 
 DEPTH_KM, DEPTH_FT = 15, 800  # a gauge stands in for an elevation within this distance / height
@@ -365,7 +365,7 @@ def process(r, cal):
                     out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]) if p > 0.5 else q[p], 2))
         plume[e] = dict(t=[times[b[0]] for b in bins], **out)
 
-    hourly = [dict(t=t, **{k: rnd(v) for k, v in levels[i].items()},
+    hourly = [dict(t=t, precip_chance=precip_chance(range(i, i + 1)) if i >= now_i else None, **{k: rnd(v) for k, v in levels[i].items()},
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i - 24 * 7 <= i < now_i + 24 * 10]  # charts: last 7 + next 10 days
     return dict(
