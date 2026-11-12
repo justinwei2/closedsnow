@@ -20,6 +20,7 @@ OUT = os.path.join(HERE, "web", "data")
 PAST_DAYS = 7
 REFRESH_EVERY_H = 7.5  # ~every 9 h on the 3-hourly schedule: ~7.5k of Open-Meteo's 10k calls/day
 MAX_AGE_H = 20         # freshness alarm: about 2 missed refreshes
+FORMAT = 2             # bump when the JSON layout changes: older files count as stale
 QS = (0.1, 0.25, 0.5, 0.75, 0.9)
 HOURLY_OUT = ("temp_f", "wind_mph", "frac", "slr", "snow_in", "rain_in")  # fields the charts read
 _discussions = {}  # one NWS discussion per office per run
@@ -299,7 +300,7 @@ def process(r, cal):
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i <= i < now_i + 24 * 10]  # charts use the next 10 days
     return dict(
-        key=r.key, name=r.name, region=r.region, now=now, today=today,
+        key=r.key, name=r.name, region=r.region, format=FORMAT, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
         calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
@@ -311,16 +312,17 @@ def process(r, cal):
 
 # ---------------------------------------------------------------- files
 
-def updated_at(key):
+def updated_at(key, current_format=False):
     try:
-        return json.load(open(os.path.join(OUT, f"{key}.json")))["updated"]
+        d = json.load(open(os.path.join(OUT, f"{key}.json")))
     except Exception:
         return None
+    return None if current_format and d.get("format", 1) < FORMAT else d["updated"]
 
 
 def age_h(key):
     """Age from the JSON's own timestamp (file mtimes are reset by git checkouts)."""
-    t = updated_at(key)
+    t = updated_at(key, current_format=True)
     return None if t is None else (datetime.now(timezone.utc) - datetime.fromisoformat(t)).total_seconds() / 3600
 
 
