@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map · Snow Report</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="viz-root">
+  <header class="top">
+    <div class="brand">Snow Report</div>
+    <nav class="tabs" aria-label="Pages">
+      <a href="./">Forecast</a>
+      <a href="map.html" class="on" aria-current="page">Map</a>
+      <a href="methodology.html">Methodology</a>
+    </nav>
+    <div class="search" id="search">
+      <input id="q" type="search" placeholder="Search resorts — Alta, Whistler, Niseko…" autocomplete="off"
+             role="combobox" aria-expanded="false" aria-controls="results" aria-label="Search resorts">
+      <ul id="results" class="results" role="listbox" hidden></ul>
+    </div>
+    <div class="top-right">
+      <span id="updated" class="muted"></span>
+    </div>
+  </header>
+
+  <main class="map-main">
+    <div class="map-bar">
+      <div class="seg" id="map-views"></div>
+      <span class="muted">Next 5 days · mid-mountain · middle 50%</span>
+      <div class="legend" id="map-legend"></div>
+    </div>
+    <div id="map"></div>
+  </main>
+  <div id="tip" class="tip" role="tooltip" hidden></div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="app.js"></script>
+</body>
+</html>

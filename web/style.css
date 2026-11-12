@@ -55,7 +55,10 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
   box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
 }
 .results .grp { padding: 8px 12px 2px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-.results .opt { padding: 6px 12px; cursor: pointer; color: var(--text-primary); }
+.results .opt { padding: 6px 12px; cursor: pointer; color: var(--text-primary); display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+/* snow pill: next-5-day middle-50% snowfall, background = precipitation type */
+.pill { font-size: 12px; font-weight: 650; color: #fff; background: var(--axis); padding: 2px 8px; border-radius: 6px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pill.lite { color: var(--text-primary); }
 .results .opt.act, .results .opt:hover { background: var(--grid); }
 
 /* ---- layout pieces */
@@ -171,6 +174,19 @@ details[open] summary::before { content: "▾ "; }
 .method-link:hover { color: var(--text-primary); }
 .foot { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; max-width: 90ch; }
 .foot a { color: var(--text-secondary); }
+
+/* ---- map page */
+.map-main { max-width: none; padding: 16px 24px 24px; }
+#map { height: calc(100vh - 170px); min-height: 420px; border-radius: 10px; border: 1px solid var(--border); }
+#map .leaflet-tile-pane { filter: grayscale(1) contrast(.85) brightness(1.08); }  /* quiet basemap: the pills carry the colour */
+.mpin { position: relative; cursor: pointer; }
+.mpin .mdot { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--text-primary); }
+.mpin .stem { position: absolute; left: 0; bottom: 0; width: 1px; background: var(--text-secondary); }
+.mpin .mlab { position: absolute; left: 0; transform: translateX(-50%); display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  background: rgba(255, 255, 255, .92); border: 1px solid var(--border); border-radius: 7px; padding: 2px 5px 2px 2px; }
+.mpin .mname { font-size: 11px; font-weight: 600; color: var(--text-primary); }
+.mpin:hover .mlab { border-color: var(--text-secondary); }
+.map-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
 
 /* ---- methodology page */
 .doc { max-width: 900px; }

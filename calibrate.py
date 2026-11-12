@@ -4,6 +4,7 @@ as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate lim
 
     python3 calibrate.py [resort ...] [--force] # resorts not set up yet (--force: recalibrate them)
     python3 calibrate.py alta --out o           # CI: one resort -> o/{resorts,calibration}.json
+    python3 calibrate.py alta --relocate        # re-place points after a catalog change (keeps calibration)
     python3 calibrate.py --plan [resort ...] [--force]  # CI: resorts still to set up (job matrix)
     python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/ (raw models if uncalibrated), CALIBRATION.md
 """
@@ -40,9 +41,8 @@ def snap(lat, lon, ft, radius_km):
     return pts[i][0], pts[i][1], el[i]
 
 
-def mid_point(b, s):
-    """Point on the base->summit line about 55% of the way up."""
-    target = b[2] + 0.55 * (s[2] - b[2])
+def mid_point(b, s, target):
+    """Point on the base->summit line whose ground elevation is closest to target (ft)."""
     pts = [(b[0] + (s[0] - b[0]) * k / 24, b[1] + (s[1] - b[1]) * k / 24) for k in range(4, 21)]
     el = src.elevations(pts)
     i = min(range(len(pts)), key=lambda i: abs(el[i] - target))
@@ -111,7 +111,7 @@ def usable_models(lat, lon):
 
 
 def locate(key):
-    name, country, tz, b, s = CATALOG[key]
+    name, country, tz, b, s, *named = CATALOG[key]
     man = MANUAL.get(key, {})
     if "mid" in man:  # hand-verified points
         base, summit, mid = b[:3], s[:3], man["mid"][:3]
@@ -123,8 +123,12 @@ def locate(key):
             sb = snap(*s[:3], 4.0)
         bb = snap(*b[:3], 1.2)
         base, summit = (bb[0], bb[1], b[2]), (sb[0], sb[1], s[2])
-        mp = mid_point(base, summit)
-        mid, mlabel = (mp[0], mp[1], round(mp[2] / 100) * 100), "Mid-mountain"
+        if named:  # a real mid-mountain spot at its published elevation
+            mp = mid_point(base, summit, named[0][0])
+            mid, mlabel = (mp[0], mp[1], named[0][0]), named[0][1]
+        else:  # 55% of the way up
+            mp = mid_point(base, summit, b[2] + 0.55 * (s[2] - b[2]))
+            mid, mlabel = (mp[0], mp[1], round(mp[2] / 100) * 100), "Mid-mountain"
         dem = dict(base=bb[2], mid=mp[2], summit=sb[2])
     pt = lambda p, label: Point(round(p[0], 4), round(p[1], 4), p[2], label)
     gauge = (Gauge(*man["gauge"]) if man.get("gauge") else
@@ -273,19 +277,22 @@ def plan(only=None, force=False):
     print(json.dumps([k for k in (only or CATALOG) if todo(k, resorts, cal, force)]))
 
 
-def run(out=None, force=False, only=None):
+def run(out=None, force=False, only=None, relocate=False):
     """Locate and calibrate resorts that aren't done (force: recalibrate them too); always save
-    progress. only: specific resort keys. Gauge-less resorts are located again."""
+    progress. only: specific resort keys. Gauge-less resorts are located again; relocate: locate again
+    anyway (e.g. new catalog points), keeping the calibration unless the gauge or its nearness changed."""
     keys = only or list(CATALOG)
     resorts, cal = load_resorts(), load_calibration()
     t0 = time.time()
     log = lambda i, k, msg: print(f"[{i}/{len(keys)} {time.time() - t0:5.0f}s] {k}: {msg}", flush=True)
     try:
         for i, k in enumerate(keys, 1):
-            if k not in resorts or resorts[k].gauge is None:  # gauge-less: retry (new gauge networks)
+            if relocate or k not in resorts or resorts[k].gauge is None:  # gauge-less: retry (new gauge networks)
                 log(i, k, "locating points, gauge and models")
                 try:
-                    resorts[k] = locate(k)
+                    old, resorts[k] = resorts.get(k), locate(k)
+                    if k in cal and (not old or old.gauge != resorts[k].gauge or not cal[k].calibrated or far_gauge(resorts[k])):
+                        del cal[k]  # set up again below
                 except src.QuotaExceeded:
                     raise
                 except Exception as e:
@@ -375,6 +382,6 @@ if __name__ == "__main__":
         plan([k for k in a if k in CATALOG], force="--force" in a)
     else:
         only = [k for k in a if k in CATALOG]
-        run(opt("--out"), force="--force" in a, only=only)
+        run(opt("--out"), force="--force" in a, only=only, relocate="--relocate" in a)
         if not opt("--out"):
             merge(os.path.join(HERE, "__none__"))

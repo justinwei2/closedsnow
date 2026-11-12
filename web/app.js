@@ -163,6 +163,15 @@ function qualityKeys(box) {
 const amount = (snow, rain) =>  // e.g. 1" + 0.13" rain; snow or rain alone when the other is ~0
   [snow >= 0.25 || !(rain >= 0.01) ? fmtIn(snow) : null, rain >= 0.01 ? `${rain.toFixed(2)}" rain` : null].filter(Boolean).join(" + ");
 
+function snowPill(s) {  // next-5-day mid-mountain middle 50%, coloured by type (snow shaded by dryness)
+  const type = s && windowType(s), p = el("span", { class: "pill" }, s ? fmtRange(s.p25, s.p75) || '0"' : "–");
+  const sw = type && shade(type, s.p50 / Math.max(1e-3, s.liquid_in - (s.rain_in || 0)));
+  if (sw) p.style.background = `var(${sw})`;
+  if (!sw || sw === "--q-snow-wet") p.classList.add("lite");  // pale backgrounds take dark text
+  return p;
+}
+const go = (key) => { if ($("#map")) location.href = `./#${key}`; else location.hash = key; };
+
 function windowType(t) {  // overall type of a multi-day total, same snow-fraction cutoffs as §7
   if (!t.liquid_in || t.liquid_in < 0.05) return null;
   const frac = 1 - (t.rain_in || 0) / t.liquid_in;
@@ -792,12 +801,13 @@ function setupSearch() {
   const draw = () => {
     const term = q.value.trim().toLowerCase();
     const hits = byCountry(state.index.filter((r) => r.located !== false && (!term || r.name.toLowerCase().includes(term))));
-    list.replaceChildren(); opts = [];
+    list.replaceChildren(el("li", { class: "grp", role: "presentation" }, "Next 5 days · mid-mountain · middle 50%")); opts = [];
     let grp;
     for (const r of hits) {
       if (r.country !== grp) { grp = r.country; list.append(el("li", { class: "grp", role: "presentation" }, COUNTRY[grp] || grp)); }
-      const li = el("li", { class: "opt", role: "option", id: `opt-${r.key}` }, r.name);
-      li.addEventListener("mousedown", (ev) => { ev.preventDefault(); location.hash = r.key; close(); q.blur(); });
+      const li = el("li", { class: "opt", role: "option", id: `opt-${r.key}` });
+      li.append(el("span", {}, r.name), snowPill(r.snow5));
+      li.addEventListener("mousedown", (ev) => { ev.preventDefault(); go(r.key); close(); q.blur(); });
       list.append(li); opts.push({ li, r });
     }
     if (!hits.length) list.append(el("li", { class: "grp" }, "No matching resort"));
@@ -810,7 +820,7 @@ function setupSearch() {
   q.addEventListener("keydown", (ev) => {
     if (ev.key === "ArrowDown") { active = Math.min(opts.length - 1, active + 1); mark(); ev.preventDefault(); }
     else if (ev.key === "ArrowUp") { active = Math.max(0, active - 1); mark(); ev.preventDefault(); }
-    else if (ev.key === "Enter" && opts[Math.max(0, active)]) { location.hash = opts[Math.max(0, active)].r.key; close(); q.blur(); }
+    else if (ev.key === "Enter" && opts[Math.max(0, active)]) { go(opts[Math.max(0, active)].r.key); close(); q.blur(); }
     else if (ev.key === "Escape") { close(); q.blur(); }
   });
   addEventListener("keydown", (ev) => { if (ev.key === "/" && document.activeElement !== q) { ev.preventDefault(); q.focus(); } });
@@ -836,4 +846,48 @@ async function boot() {
   setInterval(() => { if (state.data && clock(state.data)) render(); }, 60e3);  // keep "now" current while open
   pick();
 }
-boot().catch((err) => { $("#app").prepend(el("p", { class: "err" }, `Failed to load: ${err.message}. Run update.py first.`)); });
+// ---------------------------------------------------------------- map page
+async function bootMap() {
+  state.index = (await (await fetch(`data/index.json?ts=${Date.now()}`)).json()).resorts;
+  setupSearch();
+  const rs = state.index.filter((r) => r.lat != null);
+  const map = L.map("map", { worldCopyJump: true });
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 13, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+  const pins = rs.map((r) => {  // dot at the resort; label (snow pill + name) on a stem above it
+    const pin = el("div", { class: "mpin" }), lab = el("div", { class: "mlab" }), stem = el("div", { class: "stem" });
+    lab.append(snowPill(r.snow5), el("span", { class: "mname" }, r.name));
+    pin.append(lab, stem, el("div", { class: "mdot" }));
+    L.marker([r.lat, r.lon], { icon: L.divIcon({ html: pin, className: "", iconSize: null, iconAnchor: [0, 0] }), title: r.name })
+      .on("click", () => go(r.key)).addTo(map);
+    return { r, lab, stem };
+  });
+  const layout = () => {  // nearby resorts: raise labels on longer stems until none overlap
+    const placed = [];
+    for (const p of pins.map((p) => ({ ...p, at: map.latLngToContainerPoint([p.r.lat, p.r.lon]) })).sort((a, b) => b.at.y - a.at.y)) {
+      const w = p.lab.offsetWidth, h = p.lab.offsetHeight + 2;
+      let gap = 8;
+      const box = () => ({ l: p.at.x - w / 2, r: p.at.x + w / 2, b: p.at.y - gap, t: p.at.y - gap - h });
+      while (placed.some((q) => { const b = box(); return b.l < q.r && b.r > q.l && b.t < q.b && b.b > q.t; })) gap += h;
+      placed.push(box());
+      p.stem.style.height = `${gap}px`; p.lab.style.bottom = `${gap}px`;
+    }
+  };
+  map.on("zoomend", layout);
+  const views = { "North America": rs.filter((r) => r.country !== "JP"), Japan: rs.filter((r) => r.country === "JP") };
+  const fit = (name) => map.fitBounds(L.latLngBounds(views[name].map((r) => [r.lat, r.lon])).pad(0.15));
+  const box = $("#map-views");
+  for (const name of Object.keys(views)) {
+    if (!views[name].length) continue;
+    const b = el("button", { type: "button" }, name);
+    b.addEventListener("click", () => { box.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); fit(name); });
+    box.append(b);
+  }
+  box.querySelector("button")?.click();
+  layout();
+  legend("#map-legend", [{ label: "Snow (darker = drier)", color: "var(--q-snow)", kind: "key-rect" },
+    { label: "Mixed / sleet", color: "var(--q-mixed)", kind: "key-rect" }, { label: "Rain", color: "var(--q-rain)", kind: "key-rect" }]);
+}
+
+($("#map") ? bootMap : boot)().catch((err) => { $("#app").prepend(el("p", { class: "err" }, `Failed to load: ${err.message}. Run update.py first.`)); });

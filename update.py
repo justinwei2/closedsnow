@@ -400,6 +400,13 @@ def plan():
     print(json.dumps([k for k in RESORTS if due(k, run)]))
 
 
+def snow5(key):
+    """Mid-mountain snow over the next 5 days, for the resort list's snow pills and the map."""
+    p = os.path.join(OUT, f"{key}.json")
+    s = json.load(open(p))["summary"]["mid"]["next1_5"] if os.path.exists(p) else None
+    return {k: round(s[k], 2) for k in ("p25", "p50", "p75", "liquid_in", "rain_in") if k in s} if s else None
+
+
 def write_index():
     cal = load_calibration()
     idx = []
@@ -412,7 +419,7 @@ def write_index():
         idx.append(dict(key=key, name=r.name, country=r.country, calibration=status,
                         station=r.gauge.name if r.gauge else None, station_ft=r.gauge.ft if r.gauge else None,
                         blend_mae72_in=round(c.blend_mae72 / IN, 2) if c and c.blend_mae72 else None,
-                        updated=updated_at(key), located=True))
+                        updated=updated_at(key), located=True, lat=r.mid.lat, lon=r.mid.lon, snow5=snow5(key)))
     src.write_json(os.path.join(OUT, "index.json"), dict(resorts=idx))
     for f in os.listdir(OUT):  # resorts removed from the catalog
         if f.endswith(".json") and f != "index.json" and f[:-5] not in CATALOG:

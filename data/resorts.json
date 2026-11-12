@@ -100,10 +100,10 @@
    "label": "Village"
   },
   "mid": {
-   "lat": 50.0817,
-   "lon": -122.9563,
-   "ft": 5000,
-   "label": "Mid-mountain"
+   "lat": 50.0675,
+   "lon": -122.9569,
+   "ft": 6069,
+   "label": "Roundhouse"
   },
   "summit": {
    "lat": 50.058,
@@ -113,7 +113,7 @@
   },
   "dem_ft": {
    "base": 2228,
-   "mid": 4980,
+   "mid": 6086,
    "summit": 7087
   },
   "obs": [
@@ -132,7 +132,7 @@
    "ncep_nbm_conus",
    "gem_seamless",
    "icon_seamless",
-   "gem_hrdps_continental"
+   "jma_seamless"
   ]
  },
  "kirkwood": {
@@ -237,10 +237,10 @@
    "label": "West Village"
   },
   "mid": {
-   "lat": 43.9873,
-   "lon": -121.6848,
-   "ft": 7900,
-   "label": "Mid-mountain"
+   "lat": 43.9883,
+   "lon": -121.6844,
+   "ft": 7775,
+   "label": "Pine Marten"
   },
   "summit": {
    "lat": 43.979,
@@ -250,7 +250,7 @@
   },
   "dem_ft": {
    "base": 6398,
-   "mid": 7851,
+   "mid": 7772,
    "summit": 9022
   },
   "obs": [
@@ -268,7 +268,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "alta": {
@@ -552,10 +553,10 @@
    "label": "Village"
   },
   "mid": {
-   "lat": 50.1011,
-   "lon": -122.9126,
-   "ft": 5000,
-   "label": "Mid-mountain"
+   "lat": 50.0956,
+   "lon": -122.8972,
+   "ft": 6102,
+   "label": "Rendezvous"
   },
   "summit": {
    "lat": 50.089,
@@ -565,7 +566,7 @@
   },
   "dem_ft": {
    "base": 2224,
-   "mid": 4997,
+   "mid": 6076,
    "summit": 7608
   },
   "obs": [
@@ -584,7 +585,7 @@
    "ncep_nbm_conus",
    "gem_seamless",
    "icon_seamless",
-   "gem_hrdps_continental"
+   "jma_seamless"
   ]
  },
  "revelstoke": {
@@ -690,10 +691,10 @@
    "label": "Base"
   },
   "mid": {
-   "lat": 51.4546,
-   "lon": -116.1421,
-   "ft": 7100,
-   "label": "Mid-mountain"
+   "lat": 51.4512,
+   "lon": -116.1448,
+   "ft": 6700,
+   "label": "Whitehorn Lodge"
   },
   "summit": {
    "lat": 51.4765,
@@ -703,7 +704,7 @@
   },
   "dem_ft": {
    "base": 5420,
-   "mid": 7123,
+   "mid": 6696,
    "summit": 8527
   },
   "obs": [
@@ -722,7 +723,7 @@
    "ncep_nbm_conus",
    "gem_seamless",
    "icon_seamless",
-   "gem_hrdps_continental"
+   "jma_seamless"
   ]
  },
  "abasin": {
@@ -827,9 +828,9 @@
   },
   "mid": {
    "lat": 40.4566,
-   "lon": -106.7646,
-   "ft": 8900,
-   "label": "Mid-mountain"
+   "lon": -106.7619,
+   "ft": 9080,
+   "label": "Thunderhead"
   },
   "summit": {
    "lat": 40.4563,
@@ -839,7 +840,7 @@
   },
   "dem_ft": {
    "base": 6923,
-   "mid": 8862,
+   "mid": 9144,
    "summit": 10541
   },
   "obs": [
@@ -857,7 +858,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "telluride": {
@@ -961,10 +963,10 @@
    "label": "Happo base"
   },
   "mid": {
-   "lat": 36.6917,
-   "lon": 137.8087,
-   "ft": 4400,
-   "label": "Mid-mountain"
+   "lat": 36.6919,
+   "lon": 137.8108,
+   "ft": 4593,
+   "label": "Usagidaira"
   },
   "summit": {
    "lat": 36.69,
@@ -974,7 +976,7 @@
   },
   "dem_ft": {
    "base": 2493,
-   "mid": 4373,
+   "mid": 4498,
    "summit": 5997
   },
   "obs": [

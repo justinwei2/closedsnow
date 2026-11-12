@@ -48,6 +48,7 @@ refresh costs ~65–85 calls per resort (~7k/day for 21 resorts); calibration ~2
 | `conditions.py` | wet-bulb, snow fraction, snow level, Kuchera snow ratio, quality labels, weather report |
 | `calibrate.py` | locate + calibrate + merge per-resort results |
 | `update.py` | forecast pipeline, index, `--check` |
+| `web/` | `index.html` (forecast), `map.html` (map), `methodology.html`; one `app.js` and `style.css` |
 
 ## Usage
 
@@ -58,7 +59,23 @@ python3 -m http.server -d web 8000  # preview
 SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, replay on later runs
 ```
 
-To add a resort, add a line to `CATALOG` in `resorts.py`; the next `backfill` run sets it up.
+## Adding a resort
+
+1. Add a line to `CATALOG` in `resorts.py`:
+   `key: (name, country, tz, (base lat, lon, ft, label), (summit lat, lon, ft, label), (mid ft, label))`.
+   - Use the **published** base and top-lift elevations; rough coordinates are fine (within ~1 km).
+     Setup snaps each to the terrain-map spot nearest that elevation (summit within 2 km, base 1.2 km).
+   - **Mid** is optional but worth setting: name a real mid-mountain spot (main gondola top or
+     mid-mountain lodge) and its published elevation, e.g. `(6069, "Roundhouse")`. Setup puts it on
+     the base-to-summit line at that elevation. Without it, mid is the point 55% of the way up.
+   - Separate ski areas (Whistler / Blackcomb, Palisades / Alpine) are separate entries.
+2. Push. The nightly `backfill` locates and calibrates it (or run `gh workflow run backfill.yml
+   -f resorts="key"`), and the next `refresh` publishes it.
+3. Check the setup log line `key  base 2228/2214  mid 6069  summit 7087/7160  obs=...`: terrain-map vs
+   listed elevations (a warning prints if they differ by > 600 ft), and the gauge picked.
+4. Calibration only uses a gauge within 1,500 ft of mid-mountain (`GAUGE_NEAR_FT`); a valley gauge
+   leaves the resort on raw models, with the reason shown. To re-place points after editing an
+   entry: `python3 calibrate.py key --relocate` (keeps the calibration unless the gauge changes).
 
 A resort outside the covered gauge networks (SNOTEL/CDEC in the US, BC snow pillows, Alberta
 Rivers, JMA) also needs a gauge source: an adapter in `sources.py` mapping its data onto `StationSeries`,
