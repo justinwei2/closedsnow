@@ -1426,5 +1426,467 @@
    1.24,
    1.07
   ]
+ },
+ "blackcomb": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 0.951,
+    "weight": 0.188,
+    "mae72": 10.07,
+    "raw_mae72": 10.47,
+    "n": 155,
+    "weight_ext": 0.168,
+    "mae_ext": 6.69
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.387,
+    "weight": 0.142,
+    "mae72": 11.59,
+    "raw_mae72": 11.51,
+    "n": 343,
+    "weight_ext": 0.138,
+    "mae_ext": 7.39
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.203,
+    "weight": 0.143,
+    "mae72": 11.55,
+    "raw_mae72": 10.29,
+    "n": 247,
+    "weight_ext": 0.155,
+    "mae_ext": 6.96
+   },
+   "gfs_seamless": {
+    "factor": 0.999,
+    "weight": 0.131,
+    "mae72": 12.07,
+    "raw_mae72": 12.08,
+    "n": 343,
+    "weight_ext": 0.135,
+    "mae_ext": 7.47
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.212,
+    "weight": 0.158,
+    "mae72": 10.99,
+    "raw_mae72": 10.18,
+    "n": 343,
+    "weight_ext": 0.143,
+    "mae_ext": 7.25
+   },
+   "gem_seamless": {
+    "factor": 1.201,
+    "weight": 0.116,
+    "mae72": 12.84,
+    "raw_mae72": 11.63,
+    "n": 343,
+    "weight_ext": 0.128,
+    "mae_ext": 7.66
+   },
+   "icon_seamless": {
+    "factor": 1.05,
+    "weight": 0.121,
+    "mae72": 12.57,
+    "raw_mae72": 12.16,
+    "n": 338,
+    "weight_ext": 0.134,
+    "mae_ext": 7.5
+   }
+  },
+  "station": "Callaghan Creek (BC snow pillow)",
+  "blend_mae72": 10.14,
+  "n_windows": 343,
+  "n_wet": 202,
+  "ratio_q": {
+   "0.05": 0.482,
+   "0.25": 0.706,
+   "0.5": 0.868,
+   "0.75": 1.122,
+   "0.95": 1.638
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 55,
+    "q": {
+     "0.05": 0.413,
+     "0.25": 0.67,
+     "0.5": 0.868,
+     "0.75": 1.226,
+     "0.95": 1.838
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 76,
+    "q": {
+     "0.05": 0.506,
+     "0.25": 0.697,
+     "0.5": 0.903,
+     "0.75": 1.124,
+     "0.95": 1.591
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 71,
+    "q": {
+     "0.05": 0.512,
+     "0.25": 0.736,
+     "0.5": 0.862,
+     "0.75": 1.05,
+     "0.95": 1.359
+    }
+   }
+  ],
+  "temp_bias_c": 0.87,
+  "temp_bias_wet_c": 0.63,
+  "temp_n_wet": 170,
+  "temp_mae_c": [
+   1.15,
+   0.79
+  ]
+ },
+ "revelstoke": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.56,
+    "weight": 0.092,
+    "mae72": 11.06,
+    "raw_mae72": 12.29,
+    "n": 155,
+    "weight_ext": 0.117,
+    "mae_ext": 6.27
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.664,
+    "weight": 0.166,
+    "mae72": 8.23,
+    "raw_mae72": 10.06,
+    "n": 356,
+    "weight_ext": 0.172,
+    "mae_ext": 5.16
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.866,
+    "weight": 0.175,
+    "mae72": 8.01,
+    "raw_mae72": 12.23,
+    "n": 247,
+    "weight_ext": 0.174,
+    "mae_ext": 5.12
+   },
+   "gfs_seamless": {
+    "factor": 2.0,
+    "weight": 0.118,
+    "mae72": 9.78,
+    "raw_mae72": 12.03,
+    "n": 356,
+    "weight_ext": 0.137,
+    "mae_ext": 5.77
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.649,
+    "weight": 0.174,
+    "mae72": 8.05,
+    "raw_mae72": 9.88,
+    "n": 356,
+    "weight_ext": 0.143,
+    "mae_ext": 5.66
+   },
+   "gem_seamless": {
+    "factor": 1.876,
+    "weight": 0.121,
+    "mae72": 9.63,
+    "raw_mae72": 11.47,
+    "n": 356,
+    "weight_ext": 0.112,
+    "mae_ext": 6.39
+   },
+   "icon_seamless": {
+    "factor": 1.88,
+    "weight": 0.155,
+    "mae72": 8.53,
+    "raw_mae72": 10.95,
+    "n": 351,
+    "weight_ext": 0.146,
+    "mae_ext": 5.61
+   }
+  },
+  "station": "Mount Revelstoke (BC snow pillow)",
+  "blend_mae72": 6.93,
+  "n_windows": 356,
+  "n_wet": 201,
+  "ratio_q": {
+   "0.05": 0.393,
+   "0.25": 0.708,
+   "0.5": 0.962,
+   "0.75": 1.225,
+   "0.95": 1.7
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 72,
+    "q": {
+     "0.05": 0.342,
+     "0.25": 0.606,
+     "0.5": 0.958,
+     "0.75": 1.318,
+     "0.95": 1.937
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 86,
+    "q": {
+     "0.05": 0.504,
+     "0.25": 0.767,
+     "0.5": 0.958,
+     "0.75": 1.155,
+     "0.95": 1.637
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 43,
+    "q": {
+     "0.05": 0.532,
+     "0.25": 0.727,
+     "0.5": 0.974,
+     "0.75": 1.177,
+     "0.95": 1.521
+    }
+   }
+  ],
+  "temp_bias_c": 1.14,
+  "temp_bias_wet_c": 1.04,
+  "temp_n_wet": 176,
+  "temp_mae_c": [
+   1.43,
+   0.93
+  ]
+ },
+ "kickinghorse": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.094,
+    "weight": 0.099,
+    "mae72": 7.35,
+    "raw_mae72": 7.01,
+    "n": 148,
+    "weight_ext": 0.123,
+    "mae_ext": 4.27
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.037,
+    "weight": 0.186,
+    "mae72": 5.37,
+    "raw_mae72": 5.24,
+    "n": 349,
+    "weight_ext": 0.177,
+    "mae_ext": 3.55
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.147,
+    "weight": 0.149,
+    "mae72": 6.0,
+    "raw_mae72": 6.05,
+    "n": 240,
+    "weight_ext": 0.136,
+    "mae_ext": 4.05
+   },
+   "gfs_seamless": {
+    "factor": 1.343,
+    "weight": 0.094,
+    "mae72": 7.55,
+    "raw_mae72": 7.19,
+    "n": 349,
+    "weight_ext": 0.136,
+    "mae_ext": 4.05
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.031,
+    "weight": 0.189,
+    "mae72": 5.33,
+    "raw_mae72": 5.23,
+    "n": 349,
+    "weight_ext": 0.149,
+    "mae_ext": 3.87
+   },
+   "gem_seamless": {
+    "factor": 1.306,
+    "weight": 0.117,
+    "mae72": 6.76,
+    "raw_mae72": 6.54,
+    "n": 349,
+    "weight_ext": 0.122,
+    "mae_ext": 4.28
+   },
+   "icon_seamless": {
+    "factor": 1.259,
+    "weight": 0.165,
+    "mae72": 5.71,
+    "raw_mae72": 5.58,
+    "n": 344,
+    "weight_ext": 0.157,
+    "mae_ext": 3.77
+   }
+  },
+  "station": "Caribou Creek (BC snow pillow)",
+  "blend_mae72": 4.9,
+  "n_windows": 349,
+  "n_wet": 169,
+  "ratio_q": {
+   "0.05": 0.413,
+   "0.25": 0.708,
+   "0.5": 0.91,
+   "0.75": 1.157,
+   "0.95": 1.83
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 94,
+    "q": {
+     "0.05": 0.33,
+     "0.25": 0.69,
+     "0.5": 0.901,
+     "0.75": 1.124,
+     "0.95": 1.981
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 64,
+    "q": {
+     "0.05": 0.569,
+     "0.25": 0.778,
+     "0.5": 0.944,
+     "0.75": 1.172,
+     "0.95": 1.677
+    }
+   }
+  ],
+  "temp_bias_c": 2.0,
+  "temp_bias_wet_c": 1.35,
+  "temp_n_wet": 145,
+  "temp_mae_c": [
+   2.24,
+   1.2
+  ]
+ },
+ "lakelouise": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.492,
+    "weight": 0.12,
+    "mae72": 4.13,
+    "raw_mae72": 4.48,
+    "n": 155,
+    "weight_ext": 0.095,
+    "mae_ext": 2.79
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.54,
+    "weight": 0.18,
+    "mae72": 3.38,
+    "raw_mae72": 3.7,
+    "n": 356,
+    "weight_ext": 0.154,
+    "mae_ext": 2.19
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.26,
+    "weight": 0.149,
+    "mae72": 3.71,
+    "raw_mae72": 3.81,
+    "n": 247,
+    "weight_ext": 0.145,
+    "mae_ext": 2.26
+   },
+   "gfs_seamless": {
+    "factor": 1.231,
+    "weight": 0.102,
+    "mae72": 4.49,
+    "raw_mae72": 4.31,
+    "n": 356,
+    "weight_ext": 0.151,
+    "mae_ext": 2.21
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.039,
+    "weight": 0.152,
+    "mae72": 3.67,
+    "raw_mae72": 3.63,
+    "n": 356,
+    "weight_ext": 0.148,
+    "mae_ext": 2.24
+   },
+   "gem_seamless": {
+    "factor": 1.211,
+    "weight": 0.124,
+    "mae72": 4.06,
+    "raw_mae72": 3.87,
+    "n": 356,
+    "weight_ext": 0.137,
+    "mae_ext": 2.32
+   },
+   "icon_seamless": {
+    "factor": 1.057,
+    "weight": 0.172,
+    "mae72": 3.45,
+    "raw_mae72": 3.42,
+    "n": 351,
+    "weight_ext": 0.17,
+    "mae_ext": 2.08
+   }
+  },
+  "station": "Pika Run (Alberta Rivers)",
+  "blend_mae72": 3.12,
+  "n_windows": 356,
+  "n_wet": 97,
+  "ratio_q": {
+   "0.05": 0.281,
+   "0.25": 0.656,
+   "0.5": 0.878,
+   "0.75": 1.271,
+   "0.95": 1.733
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 79,
+    "q": {
+     "0.05": 0.263,
+     "0.25": 0.652,
+     "0.5": 0.863,
+     "0.75": 1.307,
+     "0.95": 1.751
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 16,
+    "q": {
+     "0.05": 0.57,
+     "0.25": 0.803,
+     "0.5": 1.166,
+     "0.75": 1.277,
+     "0.95": 1.486
+    }
+   }
+  ],
+  "temp_n_wet": 0
  }
 }

@@ -131,7 +131,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "gem_hrdps_continental"
   ]
  },
  "kirkwood": {
@@ -538,6 +539,190 @@
    "ncep_nbm_conus",
    "gem_seamless",
    "icon_seamless"
+  ]
+ },
+ "blackcomb": {
+  "name": "Blackcomb",
+  "country": "CA",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.1155,
+   "lon": -122.9527,
+   "ft": 2214,
+   "label": "Village"
+  },
+  "mid": {
+   "lat": 50.1011,
+   "lon": -122.9126,
+   "ft": 5000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.089,
+   "lon": -122.8786,
+   "ft": 7494,
+   "label": "Glacier / 7th Heaven"
+  },
+  "dem_ft": {
+   "base": 2224,
+   "mid": 4997,
+   "summit": 7608
+  },
+  "obs": [
+   "bcasws",
+   "3A20P",
+   "Callaghan Creek (BC snow pillow)",
+   3337,
+   50.137056,
+   -123.102889
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "revelstoke": {
+  "name": "Revelstoke",
+  "country": "CA",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.958,
+   "lon": -118.1636,
+   "ft": 1680,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 50.9422,
+   "lon": -118.2634,
+   "ft": 4700,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.939,
+   "lon": -118.2834,
+   "ft": 7300,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 1690,
+   "mid": 4688,
+   "summit": 7152
+  },
+  "obs": [
+   "bcasws",
+   "2A06P",
+   "Mount Revelstoke (BC snow pillow)",
+   6070,
+   51.036342,
+   -118.151603
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "kickinghorse": {
+  "name": "Kicking Horse",
+  "country": "CA",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 51.3005,
+   "lon": -117.0432,
+   "ft": 3900,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 51.2903,
+   "lon": -117.0745,
+   "ft": 6200,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 51.283,
+   "lon": -117.0968,
+   "ft": 8033,
+   "label": "Terminator Peak"
+  },
+  "dem_ft": {
+   "base": 3963,
+   "mid": 6217,
+   "summit": 8048
+  },
+  "obs": [
+   "bcasws",
+   "2A31P",
+   "Caribou Creek (BC snow pillow)",
+   7221,
+   51.109028,
+   -117.228417
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "lakelouise": {
+  "name": "Lake Louise",
+  "country": "CA",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 51.436,
+   "lon": -116.1572,
+   "ft": 5400,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 51.4546,
+   "lon": -116.1421,
+   "ft": 7100,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 51.4765,
+   "lon": -116.1242,
+   "ft": 8650,
+   "label": "Top of the World"
+  },
+  "dem_ft": {
+   "base": 5420,
+   "mid": 7123,
+   "summit": 8527
+  },
+  "obs": [
+   "abrivers",
+   "05BA815:158817042",
+   "Pika Run (Alberta Rivers)",
+   7382,
+   51.462944,
+   -116.117833
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
   ]
  }
 }

@@ -24,7 +24,7 @@ the raw models with equal weights.
 | Telluride | not located yet | | | | |
 | Crested Butte | not located yet | | | | |
 | Whistler | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
-| Blackcomb | not located yet | | | | |
-| Revelstoke | not located yet | | | | |
-| Kicking Horse | not located yet | | | | |
-| Lake Louise | not located yet | | | | |
+| Blackcomb | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
+| Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
+| Kicking Horse | calibrated | Caribou Creek (BC snow pillow) | 7,221 ft | 349 | 0.19 |
+| Lake Louise | calibrated | Pika Run (Alberta Rivers) | 7,382 ft | 356 | 0.12 |
