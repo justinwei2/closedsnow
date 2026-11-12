@@ -54,7 +54,7 @@ CATALOG = {
     "abasin": ("Arapahoe Basin", "US", MT, (39.6420, -105.8715, 10780, "Base"), (39.6300, -105.8650, 13050, "Summit")),
     "copper": ("Copper Mountain", "US", MT, (39.5018, -106.1511, 9712, "Base"), (39.4720, -106.1660, 12313, "Tucker Mtn")),
     "steamboat": ("Steamboat", "US", MT, (40.4572, -106.8045, 6900, "Base"), (40.4563, -106.7485, 10568, "Mt. Werner"), (9080, "Thunderhead")),
-    "telluride": ("Telluride", "US", MT, (37.9369, -107.8467, 8725, "Mountain Village"), (37.9105, -107.8380, 12570, "Gold Hill")),
+    "telluride": ("Telluride", "US", MT, (37.9370, -107.8466, 9545, "Mountain Village"), (37.9105, -107.8380, 12570, "Gold Hill")),
     "taos": ("Taos Ski Valley", "US", MT, (36.5960, -105.4545, 9207, "Base"), (36.5745, -105.4385, 12481, "Kachina Peak")),
     "crestedbutte": ("Crested Butte", "US", MT, (38.8991, -106.9650, 9375, "Base"), (38.8877, -106.9440, 12162, "North Face / High Lift")),
     "whistler": ("Whistler", "CA", VAN, (50.1150, -122.9548, 2214, "Village"), (50.0610, -122.9480, 7160, "Whistler Peak"), (6069, "Roundhouse")),

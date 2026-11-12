@@ -867,15 +867,15 @@
   "country": "US",
   "tz": "America/Denver",
   "base": {
-   "lat": 37.9429,
-   "lon": -107.8429,
-   "ft": 8725,
+   "lat": 37.937,
+   "lon": -107.8466,
+   "ft": 9545,
    "label": "Mountain Village"
   },
   "mid": {
-   "lat": 37.9188,
-   "lon": -107.832,
-   "ft": 10800,
+   "lat": 37.9097,
+   "lon": -107.8297,
+   "ft": 11200,
    "label": "Mid-mountain"
   },
   "summit": {
@@ -885,8 +885,8 @@
    "label": "Gold Hill"
   },
   "dem_ft": {
-   "base": 8737,
-   "mid": 10814,
+   "base": 9534,
+   "mid": 11171,
    "summit": 12402
   },
   "obs": [
@@ -904,7 +904,8 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless"
+   "icon_seamless",
+   "jma_seamless"
   ]
  },
  "crestedbutte": {
