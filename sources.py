@@ -27,7 +27,7 @@ def cache_path(name):
     return os.path.join(CACHE, name)
 
 
-def get_json(url, params=None, retries=4):
+def get_json(url, params=None, retries=6):
     if params:
         url += "?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json"})

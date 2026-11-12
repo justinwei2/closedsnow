@@ -45,9 +45,10 @@ regional default factors (the page says so).
 - `web/`: static site (no build step)
 
 ## Failures, retries & alerts
-- HTTP: exponential backoff with jitter; Open-Meteo hourly/daily quota stops a region cleanly
-  (previous data kept). Resorts that error get a second pass after 60 s. Data-branch pushes and
-  the Pages deploy retry.
+- HTTP: 6 attempts, exponential backoff with jitter (permanent 4xx not retried); Open-Meteo hourly/daily quota stops a region cleanly
+  (previous data kept). Resorts that error get a second pass after 60 s. Data restore/push
+  retry 3x, the Pages deploy up to 3x, and `autoretry.yml` re-runs any failed refresh/backfill
+  job once automatically (not for health-check failures).
 - `health.py` runs at the end of every refresh and fails the run when a forecast is missing or 3+ resorts are > 20 h old
   (one missed refresh doesn't trip it). A failed run
   makes GitHub email you.
