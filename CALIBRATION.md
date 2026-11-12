@@ -11,13 +11,13 @@ the median factors of calibrated resorts in their region.
 | Alpine Meadows | California | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 356 | 0.57 |
 | Kirkwood | California | calibrated | Carson Pass SNOTEL | 8,360 ft | 356 | 0.32 |
 | Mammoth Mountain | California | calibrated | Mammoth Pass (CDEC) | 9,400 ft | 356 | 0.41 |
-| Mt. Bachelor | Pacific Northwest | not located yet | | | | |
-| Alta | Utah | not located yet | | | | |
-| Snowbird | Utah | not located yet | | | | |
-| Solitude | Utah | not located yet | | | | |
-| Snowbasin | Utah | not located yet | | | | |
-| Jackson Hole | Northern Rockies | not located yet | | | | |
-| Big Sky | Northern Rockies | not located yet | | | | |
+| Mt. Bachelor | Pacific Northwest | calibrated | Three Creeks Meadow SNOTEL | 5,680 ft | 356 | 0.37 |
+| Alta | Utah | calibrated | Atwater SNOTEL | 8,750 ft | 356 | 0.39 |
+| Snowbird | Utah | calibrated | Snowbird SNOTEL | 9,170 ft | 356 | 0.37 |
+| Solitude | Utah | calibrated | Brighton SNOTEL | 8,790 ft | 356 | 0.27 |
+| Snowbasin | Utah | calibrated | Ben Lomond Peak SNOTEL | 7,690 ft | 356 | 0.41 |
+| Jackson Hole | Northern Rockies | calibrated | Phillips Bench SNOTEL | 8,170 ft | 356 | 0.26 |
+| Big Sky | Northern Rockies | calibrated | Lone Mountain SNOTEL | 8,820 ft | 356 | 0.20 |
 | Arapahoe Basin | Colorado | not located yet | | | | |
 | Copper Mountain | Colorado | not located yet | | | | |
 | Steamboat | Colorado | not located yet | | | | |

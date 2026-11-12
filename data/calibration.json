@@ -613,5 +613,818 @@
    1.56,
    0.88
   ]
+ },
+ "bachelor": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 0.773,
+    "weight": 0.162,
+    "mae72": 9.27,
+    "raw_mae72": 10.99,
+    "n": 155,
+    "weight_ext": 0.145,
+    "mae_ext": 4.98
+   },
+   "ecmwf_ifs025": {
+    "factor": 0.802,
+    "weight": 0.142,
+    "mae72": 9.89,
+    "raw_mae72": 11.17,
+    "n": 356,
+    "weight_ext": 0.12,
+    "mae_ext": 5.47
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 0.826,
+    "weight": 0.176,
+    "mae72": 8.89,
+    "raw_mae72": 10.03,
+    "n": 247,
+    "weight_ext": 0.158,
+    "mae_ext": 4.77
+   },
+   "gfs_seamless": {
+    "factor": 0.71,
+    "weight": 0.143,
+    "mae72": 9.88,
+    "raw_mae72": 12.74,
+    "n": 356,
+    "weight_ext": 0.167,
+    "mae_ext": 4.65
+   },
+   "ncep_nbm_conus": {
+    "factor": 0.843,
+    "weight": 0.138,
+    "mae72": 10.05,
+    "raw_mae72": 11.13,
+    "n": 356,
+    "weight_ext": 0.171,
+    "mae_ext": 4.6
+   },
+   "gem_seamless": {
+    "factor": 1.117,
+    "weight": 0.118,
+    "mae72": 10.88,
+    "raw_mae72": 10.42,
+    "n": 356,
+    "weight_ext": 0.14,
+    "mae_ext": 5.07
+   },
+   "icon_seamless": {
+    "factor": 0.808,
+    "weight": 0.121,
+    "mae72": 10.71,
+    "raw_mae72": 12.12,
+    "n": 351,
+    "weight_ext": 0.098,
+    "mae_ext": 6.06
+   }
+  },
+  "station": "Three Creeks Meadow SNOTEL",
+  "blend_mae72": 9.52,
+  "n_windows": 356,
+  "n_wet": 150,
+  "ratio_q": {
+   "0.05": 0.131,
+   "0.25": 0.364,
+   "0.5": 0.672,
+   "0.75": 1.231,
+   "0.95": 2.407
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 79,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.34,
+     "0.5": 0.614,
+     "0.75": 1.285,
+     "0.95": 2.589
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 55,
+    "q": {
+     "0.05": 0.132,
+     "0.25": 0.382,
+     "0.5": 0.778,
+     "0.75": 1.198,
+     "0.95": 2.238
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 16,
+    "q": {
+     "0.05": 0.253,
+     "0.25": 0.511,
+     "0.5": 0.806,
+     "0.75": 1.199,
+     "0.95": 1.522
+    }
+   }
+  ],
+  "temp_bias_c": 1.66,
+  "temp_bias_wet_c": 1.44,
+  "temp_n_wet": 161,
+  "temp_mae_c": [
+   1.83,
+   0.87
+  ]
+ },
+ "alta": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.653,
+    "weight": 0.132,
+    "mae72": 10.89,
+    "raw_mae72": 10.15,
+    "n": 155,
+    "weight_ext": 0.13,
+    "mae_ext": 6.31
+   },
+   "ecmwf_ifs025": {
+    "factor": 2.0,
+    "weight": 0.138,
+    "mae72": 10.67,
+    "raw_mae72": 12.02,
+    "n": 356,
+    "weight_ext": 0.139,
+    "mae_ext": 6.1
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 2.0,
+    "weight": 0.187,
+    "mae72": 9.15,
+    "raw_mae72": 10.31,
+    "n": 247,
+    "weight_ext": 0.156,
+    "mae_ext": 5.77
+   },
+   "gfs_seamless": {
+    "factor": 1.357,
+    "weight": 0.134,
+    "mae72": 10.82,
+    "raw_mae72": 10.41,
+    "n": 356,
+    "weight_ext": 0.167,
+    "mae_ext": 5.56
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.053,
+    "weight": 0.142,
+    "mae72": 10.49,
+    "raw_mae72": 10.37,
+    "n": 356,
+    "weight_ext": 0.135,
+    "mae_ext": 6.19
+   },
+   "gem_seamless": {
+    "factor": 1.213,
+    "weight": 0.123,
+    "mae72": 11.3,
+    "raw_mae72": 10.64,
+    "n": 356,
+    "weight_ext": 0.144,
+    "mae_ext": 6.01
+   },
+   "icon_seamless": {
+    "factor": 1.433,
+    "weight": 0.144,
+    "mae72": 10.44,
+    "raw_mae72": 9.76,
+    "n": 351,
+    "weight_ext": 0.129,
+    "mae_ext": 6.33
+   }
+  },
+  "station": "Atwater SNOTEL",
+  "blend_mae72": 9.81,
+  "n_windows": 356,
+  "n_wet": 165,
+  "ratio_q": {
+   "0.05": 0.0,
+   "0.25": 0.449,
+   "0.5": 0.952,
+   "0.75": 1.474,
+   "0.95": 2.375
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 80,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.424,
+     "0.5": 1.068,
+     "0.75": 1.678,
+     "0.95": 2.42
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 64,
+    "q": {
+     "0.05": 0.084,
+     "0.25": 0.51,
+     "0.5": 0.982,
+     "0.75": 1.401,
+     "0.95": 2.247
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 21,
+    "q": {
+     "0.05": 0.138,
+     "0.25": 0.539,
+     "0.5": 0.679,
+     "0.75": 0.985,
+     "0.95": 1.492
+    }
+   }
+  ],
+  "temp_bias_c": 0.17,
+  "temp_bias_wet_c": 0.09,
+  "temp_n_wet": 139,
+  "temp_mae_c": [
+   1.07,
+   1.07
+  ]
+ },
+ "snowbird": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.584,
+    "weight": 0.151,
+    "mae72": 9.58,
+    "raw_mae72": 8.88,
+    "n": 155,
+    "weight_ext": 0.125,
+    "mae_ext": 5.91
+   },
+   "ecmwf_ifs025": {
+    "factor": 2.0,
+    "weight": 0.146,
+    "mae72": 9.74,
+    "raw_mae72": 10.76,
+    "n": 356,
+    "weight_ext": 0.132,
+    "mae_ext": 5.76
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 2.0,
+    "weight": 0.173,
+    "mae72": 8.96,
+    "raw_mae72": 9.33,
+    "n": 247,
+    "weight_ext": 0.15,
+    "mae_ext": 5.4
+   },
+   "gfs_seamless": {
+    "factor": 1.184,
+    "weight": 0.127,
+    "mae72": 10.47,
+    "raw_mae72": 10.12,
+    "n": 356,
+    "weight_ext": 0.174,
+    "mae_ext": 5.01
+   },
+   "ncep_nbm_conus": {
+    "factor": 0.945,
+    "weight": 0.14,
+    "mae72": 9.98,
+    "raw_mae72": 10.27,
+    "n": 356,
+    "weight_ext": 0.144,
+    "mae_ext": 5.52
+   },
+   "gem_seamless": {
+    "factor": 1.06,
+    "weight": 0.125,
+    "mae72": 10.55,
+    "raw_mae72": 10.29,
+    "n": 356,
+    "weight_ext": 0.151,
+    "mae_ext": 5.37
+   },
+   "icon_seamless": {
+    "factor": 1.317,
+    "weight": 0.138,
+    "mae72": 10.04,
+    "raw_mae72": 9.4,
+    "n": 351,
+    "weight_ext": 0.124,
+    "mae_ext": 5.94
+   }
+  },
+  "station": "Snowbird SNOTEL",
+  "blend_mae72": 9.32,
+  "n_windows": 356,
+  "n_wet": 159,
+  "ratio_q": {
+   "0.05": 0.0,
+   "0.25": 0.438,
+   "0.5": 0.837,
+   "0.75": 1.406,
+   "0.95": 2.53
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 85,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.372,
+     "0.5": 0.987,
+     "0.75": 1.513,
+     "0.95": 2.847
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 53,
+    "q": {
+     "0.05": 0.084,
+     "0.25": 0.4,
+     "0.5": 0.827,
+     "0.75": 1.338,
+     "0.95": 2.194
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 21,
+    "q": {
+     "0.05": 0.043,
+     "0.25": 0.501,
+     "0.5": 0.742,
+     "0.75": 1.126,
+     "0.95": 1.787
+    }
+   }
+  ],
+  "temp_bias_c": 2.57,
+  "temp_bias_wet_c": 2.1,
+  "temp_n_wet": 144,
+  "temp_mae_c": [
+   2.69,
+   1.37
+  ]
+ },
+ "solitude": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.2,
+    "weight": 0.136,
+    "mae72": 7.48,
+    "raw_mae72": 7.17,
+    "n": 155,
+    "weight_ext": 0.132,
+    "mae_ext": 4.52
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.389,
+    "weight": 0.13,
+    "mae72": 7.65,
+    "raw_mae72": 6.92,
+    "n": 356,
+    "weight_ext": 0.129,
+    "mae_ext": 4.57
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.405,
+    "weight": 0.164,
+    "mae72": 6.81,
+    "raw_mae72": 6.4,
+    "n": 247,
+    "weight_ext": 0.157,
+    "mae_ext": 4.15
+   },
+   "gfs_seamless": {
+    "factor": 0.974,
+    "weight": 0.138,
+    "mae72": 7.42,
+    "raw_mae72": 7.52,
+    "n": 356,
+    "weight_ext": 0.192,
+    "mae_ext": 3.75
+   },
+   "ncep_nbm_conus": {
+    "factor": 0.809,
+    "weight": 0.144,
+    "mae72": 7.27,
+    "raw_mae72": 8.29,
+    "n": 356,
+    "weight_ext": 0.153,
+    "mae_ext": 4.21
+   },
+   "gem_seamless": {
+    "factor": 1.281,
+    "weight": 0.146,
+    "mae72": 7.22,
+    "raw_mae72": 6.89,
+    "n": 356,
+    "weight_ext": 0.102,
+    "mae_ext": 5.16
+   },
+   "icon_seamless": {
+    "factor": 0.972,
+    "weight": 0.142,
+    "mae72": 7.33,
+    "raw_mae72": 7.44,
+    "n": 351,
+    "weight_ext": 0.136,
+    "mae_ext": 4.46
+   }
+  },
+  "station": "Brighton SNOTEL",
+  "blend_mae72": 6.84,
+  "n_windows": 356,
+  "n_wet": 138,
+  "ratio_q": {
+   "0.05": 0.056,
+   "0.25": 0.45,
+   "0.5": 0.768,
+   "0.75": 1.363,
+   "0.95": 2.442
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 85,
+    "q": {
+     "0.05": 0.023,
+     "0.25": 0.411,
+     "0.5": 0.785,
+     "0.75": 1.367,
+     "0.95": 2.383
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 45,
+    "q": {
+     "0.05": 0.093,
+     "0.25": 0.575,
+     "0.5": 0.757,
+     "0.75": 1.483,
+     "0.95": 2.422
+    }
+   }
+  ],
+  "temp_bias_c": 0.52,
+  "temp_bias_wet_c": 0.7,
+  "temp_n_wet": 129,
+  "temp_mae_c": [
+   1.11,
+   0.99
+  ]
+ },
+ "snowbasin": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.87,
+    "weight": 0.122,
+    "mae72": 12.07,
+    "raw_mae72": 10.53,
+    "n": 155,
+    "weight_ext": 0.142,
+    "mae_ext": 5.69
+   },
+   "ecmwf_ifs025": {
+    "factor": 2.0,
+    "weight": 0.148,
+    "mae72": 10.94,
+    "raw_mae72": 10.63,
+    "n": 356,
+    "weight_ext": 0.141,
+    "mae_ext": 5.69
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 2.0,
+    "weight": 0.166,
+    "mae72": 10.35,
+    "raw_mae72": 9.41,
+    "n": 247,
+    "weight_ext": 0.143,
+    "mae_ext": 5.67
+   },
+   "gfs_seamless": {
+    "factor": 1.41,
+    "weight": 0.125,
+    "mae72": 11.93,
+    "raw_mae72": 10.38,
+    "n": 356,
+    "weight_ext": 0.169,
+    "mae_ext": 5.2
+   },
+   "ncep_nbm_conus": {
+    "factor": 0.99,
+    "weight": 0.158,
+    "mae72": 10.58,
+    "raw_mae72": 10.62,
+    "n": 356,
+    "weight_ext": 0.12,
+    "mae_ext": 6.18
+   },
+   "gem_seamless": {
+    "factor": 1.298,
+    "weight": 0.126,
+    "mae72": 11.86,
+    "raw_mae72": 10.62,
+    "n": 356,
+    "weight_ext": 0.149,
+    "mae_ext": 5.55
+   },
+   "icon_seamless": {
+    "factor": 2.0,
+    "weight": 0.155,
+    "mae72": 10.69,
+    "raw_mae72": 9.96,
+    "n": 351,
+    "weight_ext": 0.136,
+    "mae_ext": 5.8
+   }
+  },
+  "station": "Ben Lomond Peak SNOTEL",
+  "blend_mae72": 10.36,
+  "n_windows": 356,
+  "n_wet": 146,
+  "ratio_q": {
+   "0.05": 0.0,
+   "0.25": 0.274,
+   "0.5": 0.72,
+   "0.75": 1.269,
+   "0.95": 2.852
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 82,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.247,
+     "0.5": 0.72,
+     "0.75": 1.273,
+     "0.95": 3.895
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 44,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.2,
+     "0.5": 0.662,
+     "0.75": 1.327,
+     "0.95": 2.386
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 20,
+    "q": {
+     "0.05": 0.182,
+     "0.25": 0.486,
+     "0.5": 0.792,
+     "0.75": 1.027,
+     "0.95": 1.69
+    }
+   }
+  ],
+  "temp_bias_c": 1.52,
+  "temp_bias_wet_c": 0.77,
+  "temp_n_wet": 134,
+  "temp_mae_c": [
+   2.01,
+   1.71
+  ]
+ },
+ "jackson": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.35,
+    "weight": 0.124,
+    "mae72": 7.62,
+    "raw_mae72": 6.93,
+    "n": 155,
+    "weight_ext": 0.138,
+    "mae_ext": 4.14
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.259,
+    "weight": 0.152,
+    "mae72": 6.89,
+    "raw_mae72": 6.44,
+    "n": 356,
+    "weight_ext": 0.133,
+    "mae_ext": 4.23
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.233,
+    "weight": 0.191,
+    "mae72": 6.13,
+    "raw_mae72": 5.89,
+    "n": 247,
+    "weight_ext": 0.161,
+    "mae_ext": 3.85
+   },
+   "gfs_seamless": {
+    "factor": 1.014,
+    "weight": 0.14,
+    "mae72": 7.16,
+    "raw_mae72": 7.1,
+    "n": 356,
+    "weight_ext": 0.173,
+    "mae_ext": 3.71
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.01,
+    "weight": 0.147,
+    "mae72": 7.0,
+    "raw_mae72": 6.98,
+    "n": 356,
+    "weight_ext": 0.158,
+    "mae_ext": 3.87
+   },
+   "gem_seamless": {
+    "factor": 1.373,
+    "weight": 0.137,
+    "mae72": 7.24,
+    "raw_mae72": 6.74,
+    "n": 356,
+    "weight_ext": 0.121,
+    "mae_ext": 4.43
+   },
+   "icon_seamless": {
+    "factor": 1.275,
+    "weight": 0.109,
+    "mae72": 8.14,
+    "raw_mae72": 7.37,
+    "n": 351,
+    "weight_ext": 0.117,
+    "mae_ext": 4.51
+   }
+  },
+  "station": "Phillips Bench SNOTEL",
+  "blend_mae72": 6.55,
+  "n_windows": 356,
+  "n_wet": 144,
+  "ratio_q": {
+   "0.05": 0.193,
+   "0.25": 0.504,
+   "0.5": 0.787,
+   "0.75": 1.192,
+   "0.95": 2.153
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 83,
+    "q": {
+     "0.05": 0.158,
+     "0.25": 0.412,
+     "0.5": 0.821,
+     "0.75": 1.437,
+     "0.95": 2.306
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 54,
+    "q": {
+     "0.05": 0.337,
+     "0.25": 0.594,
+     "0.5": 0.782,
+     "0.75": 1.088,
+     "0.95": 1.839
+    }
+   }
+  ],
+  "temp_bias_c": 0.11,
+  "temp_bias_wet_c": -0.01,
+  "temp_n_wet": 173,
+  "temp_mae_c": [
+   0.91,
+   0.9
+  ]
+ },
+ "bigsky": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.101,
+    "weight": 0.167,
+    "mae72": 4.85,
+    "raw_mae72": 4.64,
+    "n": 155,
+    "weight_ext": 0.151,
+    "mae_ext": 2.94
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.273,
+    "weight": 0.126,
+    "mae72": 5.58,
+    "raw_mae72": 5.16,
+    "n": 356,
+    "weight_ext": 0.119,
+    "mae_ext": 3.31
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.067,
+    "weight": 0.189,
+    "mae72": 4.56,
+    "raw_mae72": 4.44,
+    "n": 247,
+    "weight_ext": 0.151,
+    "mae_ext": 2.94
+   },
+   "gfs_seamless": {
+    "factor": 1.008,
+    "weight": 0.113,
+    "mae72": 5.9,
+    "raw_mae72": 5.87,
+    "n": 356,
+    "weight_ext": 0.17,
+    "mae_ext": 2.78
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.039,
+    "weight": 0.134,
+    "mae72": 5.42,
+    "raw_mae72": 5.31,
+    "n": 356,
+    "weight_ext": 0.147,
+    "mae_ext": 2.98
+   },
+   "gem_seamless": {
+    "factor": 0.779,
+    "weight": 0.138,
+    "mae72": 5.33,
+    "raw_mae72": 6.37,
+    "n": 356,
+    "weight_ext": 0.124,
+    "mae_ext": 3.24
+   },
+   "icon_seamless": {
+    "factor": 0.807,
+    "weight": 0.132,
+    "mae72": 5.46,
+    "raw_mae72": 6.28,
+    "n": 351,
+    "weight_ext": 0.139,
+    "mae_ext": 3.07
+   }
+  },
+  "station": "Lone Mountain SNOTEL",
+  "blend_mae72": 4.99,
+  "n_windows": 356,
+  "n_wet": 114,
+  "ratio_q": {
+   "0.05": 0.209,
+   "0.25": 0.491,
+   "0.5": 0.769,
+   "0.75": 1.297,
+   "0.95": 1.964
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 102,
+    "q": {
+     "0.05": 0.212,
+     "0.25": 0.523,
+     "0.5": 0.802,
+     "0.75": 1.335,
+     "0.95": 1.97
+    }
+   }
+  ],
+  "temp_bias_c": 0.76,
+  "temp_bias_wet_c": 0.47,
+  "temp_n_wet": 170,
+  "temp_mae_c": [
+   1.24,
+   1.07
+  ]
  }
 }
