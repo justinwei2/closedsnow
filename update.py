@@ -336,13 +336,16 @@ def process(r, cal):
             for e in ELEVS:
                 summary[e][key]["station_in"] = sum(vals) if vals else None
 
-    # ---- snow and rain per hour for 10 days: forecast + ensemble spread (each member's precip split
+    # ---- snow and rain per 12 h (daytime 6a-6p / nighttime 6p-6a), last 7 + next 10 days: forecast +
+    # ensemble spread (future only; each member's precip split
     # with the forecast's hourly phase and snow ratio); bands widened to include the forecast
+    today_minus = lambda n: (datetime.fromisoformat(today) - timedelta(n)).strftime("%Y-%m-%d")
     plume = {}
     for e in ELEVS:
         hrs = hours[e]
         out = {k: {q: [] for q in ("fc", *map(str, QS))} for k in ("snow", "rain")}
-        bins = [range(i, i + 1) for i in range(max(0, now_i - 24 * 7), min(len(times), now_i + 24 * 10))]  # hourly
+        span = [d for d in sorted(starts) if today_minus(7) <= d < today_minus(-10)]
+        bins = [range(a, min(a + 12, len(times))) for d in span for a in (starts[d], starts[d] + 12) if a < len(times)]
         for b in bins:
             s_liq = sum(hours["summit"][i].precip_mm or 0 for i in b)
             liq = sum(hrs[i].precip_mm or 0 for i in b)

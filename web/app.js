@@ -20,9 +20,11 @@ const QUALITY = {  // one colour per label everywhere: orange = good snow, purpl
   "sleet / freezing rain risk": { sw: "--q-sleet", text: "Sleet / ZR" },
   "rain": { sw: "--q-rain", text: "Rain" },
 };
-const ALERT = { powder: "--q-light", wet: "--q-sleet", warn: "--warning" };  // daily-overview alert squares
+const ALERT = { powder: "--q-light", wet: "--q-sleet", warn: "--warning", info: "--muted" };  // daily-overview alert squares
+const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
+const NOTE_ALERT = { powder: "powder", rain: "wet", sleet: "wet", vis: "info" };  // weather-report note -> alert
+const ALERT_NAME_HEAD = (h) => h.name === "day" ? "Daytime 6a–6p alerts" : "Nighttime 6p–6a alerts";
 // weather-report note styling: status colours always ship with an icon + text
-const NOTE = { powder: "--q-light", rain: "--q-sleet", sleet: "--q-sleet", wind: "--warning", cold: "--warning", vis: "--muted" };
 
 // ---------------------------------------------------------------- formatting
 const fmtSnow = (v) => v == null ? "–" : v < 0.25 ? "0" : v < 1 ? "<1" : String(Math.round(v));
@@ -153,41 +155,6 @@ function renderAlerts(d) {
   }
 }
 
-function renderReport(d, e) {
-  const box = $("#report");
-  box.replaceChildren();
-  const days = window17(d);
-  for (const x of days) {
-    const v = x[e];
-    const notes = x.report || [];
-    const snowy = (v.p50 || 0) >= 1 || (v.rain_in || 0) >= 0.1;
-    const row = el("div", { class: "rday" + (x.past ? " past" : "") });
-    const dl = dayLabel(x.date);
-    const dd = el("div", { class: "d" }); dd.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", { class: "muted" }, ` ${dl.mon} ${dl.dom}`));
-    const amt = el("div", { class: "amt" });
-    if (snowy) {
-      amt.append(el("b", {}, `${fmtIn(v.p50)}${fmtRange(v.p25, v.p75) ? "  (" + fmtRange(v.p25, v.p75) + ")" : ""}`));
-      if (v.quality) amt.append(chip(v.quality, v.slr));
-    } else amt.append(el("span", { class: "quiet" }, "Dry"));
-    const nn = el("div", { class: "notes" });
-    for (const n of notes) {
-      const line = el("div", { class: "note" });
-      const sq = el("span", { class: "sq" });
-      sq.style.background = `var(${NOTE[n.kind] || "--muted"})`;
-      line.append(sq, el("span", {}, n.text));
-      nn.append(line);
-    }
-    const w = x.wind_hold;
-    if (!notes.length) {
-      const bits = [];
-      if (w) bits.push(`ridge wind ${w.dir || ""} ${w.sustained_mph} mph`);
-      if (v.hi_f != null) bits.push(`${fmtF(v.lo_f)} / ${fmtF(v.hi_f)}`);
-      nn.append(el("span", { class: "quiet" }, `Nothing notable${bits.length ? " · " + bits.join(" · ") : ""}`));
-    }
-    row.append(dd, amt, nn);
-    box.append(row);
-  }
-}
 
 function qualityKeys(box) {
   for (const k of Object.keys(QUALITY)) {
@@ -272,26 +239,44 @@ function renderDailyTable(d, e) {
   tb.className = "grid days";
   const days = window17(d);
   $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft`;
-  const cols = [
+  const snowCell = (h) => {
+    const c = el("span", { class: "snowcell" });
+    c.append(el("b", {}, fmtIn(h.snow_in)));
+    const r = fmtRange(h.p25, h.p75);
+    if (r) c.append(el("span", { class: "muted" }, r));
+    return c;
+  };
+  // daytime rows also carry the day's report notes (powder morning, rain line, sleet, flat light);
+  // wind-hold / wind-chill notes are already row alerts
+  const rowAlerts = (h, x, k) => [...h.alerts, ...(k ? [] : (x.report || []).filter((n) => NOTE_ALERT[n.kind])
+    .map((n) => ({ kind: NOTE_ALERT[n.kind], text: n.text })))];
+  const cols = [  // [header, cell(h, x, k), class, header group]
     ["Temp", (h) => fmtF(h.temp_f)],
-    ["Alerts", (h) => { const s = el("span"); for (const a of h.alerts) { const q = el("span", { class: "asq", title: a.text }); q.style.background = `var(${ALERT[a.kind]})`; s.append(q); } return h.alerts.length ? s : ""; }],
-    ["Snow", (h) => fmtIn(h.snow_in), "strong"],
-    ["Middle 50%", (h) => fmtRange(h.p25, h.p75) || "–"],
+    ["Alerts", (h, x, k) => {
+      const al = rowAlerts(h, x, k);
+      if (!al.length) return "";
+      const s = el("span", { class: "alerts", tabindex: 0, "aria-label": al.map((a) => a.text).join("; ") });
+      for (const a of al) { const q = el("span", { class: "asq" }); q.style.background = `var(${ALERT[a.kind]})`; s.append(q); }
+      hover(s, (ev) => showTip(ev, ALERT_NAME_HEAD(h), al.map((a) => ({ name: ALERT_NAME[a.kind], value: a.text, color: `var(${ALERT[a.kind]})` }))));
+      return s;
+    }],
     ["Snow Ratio", (h) => (h.liquid_in > 0.02 ? snowRatio(h.quality, h.slr) : "–")],
-    ["Snow Level", (h) => { const t = el("span", { title: h.nws_snow_level_ft != null ? `NWS ${fmtFt(h.nws_snow_level_ft)}` : "" }, fmtFt(h.snow_level_ft)); return t; }],
+    ["12-Hr Snowfall", snowCell],
+    ["Snow Level (ft)", (h) => el("span", { title: h.nws_snow_level_ft != null ? `NWS ${fmtFt(h.nws_snow_level_ft)}` : "" }, fmtFt(h.snow_level_ft))],
     ["Precip Chance", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}%`],
-    ["Precip", (h) => h.liquid_in >= 0.005 ? `${h.liquid_in.toFixed(2)}"` : "0\""],
-    ["Feels Like", (h) => fmtF(h.feels_f)],
-    ["Humidity", (h) => h.rh == null ? "–" : `${Math.round(h.rh)}%`],
-    ["Wind", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`],
-    ["Gust", (h) => fmtMph(h.gust_mph)],
-    ["Cloud", (h) => h.cloud == null ? "–" : `${Math.round(h.cloud)}%`],
-    ["Freezing Level", (h) => fmtFt(h.freezing_level_ft)],
-    ["NWS Snow", (h) => h.nws_snow_in != null ? fmtIn(h.nws_snow_in) : "–"],
+    ["Precip Amount", (h) => h.liquid_in >= 0.005 ? `${h.liquid_in.toFixed(2)}"` : "0\""],
+    ["Speed", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`, "", "Wind (mph)"],
+    ["Gust", (h) => fmtMph(h.gust_mph), "", "Wind (mph)"],
+    ["NWS Snowfall", (h) => h.nws_snow_in != null ? fmtIn(h.nws_snow_in) : "–"],
   ];
-  const head = el("tr"); head.append(el("th", { class: "rowh" }, ""), el("th", {}, ""));
-  for (const [name] of cols) head.append(el("th", {}, name === "Wind" || name === "Gust" ? `${name} (mph)` : name));
-  tb.append(head);
+  const head1 = el("tr"), head2 = el("tr");
+  head1.append(el("th", { class: "rowh", rowspan: 2 }, ""), el("th", { rowspan: 2 }, ""));
+  cols.forEach(([name, , , grp], k) => {
+    if (!grp) return head1.append(el("th", { rowspan: 2 }, name));
+    if (cols[k - 1]?.[3] !== grp) head1.append(el("th", { colspan: cols.filter((c) => c[3] === grp).length, class: "grp" }, grp));
+    head2.append(el("th", {}, name));
+  });
+  tb.append(head1, head2);
   for (const x of days) {
     const dl = dayLabel(x.date);
     x[e].halves.forEach((h, k) => {
@@ -304,7 +289,7 @@ function renderDailyTable(d, e) {
       tr.append(el("td", { class: "muted" }, h.name === "day" ? "Daytime 6a–6p" : "Nighttime 6p–6a"));
       for (const [, fn, cls] of cols) {
         const td = el("td", { class: cls || "" });
-        const v = fn(h);
+        const v = fn(h, x, k);
         if (v instanceof Node) td.append(v); else td.textContent = v;
         tr.append(td);
       }
@@ -417,33 +402,56 @@ function levelCharts(d, e) {
   ]);
 }
 
-function plumeChart(d, e) {
+function plumeChart(d, e) {  // snow + rain per 12 h period (daytime 6a-6p, nighttime 6p-6a) with spread whiskers
   const p = d.plume[e];
-  const series = { snow: { color: "var(--q-light)", name: "Snow" }, rain: { color: "var(--q-rain)", name: "Rain" } };
-  const pts = p.t.map((t, i) => {
-    const x = { t };
-    for (const k in series) for (const q of ["fc", "0.05", "0.25", "0.75", "0.95"]) x[`${k}${q}`] = p[k][q][i];
-    return x;
-  });
-  const top = Math.max(0.5, ...pts.map((x) => Math.max(x["snow0.95"], x["rain0.95"])));
+  const kinds = [["snow", "var(--q-light)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
+  const n = p.t.length;
+  const c = $("#plume");
+  const f = frame(c, { t: 16, r: 12, b: 34, l: 40 });
+  const top = Math.max(2, ...p.snow["0.95"], ...p.rain["0.95"]);
   const { max, step } = niceMax(top);
-  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per hour · last 7 days (model estimate) and next 10`;
-  const val = (v, k) => k === "snow" ? `${v.toFixed(1)}"` : `${v.toFixed(2)}"`;
-  timeChart($("#plume"), pts, {
-    y: { min: 0, max, step, fmt: (v) => `${v}"` },
-    bands: Object.entries(series).flatMap(([k, s]) => [
-      { lo: (x) => x[`${k}0.05`], hi: (x) => x[`${k}0.95`], color: s.color, opacity: 0.08 },
-      { lo: (x) => x[`${k}0.25`], hi: (x) => x[`${k}0.75`], color: s.color, opacity: 0.2 }]),
-    lines: Object.entries(series).map(([k, s]) => ({ get: (x) => x[`${k}fc`], color: s.color })),
-    tip: (x) => Object.entries(series).flatMap(([k, s]) => [
-      { name: `${s.name} (1 h)`, value: val(x[`${k}fc`], k), color: s.color },
-      { name: "  middle 50% · 90%", value: `${val(x[`${k}0.25`], k)}–${val(x[`${k}0.75`], k)} · ${val(x[`${k}0.05`], k)}–${val(x[`${k}0.95`], k)}` }]),
+  yAxis(f, max, step, (v) => `${v}"`);
+  const band = f.iw / n, bw = Math.max(3, Math.min(10, band * 0.32));
+  const Y = (v) => f.m.t + f.ih - (Math.min(v, max) / max) * f.ih;
+  const ni = p.t.findIndex((t) => t >= d.now.slice(0, 13));
+  p.t.forEach((t, i) => {
+    const cx = f.m.l + band * i + band / 2, past = t < d.now && (p.t[i + 1] || "9") <= d.now;
+    const g = svgEl("g", { class: "col" });
+    kinds.forEach(([k, color], j) => {
+      const v = p[k].fc[i], x = cx + (j ? 1 : -1) * (bw / 2 + 1) - bw / 2;
+      if (v >= 0.05) g.append(column(x, Y(v), bw, f.m.t + f.ih - Y(v), past ? "var(--muted)" : color));
+      if (!past && p[k]["0.95"][i] > p[k]["0.05"][i] + 0.05) {
+        const xm = x + bw / 2;
+        g.append(svgEl("line", { x1: xm, x2: xm, y1: Y(p[k]["0.05"][i]), y2: Y(p[k]["0.95"][i]), stroke: "var(--text-secondary)", "stroke-width": 1 }),
+          svgEl("line", { x1: xm, x2: xm, y1: Y(p[k]["0.25"][i]), y2: Y(p[k]["0.75"][i]), stroke: "var(--text-secondary)", "stroke-width": 3, "stroke-linecap": "round" }));
+      }
+    });
+    if (t.endsWith("T06:00")) {  // label each day under its daytime + nighttime pair
+      const dl = dayLabel(t.slice(0, 10));
+      f.svg.append(svgText({ x: cx + band / 2, y: f.H - 18, "text-anchor": "middle", class: t.slice(0, 10) === d.today ? "today" : "" },
+        t.slice(0, 10) === d.today ? "Today" : dl.dow.slice(0, 2)), svgText({ x: cx + band / 2, y: f.H - 5, "text-anchor": "middle" }, String(dl.dom)));
+      if (i) f.svg.append(svgEl("line", { x1: cx - band / 2, x2: cx - band / 2, y1: f.m.t, y2: f.m.t + f.ih, class: "gridline" }));
+    }
+    const hit = svgEl("rect", { class: "hit", x: cx - band / 2, y: f.m.t, width: band, height: f.ih + 30 });
+    const dl = dayLabel(t.slice(0, 10)), night = t.endsWith("T18:00");
+    hover(hit, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${night ? "Nighttime 6p–6a" : "Daytime 6a–6p"}`, kinds.flatMap(([k, color, name, dp]) => [
+      { name, value: `${p[k].fc[i].toFixed(dp)}"`, color },
+      ...(past ? [] : [{ name: "  middle 50% · 90%", value: `${p[k]["0.25"][i].toFixed(dp)}–${p[k]["0.75"][i].toFixed(dp)} · ${p[k]["0.05"][i].toFixed(dp)}–${p[k]["0.95"][i].toFixed(dp)}"` }]),
+    ])));
+    g.append(hit);
+    f.svg.append(g);
   });
+  if (ni > 0) {
+    const xd = f.m.l + band * ni;
+    f.svg.append(svgEl("line", { x1: xd, x2: xd, y1: f.m.t - 6, y2: f.m.t + f.ih, class: "divider" }),
+      svgText({ x: xd - 6, y: f.m.t - 4, "text-anchor": "end" }, "past"), svgText({ x: xd + 6, y: f.m.t - 4 }, "forecast"));
+  }
+  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h · last 7 days (model estimate) and next 10`;
   legend("#plume-legend", [
-    { label: "Snow (in)", color: "var(--q-light)" },
-    { label: "Rain (in of water)", color: "var(--q-rain)" },
-    { label: "Middle 50%", color: "var(--text-secondary)", kind: "key-band" },
-    { label: "Middle 90%", color: "var(--text-secondary)", kind: "key-band light" },
+    { label: "Snow (in)", color: "var(--q-light)", kind: "key-rect" },
+    { label: "Rain (in of water)", color: "var(--q-rain)", kind: "key-rect" },
+    { label: "Past (model estimate)", color: "var(--muted)", kind: "key-rect" },
+    { label: "Middle 50% (thick) · 90% (thin)", glyph: "┃" },
   ]);
 }
 
@@ -646,7 +654,6 @@ function render() {
   renderAlerts(d);
   renderSummary(d, e);
   renderDailyTable(d, e);
-  renderReport(d, e);
   levelCharts(d, e);
   plumeChart(d, e);
   renderModels(d, e);

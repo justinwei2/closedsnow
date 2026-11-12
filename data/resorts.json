@@ -43,5 +43,50 @@
    "gem_seamless",
    "icon_seamless"
   ]
+ },
+ "alpine": {
+  "name": "Alpine Meadows",
+  "region": "California",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 39.1645,
+   "lon": -120.2386,
+   "ft": 6835,
+   "label": "Base lodge"
+  },
+  "mid": {
+   "lat": 39.1567,
+   "lon": -120.2431,
+   "ft": 7500,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 39.1489,
+   "lon": -120.2476,
+   "ft": 8637,
+   "label": "Ward Peak"
+  },
+  "dem_ft": {
+   "base": 6906,
+   "mid": 7487,
+   "summit": 8471
+  },
+  "obs": [
+   "snotel",
+   "848:CA:SNTL",
+   "Ward Creek #3 SNOTEL",
+   6750,
+   39.13545,
+   -120.21865
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
  }
 }

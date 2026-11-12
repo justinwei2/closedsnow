@@ -50,7 +50,6 @@ h1 { font-size: 28px; margin: 0; font-weight: 650; }
 h2 { font-size: 15px; margin: 0; font-weight: 600; }
 main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .muted { color: var(--muted); }
-.quiet { color: var(--muted); }
 .fine { color: var(--text-secondary); font-size: 12px; margin: 10px 0 0; max-width: 80ch; }
 .loading { color: var(--text-secondary); }
 .err { color: var(--critical); }
@@ -119,17 +118,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .alert details summary { font-size: 12px; color: var(--text-secondary); }
 .alert pre { white-space: pre-wrap; font: 12px/1.45 system-ui, sans-serif; color: var(--text-secondary); margin: 6px 0 0; }
 
-.rday { display: grid; grid-template-columns: 92px 150px 1fr; gap: 12px; padding: 8px 4px; border-bottom: 1px solid var(--grid); align-items: start; }
-.rday:last-child { border-bottom: 0; }
-.rday .d { font-weight: 600; }
-.rday .d .muted { font-weight: 400; }
-.rday .amt, .rday .notes { display: flex; flex-direction: column; gap: 4px; }
-.rday .amt b { font-size: 16px; }
-.note { display: flex; gap: 8px; align-items: baseline; }
-.note .ic { width: 18px; height: 18px; border-radius: 5px; flex: none; display: inline-flex; align-items: center; justify-content: center;
-  font-size: 11px; color: #fff; font-weight: 700; transform: translateY(3px); }
-.note .ic.warning { color: #0b0b0b; }
-@media (max-width: 700px) { .rday { grid-template-columns: 1fr; } }
+
 
 /* ---- snow summary strip: day bars stack morning / afternoon / night, coloured by quality */
 .summary { display: flex; gap: 14px; align-items: stretch; }
@@ -245,9 +234,12 @@ table.days tr.past td { opacity: .5; }
 .asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; }
 .ratio { display: inline-flex; align-items: center; gap: 5px; }
 .ratio .sw { width: 10px; height: 10px; border-radius: 3px; }
-.note .sq { width: 10px; height: 10px; border-radius: 3px; flex: none; transform: translateY(1px); }
 .rainmark { display: inline-block; width: 7px; height: 7px; border-radius: 2px; background: var(--q-rain); margin-right: 3px; vertical-align: middle; }
 .depth { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
 .depth b { color: var(--text-primary); font-weight: 600; }
 .depth .dep { margin-left: 10px; }
-.rday.past { opacity: .55; }
+.alerts { cursor: default; outline: none; padding: 2px; border-radius: 4px; }
+.alerts:hover, .alerts:focus { background: var(--grid); }
+.tip .t-row b { max-width: 340px; white-space: normal; text-align: right; }
+.snowcell { display: inline-flex; flex-direction: column; line-height: 1.2; }
+.snowcell .muted { font-size: 11px; }

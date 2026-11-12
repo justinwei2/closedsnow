@@ -8,7 +8,7 @@ the median factors of calibrated resorts in their region.
 | Resort | Region | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
 |---|---|---|---|---|---|---|
 | Palisades Tahoe | California | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 358 | 0.49 |
-| Alpine Meadows | California | not located yet | | | | |
+| Alpine Meadows | California | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 358 | 0.58 |
 | Kirkwood | California | not located yet | | | | |
 | Mammoth Mountain | California | not located yet | | | | |
 | Mt. Bachelor | Pacific Northwest | not located yet | | | | |
