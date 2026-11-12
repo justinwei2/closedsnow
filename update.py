@@ -266,37 +266,31 @@ def process(r, cal):
             for e in ELEVS:
                 summary[e][key]["station_in"] = sum(vals) if vals else None
 
-    # ---- plumes: cumulative snow and rain from now, forecast line + ensemble spread (every 3 h)
-    horizon = range(now_i, min(len(times), now_i + 24 * 10))
+    # ---- snow and rain per 6 h for 10 days: forecast + ensemble spread (each member's precip split
+    # with the forecast's hourly phase and snow ratio); bands widened to include the forecast
     plume = {}
     for e in ELEVS:
         hrs = hours[e]
-        liq = sum(hrs[i].precip_mm or 0 for i in horizon)
-        s_liq = sum(hours["summit"][i].precip_mm or 0 for i in horizon)
-        scale = liq / s_liq if s_liq > 0.5 else 1.0  # ensembles are at the summit point
         out = {k: {q: [] for q in ("fc", *map(str, QS))} for k in ("snow", "rain")}
-        cum = {"snow": [0.0] * len(members), "rain": [0.0] * len(members)}
-        alive, fc = [True] * len(members), {"snow": 0.0, "rain": 0.0}
-        for n, i in enumerate(horizon):
-            h, t = hrs[i], times[i]
-            fc["snow"] += h.snow_in or 0; fc["rain"] += h.rain_in or 0
-            for j, (w, mm) in enumerate(members):
-                if not alive[j] or t not in mm or h.frac is None:
-                    alive[j] = alive[j] and t in mm  # a member past its horizon stops counting
-                    continue
-                cum["snow"][j] += mm[t] * scale * h.frac * h.slr / IN
-                cum["rain"][j] += mm[t] * scale * (1 - h.frac) / IN
-            if n % 3:
-                continue
+        bins = [range(i, min(i + 6, len(times))) for i in range(now_i, min(len(times), now_i + 24 * 10), 6)]
+        for b in bins:
+            s_liq = sum(hours["summit"][i].precip_mm or 0 for i in b)
+            liq = sum(hrs[i].precip_mm or 0 for i in b)
+            scale = liq / s_liq if s_liq > 0.1 else 1.0  # ensembles are at the summit point
+            fc = dict(snow=sum(hrs[i].snow_in or 0 for i in b), rain=sum(hrs[i].rain_in or 0 for i in b))
+            vals = dict(snow=[], rain=[])
+            for w, mm in members:
+                if not all(times[i] in mm for i in b):
+                    continue  # member past its horizon
+                ok = [i for i in b if hrs[i].frac is not None]
+                vals["snow"].append((sum(mm[times[i]] * scale * hrs[i].frac * hrs[i].slr / IN for i in ok), w))
+                vals["rain"].append((sum(mm[times[i]] * scale * (1 - hrs[i].frac) / IN for i in ok), w))
             for k in ("snow", "rain"):
-                vals = [(cum[k][j], members[j][0]) for j in range(len(members)) if alive[j]]
-                q = wquantiles(vals, QS) if vals else {}
-                c = fc[k] / q[0.5] if q and q[0.5] > 0.01 and fc[k] > 0 else 1.0  # centre the spread on the forecast
+                q = wquantiles(vals[k], QS) if vals[k] else {p: fc[k] for p in QS}
                 out[k]["fc"].append(round(fc[k], 2))
                 for p in QS:
-                    v = q[p] * c if q else fc[k]
-                    out[k][str(p)].append(round(min(v, fc[k]) if p < 0.5 else max(v, fc[k]) if p > 0.5 else fc[k], 2))
-        plume[e] = dict(t=[times[i] for n, i in enumerate(horizon) if n % 3 == 0], **out)
+                    out[k][str(p)].append(round(min(q[p], fc[k]) if p < 0.5 else max(q[p], fc[k]) if p > 0.5 else q[p], 2))
+        plume[e] = dict(t=[times[b[0]] for b in bins], **out)
 
     hourly = [dict(t=t, **{k: rnd(v) for k, v in levels[i].items()},
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
@@ -333,9 +327,9 @@ def updated_at(key):
 
 
 def due(key, run):
-    """Needs a refresh: no data, a newer model run, or older than SAFETY_H."""
+    """Needs a refresh: no data, a newer model run, older than SAFETY_H, or SKISITE_FORCE set."""
     d = saved(key)
-    if not d:
+    if not d or os.environ.get("SKISITE_FORCE"):
         return True
     age = (datetime.now(timezone.utc) - datetime.fromisoformat(d["updated"])).total_seconds() / 3600
     return age > SAFETY_H or (run is not None and d.get("model_run") != run)

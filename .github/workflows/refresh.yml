@@ -8,6 +8,10 @@ on:
   schedule:
     - cron: "23 * * * *"
   workflow_dispatch:
+    inputs:
+      force: { description: "Refresh every resort now", type: boolean, default: false }
+env:
+  SKISITE_FORCE: ${{ inputs.force && '1' || '' }}
 permissions:
   contents: write
   actions: write   # trigger pages.yml; keep this schedule enabled (GitHub disables idle ones after 60 days)

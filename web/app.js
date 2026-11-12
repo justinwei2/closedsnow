@@ -206,7 +206,7 @@ function renderSummary(d, e) {
   const pmax = Math.max(1, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].periods.map((p) => p.snow_in || 0))));
   const box = $("#summary"), pq = $("#pq");
   box.replaceChildren(); pq.replaceChildren();
-  $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · ski days run 6am–6am`;
+  $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · a day runs 6am to 6am (overnight snow counts toward the day it fell)`;
   for (const g of groups) {
     if (g.center) {
       const c = el("div", { class: "scenter" });
@@ -256,7 +256,7 @@ function renderSummary(d, e) {
         { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(v.p50) },
         ...(!x.past && fmtRange(v.p25, v.p75) ? [{ name: "Middle 50%", value: fmtRange(v.p25, v.p75) }] : []),
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
-        ...["Morning", "Afternoon", "Night"].map((nm, k) => ({ name: nm, value: `${fmtIn(v.periods[k].snow_in)}${v.periods[k].quality ? " · " + QUALITY[v.periods[k].quality].text : ""}` })),
+        ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => ({ name: nm, value: `${fmtIn(v.periods[k].snow_in)}${v.periods[k].quality ? " · " + QUALITY[v.periods[k].quality].text : ""}` })),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
       ];
       for (const c of [col, pcol]) hover(c, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, tipRows()));
@@ -396,30 +396,34 @@ function levelCharts(d, e) {
   ]);
 }
 
-function plumeCharts(d, e) {
+function plumeChart(d, e) {
   const p = d.plume[e];
-  for (const [kind, id, color] of [["snow", "#snow-plume", "var(--series-1)"], ["rain", "#rain-plume", "var(--series-2)"]]) {
-    const pts = p.t.map((t, i) => ({ t, fc: p[kind].fc[i], q5: p[kind]["0.05"][i], q25: p[kind]["0.25"][i], q75: p[kind]["0.75"][i], q95: p[kind]["0.95"][i] }));
-    const top = Math.max(kind === "snow" ? 4 : 0.5, ...pts.map((x) => x.q95));
-    const { max, step } = niceMax(top, kind === "snow" ? 4 : 2);
-    const end = pts.at(-1) || {};
-    $(`${id}-sub`).textContent = `${ELEV_NAME[e].toLowerCase()} · cumulative from now · 10 days: ${fmtIn(end.fc)} (likely ${fmtSnow(end.q25)}–${fmtSnow(end.q75)}")`;
-    timeChart($(id), pts, {
-      y: { min: 0, max, step, fmt: (v) => `${v}"` },
-      bands: [{ lo: (x) => x.q5, hi: (x) => x.q95, color, opacity: 0.1 }, { lo: (x) => x.q25, hi: (x) => x.q75, color, opacity: 0.22 }],
-      lines: [{ get: (x) => x.fc, color }],
-      tip: (x) => [
-        { name: `${kind === "snow" ? "Snow" : "Rain"} so far`, value: `${x.fc.toFixed(kind === "snow" ? 0 : 2)}"`, color },
-        { name: "Middle 50%", value: `${x.q25.toFixed(kind === "snow" ? 0 : 2)}–${x.q75.toFixed(kind === "snow" ? 0 : 2)}"` },
-        { name: "Middle 90%", value: `${x.q5.toFixed(kind === "snow" ? 0 : 2)}–${x.q95.toFixed(kind === "snow" ? 0 : 2)}"` },
-      ],
-    });
-    legend(`${id}-legend`, [
-      { label: "Forecast", color },
-      { label: "Likely (25–75%)", color, kind: "key-band" },
-      { label: "Middle 90%", color, kind: "key-band light" },
-    ]);
-  }
+  const series = { snow: { color: "var(--series-1)", name: "Snow" }, rain: { color: "var(--series-2)", name: "Rain" } };
+  const pts = p.t.map((t, i) => {
+    const x = { t };
+    for (const k in series) for (const q of ["fc", "0.05", "0.25", "0.75", "0.95"]) x[`${k}${q}`] = p[k][q][i];
+    return x;
+  });
+  const top = Math.max(2, ...pts.map((x) => Math.max(x["snow0.95"], x["rain0.95"])));
+  const { max, step } = niceMax(top);
+  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 6 hours · next 10 days`;
+  const val = (v, k) => k === "snow" ? `${v < 1 && v > 0 ? v.toFixed(1) : Math.round(v)}"` : `${v.toFixed(2)}"`;
+  timeChart($("#plume"), pts, {
+    y: { min: 0, max, step, fmt: (v) => `${v}"` },
+    bands: Object.entries(series).flatMap(([k, s]) => [
+      { lo: (x) => x[`${k}0.05`], hi: (x) => x[`${k}0.95`], color: s.color, opacity: 0.08 },
+      { lo: (x) => x[`${k}0.25`], hi: (x) => x[`${k}0.75`], color: s.color, opacity: 0.2 }]),
+    lines: Object.entries(series).map(([k, s]) => ({ get: (x) => x[`${k}fc`], color: s.color })),
+    tip: (x) => Object.entries(series).flatMap(([k, s]) => [
+      { name: `${s.name} (6 h)`, value: val(x[`${k}fc`], k), color: s.color },
+      { name: "  middle 50% · 90%", value: `${val(x[`${k}0.25`], k)}–${val(x[`${k}0.75`], k)} · ${val(x[`${k}0.05`], k)}–${val(x[`${k}0.95`], k)}` }]),
+  });
+  legend("#plume-legend", [
+    { label: "Snow (in)", color: "var(--series-1)" },
+    { label: "Rain (in of water)", color: "var(--series-2)" },
+    { label: "Middle 50%", color: "var(--text-secondary)", kind: "key-band" },
+    { label: "Middle 90%", color: "var(--text-secondary)", kind: "key-band light" },
+  ]);
 }
 
 // ---------------------------------------------------------------- appendix
@@ -610,7 +614,7 @@ function render() {
   renderDailyTable(d, e);
   renderReport(d, e);
   levelCharts(d, e);
-  plumeCharts(d, e);
+  plumeChart(d, e);
   renderModels(d, e);
   renderObs(d);
   renderAfd(d);
