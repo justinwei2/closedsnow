@@ -656,5 +656,461 @@
    "gem_seamless",
    "icon_seamless"
   ]
+ },
+ "alyeska": {
+  "name": "Alyeska",
+  "sub": "",
+  "region": "Alaska",
+  "pass_": "Ikon",
+  "tz": "America/Anchorage",
+  "base": {
+   "lat": 60.9705,
+   "lon": -149.1042,
+   "ft": 250,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 60.9642,
+   "lon": -149.0773,
+   "ft": 1700,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 60.961,
+   "lon": -149.0638,
+   "ft": 2750,
+   "label": "Glacier Bowl"
+  },
+  "dem_ft": {
+   "base": 226,
+   "mid": 1657,
+   "summit": 2759
+  },
+  "obs": [
+   "snotel",
+   "1103:AK:SNTL",
+   "Mt. Alyeska SNOTEL",
+   1500,
+   60.95842,
+   -149.08858
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "whistler": {
+  "name": "Whistler",
+  "sub": "Whistler Blackcomb",
+  "region": "British Columbia",
+  "pass_": "Epic",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.115,
+   "lon": -122.9548,
+   "ft": 2214,
+   "label": "Village"
+  },
+  "mid": {
+   "lat": 50.0817,
+   "lon": -122.9563,
+   "ft": 5000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.058,
+   "lon": -122.9573,
+   "ft": 7160,
+   "label": "Whistler Peak"
+  },
+  "dem_ft": {
+   "base": 2228,
+   "mid": 4980,
+   "summit": 7087
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "blackcomb": {
+  "name": "Blackcomb",
+  "sub": "Whistler Blackcomb",
+  "region": "British Columbia",
+  "pass_": "Epic",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.1155,
+   "lon": -122.9527,
+   "ft": 2214,
+   "label": "Village"
+  },
+  "mid": {
+   "lat": 50.1011,
+   "lon": -122.9126,
+   "ft": 5000,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.089,
+   "lon": -122.8786,
+   "ft": 7494,
+   "label": "Glacier / 7th Heaven"
+  },
+  "dem_ft": {
+   "base": 2224,
+   "mid": 4997,
+   "summit": 7608
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "revelstoke": {
+  "name": "Revelstoke",
+  "sub": "",
+  "region": "British Columbia",
+  "pass_": "Ikon",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.958,
+   "lon": -118.1636,
+   "ft": 1680,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 50.9347,
+   "lon": -118.2396,
+   "ft": 3200,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.93,
+   "lon": -118.2548,
+   "ft": 7300,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 1690,
+   "mid": 3235,
+   "summit": 5361
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "kickinghorse": {
+  "name": "Kicking Horse",
+  "sub": "",
+  "region": "British Columbia",
+  "pass_": "Epic",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 51.3005,
+   "lon": -117.0432,
+   "ft": 3900,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 51.2903,
+   "lon": -117.0745,
+   "ft": 6200,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 51.283,
+   "lon": -117.0968,
+   "ft": 8033,
+   "label": "Terminator Peak"
+  },
+  "dem_ft": {
+   "base": 3963,
+   "mid": 6217,
+   "summit": 8048
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "redmountain": {
+  "name": "RED Mountain",
+  "sub": "",
+  "region": "British Columbia",
+  "pass_": "Ikon",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 49.1,
+   "lon": -117.8195,
+   "ft": 3888,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 49.1142,
+   "lon": -117.8518,
+   "ft": 5600,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 49.118,
+   "lon": -117.8603,
+   "ft": 6800,
+   "label": "Grey Mountain"
+  },
+  "dem_ft": {
+   "base": 3865,
+   "mid": 5577,
+   "summit": 6588
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "fernie": {
+  "name": "Fernie",
+  "sub": "",
+  "region": "British Columbia",
+  "pass_": "Epic",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 49.4657,
+   "lon": -115.087,
+   "ft": 3500,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 49.4541,
+   "lon": -115.1131,
+   "ft": 5500,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 49.451,
+   "lon": -115.12,
+   "ft": 7000,
+   "label": "Polar Peak"
+  },
+  "dem_ft": {
+   "base": 3514,
+   "mid": 5495,
+   "summit": 6739
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "panorama": {
+  "name": "Panorama",
+  "sub": "",
+  "region": "British Columbia",
+  "pass_": "Ikon",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 50.46,
+   "lon": -116.2333,
+   "ft": 3800,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 50.46,
+   "lon": -116.265,
+   "ft": 5900,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.46,
+   "lon": -116.2876,
+   "ft": 7800,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 3799,
+   "mid": 5853,
+   "summit": 7779
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "sunpeaks": {
+  "name": "Sun Peaks",
+  "sub": "",
+  "region": "British Columbia",
+  "pass_": "Ikon",
+  "tz": "America/Vancouver",
+  "base": {
+   "lat": 50.881,
+   "lon": -119.8882,
+   "ft": 4100,
+   "label": "Village"
+  },
+  "mid": {
+   "lat": 50.9032,
+   "lon": -119.8625,
+   "ft": 5500,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 50.909,
+   "lon": -119.8558,
+   "ft": 6824,
+   "label": "Tod Mountain"
+  },
+  "dem_ft": {
+   "base": 4114,
+   "mid": 5548,
+   "summit": 5925
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "sunshine": {
+  "name": "Banff Sunshine",
+  "sub": "",
+  "region": "Alberta",
+  "pass_": "Ikon",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 51.0815,
+   "lon": -115.7777,
+   "ft": 7082,
+   "label": "Sunshine Village"
+  },
+  "mid": {
+   "lat": 51.0765,
+   "lon": -115.7647,
+   "ft": 8100,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 51.073,
+   "lon": -115.7555,
+   "ft": 8954,
+   "label": "Lookout Mountain"
+  },
+  "dem_ft": {
+   "base": 7067,
+   "mid": 8071,
+   "summit": 8648
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
+ },
+ "lakelouise": {
+  "name": "Lake Louise",
+  "sub": "",
+  "region": "Alberta",
+  "pass_": "Ikon",
+  "tz": "America/Edmonton",
+  "base": {
+   "lat": 51.436,
+   "lon": -116.1572,
+   "ft": 5400,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 51.4546,
+   "lon": -116.1421,
+   "ft": 7100,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 51.4765,
+   "lon": -116.1242,
+   "ft": 8650,
+   "label": "Top of the World"
+  },
+  "dem_ft": {
+   "base": 5420,
+   "mid": 7123,
+   "summit": 8527
+  },
+  "obs": null,
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless",
+   "gem_hrdps_continental"
+  ]
  }
 }

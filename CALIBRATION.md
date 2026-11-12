@@ -31,14 +31,14 @@ the median factors of calibrated resorts in their region.
 | Telluride | Colorado | not located yet | | | | |
 | Crested Butte | Colorado | not located yet | | | | |
 | Taos Ski Valley | New Mexico | not located yet | | | | |
-| Alyeska | Alaska | not located yet | | | | |
-| Whistler | British Columbia | not located yet | | | | |
-| Blackcomb | British Columbia | not located yet | | | | |
-| Revelstoke | British Columbia | not located yet | | | | |
-| Kicking Horse | British Columbia | not located yet | | | | |
-| RED Mountain | British Columbia | not located yet | | | | |
-| Fernie | British Columbia | not located yet | | | | |
-| Panorama | British Columbia | not located yet | | | | |
-| Sun Peaks | British Columbia | not located yet | | | | |
-| Banff Sunshine | Alberta | not located yet | | | | |
-| Lake Louise | Alberta | not located yet | | | | |
+| Alyeska | Alaska | pending (regional default for now) | Mt. Alyeska SNOTEL | 1,500 ft |  |  |
+| Whistler | British Columbia | regional default (no gauge) | – | – |  |  |
+| Blackcomb | British Columbia | regional default (no gauge) | – | – |  |  |
+| Revelstoke | British Columbia | regional default (no gauge) | – | – |  |  |
+| Kicking Horse | British Columbia | regional default (no gauge) | – | – |  |  |
+| RED Mountain | British Columbia | regional default (no gauge) | – | – |  |  |
+| Fernie | British Columbia | regional default (no gauge) | – | – |  |  |
+| Panorama | British Columbia | regional default (no gauge) | – | – |  |  |
+| Sun Peaks | British Columbia | regional default (no gauge) | – | – |  |  |
+| Banff Sunshine | Alberta | regional default (no gauge) | – | – |  |  |
+| Lake Louise | Alberta | regional default (no gauge) | – | – |  |  |
