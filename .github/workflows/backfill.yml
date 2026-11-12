@@ -12,7 +12,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: backfill   # separate from refresh: calibration can run for hours without blocking it
+  group: backfill-${{ inputs.group || 'all' }}   # per region: manual single-region runs go in parallel; separate from refresh
   cancel-in-progress: false
 jobs:
   region:
