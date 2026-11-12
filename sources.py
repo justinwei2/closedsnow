@@ -393,8 +393,9 @@ class StationSeries:
         return out
 
 
-def snotel_stations(state):
-    return get_json("https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations", dict(stateCds=state, networkCds="SNTL"))
+def snotel_stations():
+    """Every SNOTEL station (~900), in one request."""
+    return get_json("https://wcc.sc.egov.usda.gov/awdbRestApi/services/v1/stations", dict(stationTriplets="*:*:SNTL"))
 
 
 # ---------------------------------------------------------------- NWS (US only)

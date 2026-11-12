@@ -30,7 +30,7 @@ Stdlib Python only. No server: everything runs in GitHub Actions and is served b
 
 | Workflow | Schedule | Purpose |
 |---|---|---|
-| `refresh` | hourly check | refresh a resort once a new ECMWF run has landed (~4×/day, within ~1 h) or its data is > 7 h old; parallel region jobs; save to the `data` branch, freshness check, trigger `pages` |
+| `refresh` | hourly check | refresh a resort once a new ECMWF run has landed (~4×/day, within ~1 h) or its data is > 7 h old; one parallel job per due resort; save to the `data` branch, freshness check, trigger `pages` |
 | `pages` | after refresh / on `web/` changes | deploy the site |
 | `backfill` | nightly | set up new catalog resorts (no-op when all are set up); run manually with `force` to recalibrate every resort |
 | `watchdog` | daily | check the live site is fresh |
@@ -46,7 +46,7 @@ refresh costs ~65–85 calls per resort (~7k/day for 21 resorts); calibration ~2
 | `resorts.py` | catalog, constants, `Resort` / `Point` / `Gauge` / `Calibration` records |
 | `sources.py` | HTTP (retries, quota handling, record/replay) and adapters: `ModelGrid`, `StationSeries`, `Alert` |
 | `conditions.py` | wet-bulb, snow fraction, snow level, Kuchera snow ratio, quality labels, weather report |
-| `calibrate.py` | locate + calibrate + merge region results |
+| `calibrate.py` | locate + calibrate + merge per-resort results |
 | `update.py` | forecast pipeline, index, `--check` |
 
 ## Usage
@@ -60,11 +60,10 @@ SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, repl
 
 To add a resort, add a line to `CATALOG` in `resorts.py`; the next `backfill` run sets it up.
 
-A resort in a **new geographic region** also needs calibration support for that region: a gauge
-source (an adapter in `sources.py` mapping its data onto `StationSeries`, like SNOTEL/CDEC in the
-US or BC's snow-pillow network) and the station search in `calibrate.py`, plus the region in
-`CATALOG` (and `NON_US` / `SNOTEL_STATES` as appropriate). Until then the resort runs on regional
-default factors borrowed from calibrated resorts, and the page says it isn't calibrated.
+A resort outside the covered gauge networks (SNOTEL/CDEC in the US, BC snow pillows, Alberta
+Rivers) also needs a gauge source: an adapter in `sources.py` mapping its data onto `StationSeries`,
+plus the station search in `calibrate.py` (or a hand-picked gauge in `MANUAL`). Until then the
+resort runs on the raw models with equal weights, and the page says it isn't calibrated.
 
 ## Data
 

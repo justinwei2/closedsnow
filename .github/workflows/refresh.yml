@@ -1,7 +1,7 @@
 # Hourly check; refresh resorts once a new ECMWF run has landed (it arrives last of the 6-hourly
 # models, so the whole model cycle is in), or when data is > 7 h old. ~4 refreshes/day/resort.
-# A plan job picks the regions with due resorts; each runs as its own parallel job (own runner),
-# staggered, so an Open-Meteo rate limit in one region doesn't stall the others.
+# A plan job lists the due resorts; each runs as its own parallel job (own runner, so an Open-Meteo
+# rate limit on one doesn't stall the others; at most 10 at once).
 # Forecast JSON lives on a single-commit `data` branch so the repo doesn't grow.
 name: refresh
 on:
@@ -39,24 +39,24 @@ jobs:
     timeout-minutes: 60
     strategy:
       fail-fast: false
+      max-parallel: 10
       matrix:
-        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+        resort: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - uses: ./.github/actions/restore-data
-      - run: sleep ${{ matrix.delay }}
-      - name: Update ${{ matrix.region }}
+      - name: Update ${{ matrix.resort }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
         run: |
           touch /tmp/stamp
-          python -u update.py --scheduled --region ${{ matrix.region }} --no-index || echo "::warning::update exited non-zero"
+          python -u update.py --scheduled ${{ matrix.resort }} --no-index || echo "::warning::update exited non-zero"
           mkdir -p out && find web/data -name '*.json' -newer /tmp/stamp -exec cp {} out/ \;
       - uses: actions/upload-artifact@v4
         if: always()   # each resort file is written atomically, so partial progress is valid
-        with: { name: "data-${{ matrix.region }}", path: out/, if-no-files-found: ignore, retention-days: 1 }
+        with: { name: "data-${{ matrix.resort }}", path: out/, if-no-files-found: ignore, retention-days: 1 }
 
   publish:
     needs: [plan, fetch]

@@ -1,4 +1,4 @@
-# Locate + calibrate catalog resorts, one parallel job per region (own runner each), then merge
+# Locate + calibrate catalog resorts, one parallel job per resort (own runner each), then merge
 # and commit data/ + CALIBRATION.md. Sleeps through Open-Meteo rate limits; each job stops
 # before GitHub's 6 h limit and its progress is still merged. Nightly run is a no-op once done.
 name: backfill
@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       force: { description: "Recalibrate every resort", type: boolean, default: false }
-      region: { description: "One region (e.g. utah, coastal-bc); empty = every region with work", type: string, default: "" }
+      resorts: { description: "Resort keys, space-separated (e.g. alta snowbird); empty = every resort still to set up", type: string, default: "" }
   schedule:
     - cron: "41 9 * * *"
 permissions:
   contents: write
 concurrency:
-  group: backfill-${{ inputs.region || 'all' }}   # per region: single-region runs go in parallel; separate from refresh
+  group: backfill-${{ inputs.resorts || 'all' }}   # runs for different resorts go in parallel; separate from refresh
   cancel-in-progress: false
 jobs:
   plan:
@@ -24,37 +24,38 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - id: plan   # regions with resorts still to set up ([] when all done: no region jobs)
-        run: echo "matrix=$(python calibrate.py --plan ${{ inputs.region && format('--region {0}', inputs.region) || '' }} ${{ inputs.force && '--force' || '' }} | tail -1)" >> "$GITHUB_OUTPUT"
+      - id: plan   # resorts still to set up ([] when all done: no resort jobs)
+        run: echo "matrix=$(python calibrate.py --plan ${{ inputs.resorts }} ${{ inputs.force && '--force' || '' }} | tail -1)" >> "$GITHUB_OUTPUT"
 
-  region:
+  resort:
     needs: plan
     if: needs.plan.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     strategy:
       fail-fast: false
+      max-parallel: 10
       matrix:
-        region: ${{ fromJSON(needs.plan.outputs.matrix) }}
+        resort: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Locate + calibrate ${{ matrix.region }}
+      - name: Locate + calibrate ${{ matrix.resort }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
-        run: timeout 320m python -u calibrate.py --region ${{ matrix.region }} --out out ${{ inputs.force && '--force' || '' }} || echo "stopped early; progress kept, next run continues"
+        run: timeout 320m python -u calibrate.py ${{ matrix.resort }} --out out ${{ inputs.force && '--force' || '' }} || echo "stopped early; progress kept, next run continues"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bf-${{ matrix.region }}
+          name: bf-${{ matrix.resort }}
           path: out/
           if-no-files-found: ignore
           retention-days: 3
 
   merge:
-    needs: [plan, region]
+    needs: [plan, resort]
     if: always() && needs.plan.outputs.matrix != '[]'
     runs-on: ubuntu-latest
     steps:
@@ -67,7 +68,7 @@ jobs:
         with:
           pattern: bf-*
           path: parts
-      # merge onto the latest main each attempt (other pushes land while regions run); fail loudly
+      # merge onto the latest main each attempt (other pushes land while resorts run); fail loudly
       - name: Merge and commit
         run: |
           git config user.name "snowforecast-bot"

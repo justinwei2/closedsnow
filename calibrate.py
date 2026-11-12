@@ -3,15 +3,15 @@ there) -> calibrate (precip bias factors, weights and error quantiles from two w
 as-issued forecasts vs the gauge). Resumable; sleeps through Open-Meteo rate limits.
 
     python3 calibrate.py [resort ...] [--force] # resorts not set up yet (--force: recalibrate them)
-    python3 calibrate.py --region utah --out o  # CI: one region -> o/{resorts,calibration}.json
-    python3 calibrate.py --plan [--region R] [--force]  # CI: regions with resorts still to set up
-    python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, regional defaults, CALIBRATION.md
+    python3 calibrate.py alta --out o           # CI: one resort -> o/{resorts,calibration}.json
+    python3 calibrate.py --plan [resort ...] [--force]  # CI: resorts still to set up (job matrix)
+    python3 calibrate.py --merge DIR            # CI: merge DIR/*/ into data/, borrowed defaults, CALIBRATION.md
 """
-import glob, json, math, os, statistics, sys, time
+import glob, json, math, os, sys, time
 from datetime import date, datetime, timedelta
 import sources as src
-from resorts import (BASE_MODELS, BC_REGIONS, CATALOG, DATA, ELEVS, EXTRA_MODELS, FT, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
-                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts, slug)
+from resorts import (BASE_MODELS, CATALOG, DATA, ELEVS, FT, HERE, IN, MANUAL, SEASONS,
+                     Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
 
 STEP = 0.003                        # deg, ~300 m DEM search grid
 FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't representative; cap, let weight fall
@@ -51,18 +51,20 @@ def mid_point(b, s):
 _stations = {}
 
 
-def nearest_snotel(lat, lon, lo_ft, hi_ft, states):
+def snotel():
+    if "snotel" not in _stations:
+        _stations["snotel"] = [s for s in src.snotel_stations()
+                               if (s.get("endDate") or "2100") >= date.today().isoformat()]  # active only
+    return _stations["snotel"]
+
+
+def nearest_snotel(lat, lon, lo_ft, hi_ft):
     """Closest active SNOTEL gauge within 25 km, preferring the lift-served elevation band."""
     cands = []
-    for st in states:
-        if st not in _stations:
-            _stations[st] = src.snotel_stations(st)
-        for s in _stations[st]:
-            d = km(lat, lon, s["latitude"], s["longitude"])
-            active = (s.get("endDate") or "2100") >= date.today().isoformat()
-            if (s["stationTriplet"].endswith(":SNTL")  # the API also returns snow courses, reservoirs...
-                    and active and d <= 25 and lo_ft - 1500 <= s["elevation"] <= hi_ft + 500):
-                cands.append((d + (0 if lo_ft <= s["elevation"] <= hi_ft else 4), s))
+    for s in snotel():
+        d = km(lat, lon, s["latitude"], s["longitude"])
+        if d <= 25 and lo_ft - 1500 <= s["elevation"] <= hi_ft + 500:
+            cands.append((d + (0 if lo_ft <= s["elevation"] <= hi_ft else 4), s))
     if not cands:
         return None
     s = min(cands, key=lambda c: c[0])[1]
@@ -92,7 +94,7 @@ def nearest_bcasws(lat, lon, lo_ft, hi_ft):
 
 def usable_models(lat, lon):
     ok = []
-    for m in BASE_MODELS + EXTRA_MODELS:
+    for m in BASE_MODELS:
         try:
             if src.has_model(lat, lon, m):
                 ok.append(m)
@@ -102,13 +104,13 @@ def usable_models(lat, lon):
             if "HTTP 4" not in str(e):  # only "no data here" (4xx) means the model is absent
                 raise
         time.sleep(0.4)
-    if len([m for m in ok if m in BASE_MODELS]) < 3:
+    if len(ok) < 3:
         raise RuntimeError(f"only {ok} usable at {lat},{lon}; refusing to record (rerun later)")
     return ok
 
 
 def locate(key):
-    name, region, tz, b, s = CATALOG[key]
+    name, country, tz, b, s = CATALOG[key]
     man = MANUAL.get(key, {})
     if "mid" in man:  # hand-verified points
         base, summit, mid = b[:3], s[:3], man["mid"][:3]
@@ -125,9 +127,8 @@ def locate(key):
         dem = dict(base=bb[2], mid=mp[2], summit=sb[2])
     pt = lambda p, label: Point(round(p[0], 4), round(p[1], 4), p[2], label)
     gauge = (Gauge(*man["gauge"]) if man.get("gauge") else
-             nearest_snotel(mid[0], mid[1], b[2], s[2], SNOTEL_STATES[region]) if region in SNOTEL_STATES else
-             nearest_bcasws(mid[0], mid[1], b[2], s[2]) if region in BC_REGIONS else None)
-    r = Resort(key, name, region, tz, pt(base, b[3]), pt(mid, mlabel), pt(summit, s[3]), gauge,
+             nearest_snotel(mid[0], mid[1], b[2], s[2]) if country == "US" else nearest_bcasws(mid[0], mid[1], b[2], s[2]))
+    r = Resort(key, name, country, tz, pt(base, b[3]), pt(mid, mlabel), pt(summit, s[3]), gauge,
                usable_models(summit[0], summit[1]), {k: round(v) for k, v in dem.items()}, man.get("afd_office"))
     warn = [f"{e} DEM {r.dem_ft[e]} vs {r.point(e).ft}" for e in ("base", "summit") if abs(r.dem_ft[e] - r.point(e).ft) > 600]
     print(f"{key:15s} base {r.dem_ft['base']:>6}/{b[2]:<6} mid {mid[2]:>6} summit {r.dem_ft['summit']:>6}/{s[2]:<6} "
@@ -239,16 +240,9 @@ def calibrate_one(r):
                                    round(sum(abs(x - bias) for x, _ in diffs) / len(diffs), 2)] if diffs else None)
 
 
-def regional_default(cal, r, resorts):
-    """No usable gauge (or still pending): median factors and error quantiles of calibrated
-    resorts in the region (else all), equal weights."""
-    peers = [c for k, c in cal.items() if c.calibrated and k in resorts and resorts[k].region == r.region]
-    scope = "region" if peers else "all"
-    peers = peers or [c for c in cal.values() if c.calibrated]
-    med = lambda xs: statistics.median(xs) if xs else 1.0
-    return Calibration({m: ModelCal(round(med([p.models[m].factor for p in peers if m in p.models]), 3), round(1 / len(r.models), 3))
-                        for m in r.models}, uncalibrated=True,
-                       ratio_q={q: round(med([p.ratio_q.get(q, 1.0) for p in peers]), 3) for q in QS}, peers=len(peers), peers_scope=scope)
+def raw(r):
+    """Not calibrated yet (or no usable gauge): the raw models, equal weights, no historical error."""
+    return Calibration({m: ModelCal(1.0, round(1 / len(r.models), 3)) for m in r.models}, uncalibrated=True)
 
 
 # ---------------------------------------------------------------- orchestration
@@ -263,17 +257,16 @@ def todo(k, resorts, cal, force=False):
     return force or k not in resorts or resorts[k].gauge is None or k not in cal or not cal[k].calibrated
 
 
-def plan(region=None, force=False):
-    """Regions with resorts still to set up, as a GitHub Actions matrix."""
+def plan(only=None, force=False):
+    """Resorts still to set up, as a GitHub Actions matrix (one job each)."""
     resorts, cal = load_resorts(), load_calibration()
-    print(json.dumps(list(dict.fromkeys(slug(c[1]) for k, c in CATALOG.items()
-                                        if (not region or slug(c[1]) == region) and todo(k, resorts, cal, force)))))
+    print(json.dumps([k for k in (only or CATALOG) if todo(k, resorts, cal, force)]))
 
 
-def run(region=None, out=None, force=False, only=None):
+def run(out=None, force=False, only=None):
     """Locate and calibrate resorts that aren't done (force: recalibrate them too); always save
-    progress. only: specific resort keys; region: one region's slug. Gauge-less resorts are located again."""
-    keys = only or [k for k, c in CATALOG.items() if not region or slug(c[1]) == region]
+    progress. only: specific resort keys. Gauge-less resorts are located again."""
+    keys = only or list(CATALOG)
     resorts, cal = load_resorts(), load_calibration()
     t0 = time.time()
     log = lambda i, k, msg: print(f"[{i}/{len(keys)} {time.time() - t0:5.0f}s] {k}: {msg}", flush=True)
@@ -300,14 +293,14 @@ def run(region=None, out=None, force=False, only=None):
                     print(f"  calibration failed {k}: {e}", file=sys.stderr)
                 save(resorts, cal)
             else:
-                log(i, k, "already calibrated" if r and r.gauge else "no gauge: regional defaults")
+                log(i, k, "already calibrated" if r and r.gauge else "no gauge: raw models")
     finally:  # hand back progress even on a crash or timeout
         if out:
             os.makedirs(out, exist_ok=True)
             json.dump({k: resorts[k].to_json() for k in keys if k in resorts}, open(os.path.join(out, "resorts.json"), "w"), indent=1)
             json.dump({k: cal[k].to_json() for k in keys if k in cal and cal[k].calibrated},
                       open(os.path.join(out, "calibration.json"), "w"), indent=1)
-    print(f"setup {region or 'all'}: located {sum(k in resorts for k in keys)}/{len(keys)}, "
+    print(f"setup: located {sum(k in resorts for k in keys)}/{len(keys)}, "
           f"calibrated {sum(k in cal and cal[k].calibrated for k in keys)}")
 
 
@@ -316,7 +309,7 @@ def _load(path):
 
 
 def merge(d):
-    """Merge region outputs into data/, give every uncalibrated resort regional defaults, report."""
+    """Merge per-resort outputs into data/; uncalibrated resorts get the raw models; report."""
     resorts, cal = load_resorts(), load_calibration()
     for part in sorted(glob.glob(os.path.join(d, "*", ""))):
         for k, v in _load(os.path.join(part, "resorts.json")).items():
@@ -328,7 +321,7 @@ def merge(d):
     resorts = {k: r for k, r in resorts.items() if k in CATALOG}
     cal = {k: c for k, c in cal.items() if k in resorts and c.calibrated}
     for k, r in resorts.items():
-        cal.setdefault(k, regional_default(cal, r, resorts))
+        cal.setdefault(k, raw(r))
     save(resorts, cal)
     write_report(resorts, cal)
 
@@ -336,21 +329,21 @@ def merge(d):
 def write_report(resorts, cal):
     """CALIBRATION.md: what's calibrated, against which gauge, and how well."""
     lines = ["# Calibration status", "",
-             "Generated by `calibrate.py`. Each US resort's model precipitation is bias-corrected against a",
+             "Generated by `calibrate.py`. Each resort's model precipitation is bias-corrected against a",
              "nearby gauge using two winters (2024-26) of as-issued forecasts. Error = mean absolute error of",
-             "72 h liquid precipitation for the blend, after correction. Resorts without a gauge (Canada) use",
-             "the median factors of calibrated resorts in their region.", "",
-             "| Resort | Region | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |",
-             "|---|---|---|---|---|---|---|"]
-    for k, (name, region, *_) in CATALOG.items():
+             "72 h liquid precipitation for the blend, after correction. Resorts not calibrated yet run on",
+             "the raw models with equal weights.", "",
+             "| Resort | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |",
+             "|---|---|---|---|---|---|"]
+    for k, (name, *_) in CATALOG.items():
         r, c = resorts.get(k), cal.get(k)
         if not r:
-            lines.append(f"| {name} | {region} | not located yet | | | | |")
+            lines.append(f"| {name} | not located yet | | | | |")
             continue
         g = r.gauge
-        status = "calibrated" if c and c.calibrated else "pending (regional default for now)" if g else "regional default (no gauge)"
+        status = "calibrated" if c and c.calibrated else "pending (raw models for now)" if g else "raw models (no gauge)"
         err = f"{c.blend_mae72 / IN:.2f}" if c and c.calibrated else ""
-        lines.append(f"| {r.name} | {r.region} | {status} | {g.name if g else '–'} | {f'{g.ft:,} ft' if g else '–'} | "
+        lines.append(f"| {r.name} | {status} | {g.name if g else '–'} | {f'{g.ft:,} ft' if g else '–'} | "
                      f"{c.n_windows if c and c.calibrated else ''} | {err} |")
     open(os.path.join(HERE, "CALIBRATION.md"), "w").write("\n".join(lines) + "\n")
 
@@ -362,9 +355,9 @@ if __name__ == "__main__":
     if "--merge" in a:
         merge(opt("--merge"))
     elif "--plan" in a:
-        plan(opt("--region"), force="--force" in a)
+        plan([k for k in a if k in CATALOG], force="--force" in a)
     else:
         only = [k for k in a if k in CATALOG]
-        run(opt("--region"), opt("--out"), force="--force" in a, only=only)
-        if not opt("--region"):
+        run(opt("--out"), force="--force" in a, only=only)
+        if not opt("--out"):
             merge(os.path.join(HERE, "__none__"))

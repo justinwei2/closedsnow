@@ -15,7 +15,6 @@ ELEVS = ("base", "mid", "summit")
 # Deterministic models blended for the central forecast; each resort keeps those with data there.
 BASE_MODELS = ["ecmwf_ifs", "ecmwf_ifs025", "ecmwf_aifs025_single", "gfs_seamless",
                "ncep_nbm_conus", "gem_seamless", "icon_seamless"]
-EXTRA_MODELS = ["gem_hrdps_continental"]  # 2.5 km Canadian; BC, Canadian Rockies + northern US
 PROFILE_MODELS = ["ecmwf_ifs025", "gfs_seamless", "gem_seamless", "icon_seamless"]  # pressure levels
 LEVELS = [1000, 925, 850, 800, 750, 700, 650, 600, 550, 500]
 # Ensemble -> deterministic sibling whose calibration factor applies to its members.
@@ -25,44 +24,35 @@ SEASONS = [("2024-11-01", "2025-04-30"), ("2025-11-01", "2026-04-30")]  # calibr
 EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weights
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
-def slug(region):
-    """Region id for the CLI and CI jobs (one parallel job per region): "Coastal BC" -> "coastal-bc"."""
-    return region.lower().replace(" ", "-").replace(".", "")
-
-
-NON_US = {"Coastal BC", "Interior BC", "Canadian Rockies"}  # no NWS products / SNOTEL
-BC_REGIONS = {"Coastal BC", "Interior BC"}  # gauge search: BC snow pillows (ASWS)
-SNOTEL_STATES = {"California": ["CA", "NV"], "Pacific Northwest": ["WA", "OR"], "Utah": ["UT"],
-                 "Northern Rockies": ["WY", "MT", "ID"], "Colorado": ["CO"]}
-
 PT, MT = "America/Los_Angeles", "America/Denver"
 VAN, EDM = "America/Vancouver", "America/Edmonton"
-# key: (name, region, tz, (base lat, lon, ft, label), (summit lat, lon, ft, label)); rough coordinates
+# key: (name, country, tz, (base lat, lon, ft, label), (summit lat, lon, ft, label)); rough coordinates.
+# Country picks the gauge network (US: SNOTEL/CDEC, CA: BC snow pillows) and NWS products (US only).
 CATALOG = {
-    "palisades": ("Palisades Tahoe", "California", PT, (39.1969, -120.2354, 6200, "Village"), (39.1985, -120.2936, 9006, "Granite Chief")),
-    "alpine": ("Alpine Meadows", "California", PT, (39.1645, -120.2386, 6835, "Base lodge"), (39.1489, -120.2476, 8637, "Ward Peak")),
-    "kirkwood": ("Kirkwood", "California", PT, (38.6847, -120.0654, 7800, "Base"), (38.6650, -120.0610, 9876, "Thimble Peak ridge")),
-    "mammoth": ("Mammoth Mountain", "California", PT, (37.6510, -119.0270, 8900, "Main Lodge"), (37.6280, -119.0325, 11053, "Summit")),
-    "bachelor": ("Mt. Bachelor", "Pacific Northwest", PT, (43.9922, -121.6786, 6300, "West Village"), (43.9790, -121.6886, 9065, "Summit")),
-    "alta": ("Alta", "Utah", MT, (40.5885, -111.6380, 8530, "Wildcat base"), (40.5770, -111.6300, 10550, "Upper mountain")),
-    "snowbird": ("Snowbird", "Utah", MT, (40.5812, -111.6555, 7760, "Base"), (40.5605, -111.6455, 11000, "Hidden Peak")),
-    "solitude": ("Solitude", "Utah", MT, (40.6197, -111.5917, 7988, "Base"), (40.6020, -111.5790, 10488, "Summit")),
-    "snowbasin": ("Snowbasin", "Utah", MT, (41.2163, -111.8570, 6400, "Base"), (41.2000, -111.8800, 9350, "Needles")),
-    "jackson": ("Jackson Hole", "Northern Rockies", MT, (43.5877, -110.8279, 6311, "Teton Village"), (43.5970, -110.8710, 10450, "Rendezvous")),
-    "bigsky": ("Big Sky", "Northern Rockies", MT, (45.2857, -111.4012, 7500, "Mountain Village"), (45.2784, -111.4502, 11166, "Lone Peak")),
-    "abasin": ("Arapahoe Basin", "Colorado", MT, (39.6420, -105.8715, 10780, "Base"), (39.6300, -105.8650, 13050, "Summit")),
-    "copper": ("Copper Mountain", "Colorado", MT, (39.5018, -106.1511, 9712, "Base"), (39.4720, -106.1660, 12313, "Tucker Mtn")),
-    "steamboat": ("Steamboat", "Colorado", MT, (40.4572, -106.8045, 6900, "Base"), (40.4563, -106.7485, 10568, "Mt. Werner")),
-    "telluride": ("Telluride", "Colorado", MT, (37.9369, -107.8467, 8725, "Mountain Village"), (37.9105, -107.8380, 12570, "Gold Hill")),
-    "crestedbutte": ("Crested Butte", "Colorado", MT, (38.8991, -106.9650, 9375, "Base"), (38.8877, -106.9440, 12162, "North Face / High Lift")),
-    "whistler": ("Whistler", "Coastal BC", VAN, (50.1150, -122.9548, 2214, "Village"), (50.0610, -122.9480, 7160, "Whistler Peak")),
-    "blackcomb": ("Blackcomb", "Coastal BC", VAN, (50.1155, -122.9480, 2214, "Village"), (50.0950, -122.8880, 7494, "Glacier / 7th Heaven")),
-    "revelstoke": ("Revelstoke", "Interior BC", VAN, (50.9580, -118.1636, 1680, "Base"), (50.9390, -118.2310, 7300, "Summit")),
-    "kickinghorse": ("Kicking Horse", "Interior BC", EDM, (51.2975, -117.0480, 3900, "Base"), (51.2830, -117.0920, 8033, "Terminator Peak")),
-    "lakelouise": ("Lake Louise", "Canadian Rockies", EDM, (51.4420, -116.1620, 5400, "Base"), (51.4615, -116.1290, 8650, "Top of the World")),
+    "palisades": ("Palisades Tahoe", "US", PT, (39.1969, -120.2354, 6200, "Village"), (39.1985, -120.2936, 9006, "Granite Chief")),
+    "alpine": ("Alpine Meadows", "US", PT, (39.1645, -120.2386, 6835, "Base lodge"), (39.1489, -120.2476, 8637, "Ward Peak")),
+    "kirkwood": ("Kirkwood", "US", PT, (38.6847, -120.0654, 7800, "Base"), (38.6650, -120.0610, 9876, "Thimble Peak ridge")),
+    "mammoth": ("Mammoth Mountain", "US", PT, (37.6510, -119.0270, 8900, "Main Lodge"), (37.6280, -119.0325, 11053, "Summit")),
+    "bachelor": ("Mt. Bachelor", "US", PT, (43.9922, -121.6786, 6300, "West Village"), (43.9790, -121.6886, 9065, "Summit")),
+    "alta": ("Alta", "US", MT, (40.5885, -111.6380, 8530, "Wildcat base"), (40.5770, -111.6300, 10550, "Upper mountain")),
+    "snowbird": ("Snowbird", "US", MT, (40.5812, -111.6555, 7760, "Base"), (40.5605, -111.6455, 11000, "Hidden Peak")),
+    "solitude": ("Solitude", "US", MT, (40.6197, -111.5917, 7988, "Base"), (40.6020, -111.5790, 10488, "Summit")),
+    "snowbasin": ("Snowbasin", "US", MT, (41.2163, -111.8570, 6400, "Base"), (41.2000, -111.8800, 9350, "Needles")),
+    "jackson": ("Jackson Hole", "US", MT, (43.5877, -110.8279, 6311, "Teton Village"), (43.5970, -110.8710, 10450, "Rendezvous")),
+    "bigsky": ("Big Sky", "US", MT, (45.2857, -111.4012, 7500, "Mountain Village"), (45.2784, -111.4502, 11166, "Lone Peak")),
+    "abasin": ("Arapahoe Basin", "US", MT, (39.6420, -105.8715, 10780, "Base"), (39.6300, -105.8650, 13050, "Summit")),
+    "copper": ("Copper Mountain", "US", MT, (39.5018, -106.1511, 9712, "Base"), (39.4720, -106.1660, 12313, "Tucker Mtn")),
+    "steamboat": ("Steamboat", "US", MT, (40.4572, -106.8045, 6900, "Base"), (40.4563, -106.7485, 10568, "Mt. Werner")),
+    "telluride": ("Telluride", "US", MT, (37.9369, -107.8467, 8725, "Mountain Village"), (37.9105, -107.8380, 12570, "Gold Hill")),
+    "crestedbutte": ("Crested Butte", "US", MT, (38.8991, -106.9650, 9375, "Base"), (38.8877, -106.9440, 12162, "North Face / High Lift")),
+    "whistler": ("Whistler", "CA", VAN, (50.1150, -122.9548, 2214, "Village"), (50.0610, -122.9480, 7160, "Whistler Peak")),
+    "blackcomb": ("Blackcomb", "CA", VAN, (50.1155, -122.9480, 2214, "Village"), (50.0950, -122.8880, 7494, "Glacier / 7th Heaven")),
+    "revelstoke": ("Revelstoke", "CA", VAN, (50.9580, -118.1636, 1680, "Base"), (50.9390, -118.2310, 7300, "Summit")),
+    "kickinghorse": ("Kicking Horse", "CA", EDM, (51.2975, -117.0480, 3900, "Base"), (51.2830, -117.0920, 8033, "Terminator Peak")),
+    "lakelouise": ("Lake Louise", "CA", EDM, (51.4420, -116.1620, 5400, "Base"), (51.4615, -116.1290, 8650, "Top of the World")),
 }
 # Hand-verified mid points and gauges for the original four (kept as-is by locate), and gauges for
-# regions without a searchable station catalog (Alberta: id "station:precip-TSID").
+# places without a searchable station catalog (Alberta: id "station:precip-TSID").
 MANUAL = {
     "palisades": dict(mid=(39.1899, -120.2658, 8000, "High Camp"),
                       gauge=("snotel", "784:CA:SNTL", "Palisades Tahoe SNOTEL (High Camp area)", 8010, 39.18986, -120.26576)),
@@ -98,7 +88,7 @@ class Gauge:
 class Resort:
     key: str
     name: str
-    region: str
+    country: str  # "US" | "CA"
     tz: str
     base: Point
     mid: Point
@@ -110,20 +100,20 @@ class Resort:
 
     @property
     def us(self):
-        return self.region not in NON_US
+        return self.country == "US"
 
     def point(self, elev):
         return getattr(self, elev)
 
     @classmethod
     def from_json(cls, key, d):
-        name, region = CATALOG[key][:2] if key in CATALOG else (d["name"], d["region"])  # catalog wins
-        return cls(key=key, name=name, region=region, tz=d["tz"],
+        name, country = CATALOG[key][:2] if key in CATALOG else (d["name"], d["country"])  # catalog wins
+        return cls(key=key, name=name, country=country, tz=d["tz"],
                    **{e: Point(**d[e]) for e in ELEVS}, gauge=Gauge(*d["obs"]) if d.get("obs") else None,
                    models=d["models"], dem_ft=d.get("dem_ft", {}), afd_office=d.get("afd_office"))
 
     def to_json(self):
-        d = dict(name=self.name, region=self.region, tz=self.tz, **{e: asdict(self.point(e)) for e in ELEVS},
+        d = dict(name=self.name, country=self.country, tz=self.tz, **{e: asdict(self.point(e)) for e in ELEVS},
                  dem_ft=self.dem_ft, obs=list(asdict(self.gauge).values()) if self.gauge else None, models=self.models)
         return d | ({"afd_office": self.afd_office} if self.afd_office else {})
 
@@ -144,14 +134,12 @@ class Calibration:
     """Per-resort precipitation bias factors, blend weights and historical error quantiles."""
     models: dict  # model -> ModelCal
     station: str | None = None
-    uncalibrated: bool | None = None  # True: regional default (no gauge or still pending)
+    uncalibrated: bool | None = None  # True: raw models, equal weights (no gauge or not calibrated yet)
     blend_mae72: float | None = None
     n_windows: int | None = None
     n_wet: int = 0
     ratio_q: dict = field(default_factory=dict)  # "0.05".."0.95" -> obs/forecast ratio
     ratio_bins: list = field(default_factory=list)  # [{lo_mm, hi_mm, n, q}] by forecast storm size
-    peers: int | None = None
-    peers_scope: str | None = None
     temp_bias_c: float | None = None      # station minus model daily mean temperature, all days
     temp_bias_wet_c: float | None = None  # same on storm days: shifts the profile (phase, snow level, ratio)
     temp_n_wet: int = 0

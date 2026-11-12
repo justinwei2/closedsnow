@@ -1,7 +1,7 @@
 {
  "palisades": {
   "name": "Palisades Tahoe",
-  "region": "California",
+  "country": "US",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 39.1969,
@@ -46,7 +46,7 @@
  },
  "alpine": {
   "name": "Alpine Meadows",
-  "region": "California",
+  "country": "US",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 39.1645,
@@ -91,7 +91,7 @@
  },
  "whistler": {
   "name": "Whistler",
-  "region": "Coastal BC",
+  "country": "CA",
   "tz": "America/Vancouver",
   "base": {
    "lat": 50.115,
@@ -131,13 +131,12 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
+   "icon_seamless"
   ]
  },
  "kirkwood": {
   "name": "Kirkwood",
-  "region": "California",
+  "country": "US",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 38.6847,
@@ -182,7 +181,7 @@
  },
  "mammoth": {
   "name": "Mammoth Mountain",
-  "region": "California",
+  "country": "US",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 37.651,
@@ -228,7 +227,7 @@
  },
  "bachelor": {
   "name": "Mt. Bachelor",
-  "region": "Pacific Northwest",
+  "country": "US",
   "tz": "America/Los_Angeles",
   "base": {
    "lat": 44.0012,
@@ -268,13 +267,12 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
+   "icon_seamless"
   ]
  },
  "alta": {
   "name": "Alta",
-  "region": "Utah",
+  "country": "US",
   "tz": "America/Denver",
   "base": {
    "lat": 40.5885,
@@ -319,7 +317,7 @@
  },
  "snowbird": {
   "name": "Snowbird",
-  "region": "Utah",
+  "country": "US",
   "tz": "America/Denver",
   "base": {
    "lat": 40.5782,
@@ -364,7 +362,7 @@
  },
  "solitude": {
   "name": "Solitude",
-  "region": "Utah",
+  "country": "US",
   "tz": "America/Denver",
   "base": {
    "lat": 40.6257,
@@ -409,7 +407,7 @@
  },
  "snowbasin": {
   "name": "Snowbasin",
-  "region": "Utah",
+  "country": "US",
   "tz": "America/Denver",
   "base": {
    "lat": 41.2163,
@@ -454,7 +452,7 @@
  },
  "jackson": {
   "name": "Jackson Hole",
-  "region": "Northern Rockies",
+  "country": "US",
   "tz": "America/Denver",
   "base": {
    "lat": 43.5877,
@@ -494,13 +492,12 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
+   "icon_seamless"
   ]
  },
  "bigsky": {
   "name": "Big Sky",
-  "region": "Northern Rockies",
+  "country": "US",
   "tz": "America/Denver",
   "base": {
    "lat": 45.2857,
@@ -540,8 +537,7 @@
    "gfs_seamless",
    "ncep_nbm_conus",
    "gem_seamless",
-   "icon_seamless",
-   "gem_hrdps_continental"
+   "icon_seamless"
   ]
  }
 }

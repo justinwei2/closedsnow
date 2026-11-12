@@ -5,8 +5,8 @@ Phase, snow level and snow-to-liquid ratio come from a consensus pressure-level 
 Ranges average the quantiles of (a) the pooled bias-corrected ensembles and (b) the blend times
 this resort's historical obs/forecast error for that storm size.
 
-    python3 update.py [resort ...] [--scheduled] [--region R] [--no-index]
-    python3 update.py --plan              # regions with due resorts (CI matrix)
+    python3 update.py [resort ...] [--scheduled] [--no-index]
+    python3 update.py --plan              # due resorts (CI matrix, one job each)
     python3 update.py --check [--url SITE]
 """
 import json, os, sys, time, traceback
@@ -15,7 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import conditions as cx
 import sources as src
-from resorts import CATALOG, ELEVS, ENSEMBLES, FT, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, SNOTEL_STATES, Gauge, load_calibration, slug
+from resorts import CATALOG, ELEVS, ENSEMBLES, FT, HERE, IN, KMH_MPH, PROFILE_MODELS, LEVELS, RESORTS, Gauge, load_calibration
 
 OUT = os.path.join(HERE, "web", "data")
 PAST_DAYS = 7
@@ -132,14 +132,10 @@ def depths(r):
     SNOTEL within DEPTH_KM and DEPTH_FT of that elevation; None where no gauge qualifies."""
     import calibrate  # station search helpers
     cands = [r.gauge] if r.gauge else []
-    for st in SNOTEL_STATES.get(r.region, []):
-        if st not in calibrate._stations:
-            calibrate._stations[st] = src.snotel_stations(st)
-        for s in calibrate._stations[st]:
-            if (s["stationTriplet"].endswith(":SNTL") and (s.get("endDate") or "2100") >= date.today().isoformat()
-                    and calibrate.km(r.mid.lat, r.mid.lon, s["latitude"], s["longitude"]) <= DEPTH_KM):
-                cands.append(Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]),
-                                       s["latitude"], s["longitude"]))
+    for s in calibrate.snotel() if r.us else []:
+        if calibrate.km(r.mid.lat, r.mid.lon, s["latitude"], s["longitude"]) <= DEPTH_KM:
+            cands.append(Gauge("snotel", s["stationTriplet"], f"{s['name'].title()} SNOTEL", round(s["elevation"]),
+                               s["latitude"], s["longitude"]))
     out, latest = {}, {}
     for e in ELEVS:
         pt = r.point(e)
@@ -359,10 +355,10 @@ def process(r, cal):
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
               for i, t in enumerate(times) if now_i - 24 * 7 <= i < now_i + 24 * 10]  # charts: last 7 + next 10 days
     return dict(
-        key=r.key, name=r.name, region=r.region, model_run=run, now=now, today=today,
+        key=r.key, name=r.name, country=r.country, model_run=run, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
-        calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
+        calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated,
                          temp_bias_c=cal.temp_bias_c, profile_shift_c=cal.profile_shift_c,
                          models={m: asdict(v) for m, v in cal.models.items()}),
         daily=daily, hourly=hourly, summary=summary, plume=plume, obs=obs, depth=depth, afd=afd, alerts=alerts,
@@ -399,22 +395,21 @@ def due(key, run):
 
 
 def plan():
-    """Regions with due resorts, as a GitHub Actions matrix (one job each, starts staggered)."""
+    """Due resorts, as a GitHub Actions matrix (one job each)."""
     run = attempt("model run metadata", latest_run)
-    regions = list(dict.fromkeys(slug(r.region) for k, r in RESORTS.items() if due(k, run)))
-    print(json.dumps([dict(region=g, delay=30 * i) for i, g in enumerate(regions)]))
+    print(json.dumps([k for k in RESORTS if due(k, run)]))
 
 
 def write_index():
     cal = load_calibration()
     idx = []
-    for key, (name, region, *_) in CATALOG.items():  # catalog order = grouped by region for search
+    for key, (name, country, *_) in CATALOG.items():  # catalog order = search order
         r, c = RESORTS.get(key), cal.get(key)
         if not r:  # not set up yet: listed in the coverage appendix, hidden from search
-            idx.append(dict(key=key, name=name, region=region, calibration="not set up yet", located=False, updated=None))
+            idx.append(dict(key=key, name=name, country=country, calibration="not set up yet", located=False, updated=None))
             continue
-        status = "calibrated" if c and c.calibrated else "pending" if r.gauge else "regional default"
-        idx.append(dict(key=key, name=r.name, region=r.region, calibration=status,
+        status = "calibrated" if c and c.calibrated else "pending" if r.gauge else "raw models"
+        idx.append(dict(key=key, name=r.name, country=r.country, calibration=status,
                         station=r.gauge.name if r.gauge else None, station_ft=r.gauge.ft if r.gauge else None,
                         blend_mae72_in=round(c.blend_mae72 / IN, 2) if c and c.blend_mae72 else None,
                         updated=updated_at(key), located=True))
@@ -442,15 +437,15 @@ def update_one(key):
     print(f"  {key}: published ({time.time() - t0:.0f}s)", flush=True)
 
 
-def main(keys=None, scheduled=False, region=None, index=True):
-    """Refresh resorts (default: all, or one region). scheduled: only due ones (new model run,
+def main(keys=None, scheduled=False, index=True):
+    """Refresh resorts (default: all). scheduled: only due ones (new model run,
     old format, or stale), oldest first. Stops cleanly on Open-Meteo quota; failures get a second pass."""
     os.makedirs(OUT, exist_ok=True)
-    todo = keys or [k for k, r in RESORTS.items() if not region or slug(r.region) == region]
+    todo = keys or list(RESORTS)
     if scheduled:
         run = attempt("model run metadata", latest_run)
         todo = sorted((k for k in todo if due(k, run)), key=lambda k: updated_at(k) or "")
-        print(f"region={region or 'all'} run={run}: refreshing {todo or 'nothing'}")
+        print(f"run={run}: refreshing {todo or 'nothing'}")
     for _ in (1, 2):
         failed = []
         for key in todo:
@@ -513,5 +508,4 @@ if __name__ == "__main__":
     elif "--plan" in args:
         plan()
     else:
-        main([a for a in args if not a.startswith("--") and a != opt("--region")] or None,
-             scheduled="--scheduled" in args, region=opt("--region"), index="--no-index" not in args)
+        main([a for a in args if not a.startswith("--")] or None, scheduled="--scheduled" in args, index="--no-index" not in args)

@@ -8,7 +8,6 @@ const state = { index: [], key: null, data: null, elev: localStorage.getItem("el
 const MODEL_NAMES = {
   ecmwf_ifs: "ECMWF IFS 9 km", ecmwf_ifs025: "ECMWF IFS 0.25°", ecmwf_aifs025_single: "ECMWF AIFS",
   gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)",
-  gem_hrdps_continental: "HRDPS 2.5 km",
 };
 const QUALITY = {  // one colour per label everywhere: orange = snow, purple = mixed / sleet, blue = rain
   "snow": { sw: "--q-snow", text: "Snow" },
@@ -540,8 +539,8 @@ function renderModels(d, e) {
   }
   const c = d.calibration;
   $("#cal-note").textContent = c.uncalibrated
-    ? `Not individually calibrated (${d.obs ? "calibration pending" : "no nearby automated gauge"}): model factors are the median of ${c.peers} calibrated ${c.peers_scope === "region" ? "resorts in the region" : "US resorts"} and models are weighted equally.${/BC|Canadian Rockies/.test(d.region) ? " Canadian snow climates differ from the US resorts these factors come from, so treat amounts with extra caution." : ""}`
-    : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (HRDPS 2 d, NBM 11 d, ICON 7 d, GEM 10 d).`;
+    ? `Not calibrated yet (${d.obs ? "calibration pending" : "no nearby automated gauge"}): raw model precipitation, models weighted equally, and ranges from the ensembles only.`
+    : `Each model's precipitation is multiplied by a factor learned at ${c.station} from up to two winters (2024–26) of as-issued forecasts (ECMWF IFS 9 km and AIFS have one winter of history), and weighted ∝ 1/error². Factors are fit and scored on the same winters, so the error shown is a bit optimistic. Models drop out past their range (NBM 11 d, ICON 7 d, GEM 10 d).`;
 }
 
 function renderObs(d) {
@@ -592,7 +591,7 @@ function renderAfd(d) {
   box.replaceChildren();
   if (!d.afd) {
     $("#afd-meta").textContent = "";
-    box.textContent = /BC|Canadian Rockies/.test(d.region) ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
+    box.textContent = d.country === "CA" ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
     return;
   }
   $("#afd-meta").textContent = `· NWS ${d.afd.office} · ${new Date(d.afd.issued).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
@@ -663,15 +662,15 @@ function renderCalCoverage() {
   const tb = $("#calcov-table");
   tb.replaceChildren();
   const head = el("tr");
-  ["Resort", "Region", "Status", "Gauge", "Error (in / 72 h)", "Data updated"].forEach((h, i) => head.append(el("th", { class: i ? "" : "rowh" }, h)));
+  ["Resort", "Status", "Gauge", "Error (in / 72 h)", "Data updated"].forEach((h, i) => head.append(el("th", { class: i ? "" : "rowh" }, h)));
   tb.append(head);
-  const LABEL = { calibrated: "✓ Calibrated", pending: "◐ Pending", "regional default": "Regional default", "not set up yet": "○ Setting up" };
+  const LABEL = { calibrated: "✓ Calibrated", pending: "◐ Pending", "raw models": "Raw models", "not set up yet": "○ Setting up" };
   for (const r of state.index) {
     const tr = el("tr");
     const name = el("td", { class: "rowh" });
     name.append(r.located === false ? document.createTextNode(r.name) : el("a", { href: `#${r.key}` }, r.name));
     tr.append(name);
-    [r.region, LABEL[r.calibration] || r.calibration || "–",
+    [LABEL[r.calibration] || r.calibration || "–",
       r.station ? `${r.station}${r.station_ft ? ` (${r.station_ft.toLocaleString()} ft)` : ""}` : "–",
       r.blend_mae72_in != null ? `${r.blend_mae72_in.toFixed(2)}"` : "–",
       r.updated ? new Date(r.updated).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }) : "not yet"]
@@ -760,11 +759,9 @@ function setupSearch() {
   const close = () => { list.hidden = true; q.setAttribute("aria-expanded", "false"); active = -1; };
   const draw = () => {
     const term = q.value.trim().toLowerCase();
-    const hits = state.index.filter((r) => r.located !== false && (!term || `${r.name} ${r.region}`.toLowerCase().includes(term)));
+    const hits = state.index.filter((r) => r.located !== false && (!term || r.name.toLowerCase().includes(term)));
     list.replaceChildren(); opts = [];
-    let grp = null;
     for (const r of hits) {
-      if (r.region !== grp) { grp = r.region; list.append(el("li", { class: "grp", role: "presentation" }, grp)); }
       const li = el("li", { class: "opt", role: "option", id: `opt-${r.key}` }, r.name);
       li.addEventListener("mousedown", (ev) => { ev.preventDefault(); location.hash = r.key; close(); q.blur(); });
       list.append(li); opts.push({ li, r });
