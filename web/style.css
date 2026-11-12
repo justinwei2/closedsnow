@@ -250,3 +250,4 @@ table.days tr.past td { opacity: .5; }
 .depth { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
 .depth b { color: var(--text-primary); font-weight: 600; }
 .depth .dep { margin-left: 10px; }
+.rday.past { opacity: .55; }

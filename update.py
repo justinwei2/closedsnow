@@ -318,8 +318,7 @@ def process(r, cal):
         if d in obs_by_day:  # station days are calendar days
             o = obs_by_day[d]
             entry["obs"] = dict(new_snow_in=o.get("new_snow_in"), precip_in=o.get("precip_in"), swe_in=o.get("swe_in"))
-        if d >= today:
-            entry["report"], entry["wind_hold"] = cx.report(d, entry, hours, {e: r.point(e).ft for e in ELEVS})
+        entry["report"], entry["wind_hold"] = cx.report(d, entry, hours, {e: r.point(e).ft for e in ELEVS})
         daily.append(entry)
 
     # ---- summary strip: last 7 days | last 24 hours | next 1-5 | next 6-10 (ski days)
@@ -343,7 +342,7 @@ def process(r, cal):
     for e in ELEVS:
         hrs = hours[e]
         out = {k: {q: [] for q in ("fc", *map(str, QS))} for k in ("snow", "rain")}
-        bins = [range(i, i + 1) for i in range(now_i, min(len(times), now_i + 24 * 10))]  # hourly
+        bins = [range(i, i + 1) for i in range(max(0, now_i - 24 * 7), min(len(times), now_i + 24 * 10))]  # hourly
         for b in bins:
             s_liq = sum(hours["summit"][i].precip_mm or 0 for i in b)
             liq = sum(hrs[i].precip_mm or 0 for i in b)
@@ -365,7 +364,7 @@ def process(r, cal):
 
     hourly = [dict(t=t, **{k: rnd(v) for k, v in levels[i].items()},
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
-              for i, t in enumerate(times) if now_i <= i < now_i + 24 * 10]  # charts use the next 10 days
+              for i, t in enumerate(times) if now_i - 24 * 7 <= i < now_i + 24 * 10]  # charts: last 7 + next 10 days
     return dict(
         key=r.key, name=r.name, region=r.region, model_run=run, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
@@ -437,7 +436,7 @@ def update_one(key):
     if key not in RESORTS or key not in cal:
         raise KeyError(f"{key}: not set up yet (run calibrate.py)")
     data = process(RESORTS[key], cal[key])
-    nxt = data["hourly"][:72]
+    nxt = [h for h in data["hourly"] if h["t"] >= data["now"]][:72]
     ok = sum(1 for h in nxt if h["summit"]["snow_in"] is not None and h["summit"]["temp_f"] is not None)
     if len(nxt) < 48 or ok < 0.8 * len(nxt):  # mostly blank: keep the old file (--check flags staleness)
         raise RuntimeError(f"{key}: forecast mostly empty ({ok}/{len(nxt)} hours); not publishing")

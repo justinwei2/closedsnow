@@ -35,7 +35,8 @@ const dayLabel = (d) => {
   const dt = new Date(d + "T12:00:00");
   return { dow: dt.toLocaleDateString(undefined, { weekday: "short" }), dom: dt.getDate(), mon: dt.toLocaleDateString(undefined, { month: "short" }) };
 };
-const today = () => state.data.now.slice(0, 10);  // resort-local
+const today = () => state.data.today;  // current ski day (resort-local)
+const window17 = (d) => [...d.daily.filter((x) => x.past).slice(-7), ...d.daily.filter((x) => !x.past).slice(0, 10)];  // last 7 + next 10 days
 const el = (tag, attrs = {}, text) => {
   const e = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
@@ -155,12 +156,12 @@ function renderAlerts(d) {
 function renderReport(d, e) {
   const box = $("#report");
   box.replaceChildren();
-  const days = d.daily.filter((x) => !x.past).slice(0, 7);
+  const days = window17(d);
   for (const x of days) {
     const v = x[e];
     const notes = x.report || [];
     const snowy = (v.p50 || 0) >= 1 || (v.rain_in || 0) >= 0.1;
-    const row = el("div", { class: "rday" });
+    const row = el("div", { class: "rday" + (x.past ? " past" : "") });
     const dl = dayLabel(x.date);
     const dd = el("div", { class: "d" }); dd.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", { class: "muted" }, ` ${dl.mon} ${dl.dom}`));
     const amt = el("div", { class: "amt" });
@@ -269,7 +270,7 @@ function renderDailyTable(d, e) {
   const tb = $("#daily-table");
   tb.replaceChildren();
   tb.className = "grid days";
-  const days = d.daily.filter((x) => !x.past).slice(0, 10);
+  const days = window17(d);
   $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft`;
   const cols = [
     ["Temp", (h) => fmtF(h.temp_f)],
@@ -367,6 +368,11 @@ function timeChart(container, hours, opts) {
     });
     f.svg.append(svgEl("path", { d, fill: "none", stroke: s.color, "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
   }
+  const ni = hours.findIndex((h) => h.t >= state.data.now);
+  if (ni > 0) {  // past (model estimate) | forecast
+    f.svg.append(svgEl("line", { x1: X(ni), x2: X(ni), y1: f.m.t - 4, y2: f.m.t + f.ih, class: "divider" }));
+    f.svg.append(svgText({ x: X(ni) - 4, y: f.m.t + 10, "text-anchor": "end" }, "past"), svgText({ x: X(ni) + 4, y: f.m.t + 10 }, "forecast"));
+  }
   const xh = svgEl("line", { class: "xhair", y1: f.m.t, y2: f.m.t + f.ih, visibility: "hidden" });
   const hit = svgEl("rect", { class: "hit", x: f.m.l, y: f.m.t, width: f.iw, height: f.ih });
   f.svg.append(xh, hit);
@@ -421,7 +427,7 @@ function plumeChart(d, e) {
   });
   const top = Math.max(0.5, ...pts.map((x) => Math.max(x["snow0.95"], x["rain0.95"])));
   const { max, step } = niceMax(top);
-  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per hour · next 10 days`;
+  $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per hour · last 7 days (model estimate) and next 10`;
   const val = (v, k) => k === "snow" ? `${v.toFixed(1)}"` : `${v.toFixed(2)}"`;
   timeChart($("#plume"), pts, {
     y: { min: 0, max, step, fmt: (v) => `${v}"` },
@@ -445,7 +451,7 @@ function plumeChart(d, e) {
 function renderModels(d, e) {
   const tb = $("#models-table");
   tb.replaceChildren();
-  const days = d.daily.filter((x) => !x.past).slice(0, 10);
+  const days = window17(d);
   const head = el("tr"); head.append(el("th", { class: "rowh" }, `Model (${ELEV_NAME[e].toLowerCase()} snow, in)`));
   days.forEach((x) => { const dl = dayLabel(x.date); head.append(el("th", {}, `${dl.dow} ${dl.dom}`)); });
   head.append(el("th", {}, "Total"), el("th", {}, "Weight"));
@@ -532,7 +538,7 @@ function renderAfd(d) {
 function renderWide(d, e) {
   const tb = $("#wide-table");
   tb.replaceChildren();
-  const days = d.daily.filter((x) => !x.past).slice(0, 10);
+  const days = window17(d);
   const head = el("tr"); head.append(el("th", { class: "rowh" }, ELEV_NAME[e]));
   days.forEach((x) => { const dl = dayLabel(x.date); head.append(el("th", {}, `${dl.dow} ${dl.dom}`)); });
   tb.append(head);
