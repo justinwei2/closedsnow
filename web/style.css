@@ -14,8 +14,11 @@
   --seq-100: #cde2fb; --seq-200: #9ec5f4; --seq-300: #6da7ec; --seq-400: #3987e5;
   --seq-500: #256abf; --seq-600: #184f95; --seq-700: #0d366b;
   --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
-  /* powder quality: one ordinal blue ramp, more contrast = drier snow */
-  --q-blower: #104281; --q-light: #256abf; --q-medium: #3987e5; --q-dense: #6da7ec; --q-heavy: #86b6ef;
+  /* precipitation quality (OpenSnow-style families): orange = good snow, purple = heavy / sleet,
+     blue = rain; deeper shade = more extreme within the family */
+  --q-blower: #b8461b; --q-light: #eb6834; --q-medium: #f29a6e;
+  --q-dense: #b3a9f2; --q-heavy: #8a7de8; --q-sleet: #6250d6;
+  --q-mixed: #8ab8ef; --q-rain: #2a78d6;
 }
 /* dark: OS setting unless the toggle says light; toggle wins both ways */
 @media (prefers-color-scheme: dark) {
@@ -24,7 +27,8 @@
     --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-    --q-blower: #cde2fb; --q-light: #9ec5f4; --q-medium: #6da7ec; --q-dense: #3987e5; --q-heavy: #256abf;
+    --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #b9b0f5; --q-heavy: #9085e9; --q-sleet: #7466e0;
+    --q-mixed: #9ac3f2; --q-rain: #3987e5;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -32,7 +36,8 @@
   --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-  --q-blower: #cde2fb; --q-light: #9ec5f4; --q-medium: #6da7ec; --q-dense: #3987e5; --q-heavy: #256abf;
+  --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #b9b0f5; --q-heavy: #9085e9; --q-sleet: #7466e0;
+  --q-mixed: #9ac3f2; --q-rain: #3987e5;
 }
 
 /* ---- base */
@@ -127,7 +132,7 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .note .ic.warning { color: #0b0b0b; }
 @media (max-width: 700px) { .rday { grid-template-columns: 1fr; } }
 
-/* ---- snow summary strip + powder quality */
+/* ---- snow summary strip: day bars stack morning / afternoon / night, coloured by quality */
 .summary { display: flex; gap: 14px; align-items: stretch; }
 .sgroup { display: flex; flex-direction: column; min-width: 0; }
 .slabel { font-size: 12px; color: var(--text-secondary); text-align: center; font-weight: 600; }
@@ -136,21 +141,19 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 .srange { font-size: 12px; text-align: center; margin-bottom: 6px; }
 .sdays { display: flex; gap: 4px; flex: 1; }
 .sday { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; outline: none; }
-.sday:hover .sbar, .sday:focus .sbar { filter: brightness(1.12); }
-.sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.sbar-wrap { height: 90px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
-.sbar { width: min(22px, 70%); background: var(--series-1); border-radius: 4px 4px 0 0; }
-.sbar.past { background: var(--muted); }
+.sday:hover .sstack, .sday:focus .sstack { filter: brightness(1.1); }
+.sday.past .sstack { opacity: .55; }
+.sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sbar-wrap { height: 110px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
+.sstack { width: min(22px, 70%); height: 100%; display: flex; flex-direction: column-reverse; gap: 2px; }
+.sseg { display: block; width: 100%; min-height: 2px; border-radius: 2px; }
+.sstack .sseg:last-child { border-radius: 4px 4px 2px 2px; }
 .sday-l { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
 .sday-l.wk { color: var(--text-primary); font-weight: 600; }
 .sday-l.today { color: var(--text-primary); font-weight: 700; }
-.scenter { flex: 0 0 150px; background: var(--page); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12px; }
+.scenter { flex: 0 0 150px; background: var(--page); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 12px; }
 .sbig { font-size: 44px; font-weight: 650; line-height: 1.1; margin: 4px 0; }
-.pq-head { display: flex; gap: 10px; align-items: baseline; margin: 18px 0 8px; }
-.pq .sday { justify-content: flex-end; }
-.pq-bars { height: 44px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; border-bottom: 1px solid var(--grid); }
-.pq-bar { width: min(7px, 26%); border-radius: 2px 2px 0 0; }
-.legend-col { align-items: flex-start; gap: 3px; justify-content: flex-start; padding: 6px 10px; }
+.legend-col { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 10px; font-size: 11px; }
 .qkey { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); }
 .qkey .sw, .chip .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
 @media (max-width: 900px) { .summary { overflow-x: auto; } .sgroup { min-width: 220px; } }

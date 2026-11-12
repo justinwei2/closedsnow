@@ -200,8 +200,8 @@ def process(r, cal):
         return res
 
     # ---- ski days: 6am to 6am, split into morning (6-12), afternoon (12-6pm) and night (6pm-6am)
-    def quality_of(hrs, min_liq=1.0):
-        wet = [h for h in hrs if (h.precip_mm or 0) > 0.2 and h.frac is not None]
+    def quality_of(hrs, min_liq=1.0, wet_mm=0.2):
+        wet = [h for h in hrs if (h.precip_mm or 0) > wet_mm and h.frac is not None]
         liq = sum(h.precip_mm for h in wet)
         if liq <= 0:
             return {}
@@ -223,7 +223,7 @@ def process(r, cal):
             b = window(first if d < today else i0, i1, e)
             b.update(quality_of(hrs))
             b["periods"] = [dict(snow_in=sum(h.snow_in or 0 for h in part), rain_in=sum(h.rain_in or 0 for h in part),
-                                 **quality_of(part, 0.5)) for part in (hrs[:6], hrs[6:12], hrs[12:24])]
+                                 **quality_of(part, 0.0, 0.0)) for part in (hrs[:6], hrs[6:12], hrs[12:24])]
             temps = [h.temp_f for h in hrs if h.temp_f is not None]
             lift = cx.lift_hours(hrs, d)
             winds = [h.wind_mph for h in lift if h.wind_mph is not None]

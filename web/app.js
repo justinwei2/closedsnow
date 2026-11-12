@@ -10,15 +10,15 @@ const MODEL_NAMES = {
   gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)",
   gem_hrdps_continental: "HRDPS 2.5 km",
 };
-const QUALITY = {  // one colour per quality, used for chips, powder-quality bars and the legend
+const QUALITY = {  // one colour per label, used everywhere: orange = good snow, purple = heavy/sleet, blue = rain
   "blower": { sw: "--q-blower", text: "Blower" },
   "light & dry": { sw: "--q-light", text: "Light & dry" },
   "medium": { sw: "--q-medium", text: "Medium" },
   "dense": { sw: "--q-dense", text: "Dense" },
   "heavy / wet (Sierra cement)": { sw: "--q-heavy", text: "Heavy / wet" },
-  "mixed rain/snow": { sw: "--warning", text: "⚠ Mixed" },
-  "sleet / freezing rain risk": { sw: "--serious", text: "⚠ Sleet / ZR" },
-  "rain": { sw: "--critical", text: "☂ Rain" },
+  "sleet / freezing rain risk": { sw: "--q-sleet", text: "⚠ Sleet / ZR" },
+  "mixed rain/snow": { sw: "--q-mixed", text: "⚠ Mixed" },
+  "rain": { sw: "--q-rain", text: "☂ Rain" },
 };
 // weather-report note styling: status colours always ship with an icon + text
 const NOTE = {
@@ -192,6 +192,14 @@ function renderReport(d, e) {
   }
 }
 
+function qualityKeys(box) {
+  for (const k of Object.keys(QUALITY)) {
+    const row = el("span", { class: "qkey" }); const sw = el("span", { class: "sw" });
+    sw.style.background = `var(${QUALITY[k].sw})`; row.append(sw, document.createTextNode(QUALITY[k].text.replace(/^[⚠☂] /, "")));
+    box.append(row);
+  }
+}
+
 function renderSummary(d, e) {
   const t0 = d.today, s = d.summary[e];
   const past = d.daily.filter((x) => x.past).slice(-7);
@@ -202,24 +210,20 @@ function renderSummary(d, e) {
     { label: "Next 1–5 days", days: next.slice(0, 5), tot: s.next1_5 },
     { label: "Next 6–10 days", days: next.slice(5, 10), tot: s.next6_10 },
   ];
-  const vmax = Math.max(4, ...groups.flatMap((g) => (g.days || []).map((x) => x[e].p50 || 0)));
-  const pmax = Math.max(1, ...groups.flatMap((g) => (g.days || []).flatMap((x) => x[e].periods.map((p) => p.snow_in || 0))));
-  const box = $("#summary"), pq = $("#pq");
-  box.replaceChildren(); pq.replaceChildren();
+  const total = (v) => v.periods.reduce((a, p) => a + (p.snow_in || 0), 0);  // 6am-6am, sum of the 3 parts
+  const vmax = Math.max(4, ...groups.flatMap((g) => (g.days || []).map((x) => total(x[e]))));
+  const box = $("#summary");
+  box.replaceChildren();
   $("#summary-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · a day runs 6am to 6am (overnight snow counts toward the day it fell)`;
   for (const g of groups) {
     if (g.center) {
       const c = el("div", { class: "scenter" });
       c.append(el("div", { class: "slabel" }, "Last 24 hours"), el("div", { class: "sbig" }, fmtIn(s.last24.p50)),
         el("div", { class: "muted" }, s.last24.station_in != null ? `station measured ${fmtIn(s.last24.station_in)}` : "model estimate"));
+      const lg = el("div", { class: "legend-col" });
+      qualityKeys(lg);
+      c.append(lg);
       box.append(c);
-      const lg = el("div", { class: "scenter legend-col" });
-      for (const k of Object.keys(QUALITY)) {
-        const row = el("span", { class: "qkey" }); const sw = el("span", { class: "sw" });
-        sw.style.background = `var(${QUALITY[k].sw})`; row.append(sw, document.createTextNode(QUALITY[k].text.replace(/^[⚠☂] /, "")));
-        lg.append(row);
-      }
-      pq.append(lg);
       continue;
     }
     const grp = el("div", { class: "sgroup" }); grp.style.flex = g.days.length;
@@ -228,41 +232,38 @@ function renderSummary(d, e) {
       el("div", { class: "stotal" + (g.past ? " past" : "") }, fmtIn(g.tot.p50)),
       el("div", { class: "muted srange" }, r ? `likely ${r}` : g.past && g.tot.station_in != null ? `station ${fmtIn(g.tot.station_in)}` : "\u00a0"));
     const days = el("div", { class: "sdays" });
-    const pqg = el("div", { class: "sgroup" }); pqg.style.flex = g.days.length;
-    const pqdays = el("div", { class: "sdays" });
     for (const x of g.days) {
       const v = x[e], dl = dayLabel(x.date), weekend = /Sat|Sun/.test(dl.dow);
-      const col = el("div", { class: "sday", tabindex: 0 });
-      const bar = el("div", { class: "sbar" + (x.past ? " past" : "") });
-      bar.style.height = `${Math.max(v.p50 >= 0.5 ? 4 : 0, (v.p50 || 0) / vmax * 100)}%`;
+      const col = el("div", { class: "sday" + (x.past ? " past" : ""), tabindex: 0 });
+      const stack = el("div", { class: "sstack" });
+      v.periods.forEach((p) => {  // morning at the bottom: flex column-reverse
+        if (!(p.snow_in >= 0.05)) return;
+        const seg = el("span", { class: "sseg" });
+        seg.style.height = `${p.snow_in / vmax * 100}%`;
+        seg.style.background = `var(${(QUALITY[p.quality] || QUALITY["medium"]).sw})`;
+        stack.append(seg);
+      });
+      const wrap = el("div", { class: "sbar-wrap" });
+      wrap.append(stack);
+      const rain = v.periods.reduce((a, p) => a + (p.rain_in || 0), 0);
       const label = el("div", { class: "sday-l" + (weekend ? " wk" : "") + (x.date === t0 ? " today" : "") });
       label.append(el("span", {}, x.date === t0 ? "Today" : dl.dow.slice(0, 2)), el("span", {}, String(dl.dom)));
-      const wrap = el("div", { class: "sbar-wrap" });
-      wrap.append(bar);
-      col.append(el("div", { class: "sval" }, fmtSnow(v.p50)), wrap, label);
+      col.append(el("div", { class: "sval" }, `${rain >= 0.1 ? "☂ " : ""}${fmtSnow(total(v))}`), wrap, label);
       days.append(col);
-      const pcol = el("div", { class: "sday" });
-      const minis = el("div", { class: "pq-bars" });
-      v.periods.forEach((p) => {
-        const m = el("span", { class: "pq-bar" });
-        const q = QUALITY[p.quality] || (p.snow_in > 0.1 ? QUALITY[v.quality] : null);
-        m.style.height = p.snow_in >= 0.1 ? `${Math.max(12, p.snow_in / pmax * 100)}%` : (p.rain_in >= 0.01 ? "12%" : "2px");
-        m.style.background = q ? `var(${q.sw})` : (p.rain_in >= 0.01 ? "var(--critical)" : "var(--grid)");
-        minis.append(m);
-      });
-      pcol.append(minis);
-      pqdays.append(pcol);
-      const tipRows = () => [
-        { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(v.p50) },
+      hover(col, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, [
+        { name: x.past ? "Model estimate" : "Forecast", value: fmtIn(total(v)) },
         ...(!x.past && fmtRange(v.p25, v.p75) ? [{ name: "Middle 50%", value: fmtRange(v.p25, v.p75) }] : []),
         ...(x.obs?.new_snow_in != null ? [{ name: "Station (calendar day)", value: fmtIn(x.obs.new_snow_in) }] : []),
-        ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => ({ name: nm, value: `${fmtIn(v.periods[k].snow_in)}${v.periods[k].quality ? " · " + QUALITY[v.periods[k].quality].text : ""}` })),
+        ...["Morning 6a–12p", "Afternoon 12–6p", "Night 6p–6a"].map((nm, k) => {
+          const p = v.periods[k];
+          return { name: nm, value: `${fmtIn(p.snow_in)}${p.quality && p.snow_in >= 0.05 ? " · " + QUALITY[p.quality].text : ""}${p.rain_in >= 0.01 ? ` · ☂ ${p.rain_in.toFixed(2)}"` : ""}` };
+        }),
+        ...(rain >= 0.01 ? [{ name: "Rain", value: `${rain.toFixed(2)}"` }] : []),
         { name: "Snow level", value: fmtFt(x.snow_level_ft) },
-      ];
-      for (const c of [col, pcol]) hover(c, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${ELEV_NAME[e]}`, tipRows()));
+      ]));
     }
-    grp.append(days); pqg.append(pqdays);
-    box.append(grp); pq.append(pqg);
+    grp.append(days);
+    box.append(grp);
   }
 }
 
@@ -398,7 +399,7 @@ function levelCharts(d, e) {
 
 function plumeChart(d, e) {
   const p = d.plume[e];
-  const series = { snow: { color: "var(--series-1)", name: "Snow" }, rain: { color: "var(--series-2)", name: "Rain" } };
+  const series = { snow: { color: "var(--q-light)", name: "Snow" }, rain: { color: "var(--q-rain)", name: "Rain" } };
   const pts = p.t.map((t, i) => {
     const x = { t };
     for (const k in series) for (const q of ["fc", "0.05", "0.25", "0.75", "0.95"]) x[`${k}${q}`] = p[k][q][i];
@@ -419,8 +420,8 @@ function plumeChart(d, e) {
       { name: "  middle 50% · 90%", value: `${val(x[`${k}0.25`], k)}–${val(x[`${k}0.75`], k)} · ${val(x[`${k}0.05`], k)}–${val(x[`${k}0.95`], k)}` }]),
   });
   legend("#plume-legend", [
-    { label: "Snow (in)", color: "var(--series-1)" },
-    { label: "Rain (in of water)", color: "var(--series-2)" },
+    { label: "Snow (in)", color: "var(--q-light)" },
+    { label: "Rain (in of water)", color: "var(--q-rain)" },
     { label: "Middle 50%", color: "var(--text-secondary)", kind: "key-band" },
     { label: "Middle 90%", color: "var(--text-secondary)", kind: "key-band light" },
   ]);
