@@ -10,13 +10,14 @@ import glob, json, math, os, sys, time
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 import sources as src
-from resorts import (BASE_MODELS, CATALOG, DATA, ELEVS, EXTRA_MODELS, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
+from resorts import (BASE_MODELS, CAL_VERSION, CATALOG, DATA, ELEVS, EXTRA_MODELS, GROUPS, HERE, IN, MANUAL, SEASONS, SNOTEL_STATES,
                      Calibration, Gauge, ModelCal, Point, Resort, load_calibration, load_resorts)
 
 STEP = 0.003                        # deg, ~300 m DEM search grid
 FACTOR_MIN, FACTOR_MAX = 0.4, 2.0   # beyond this the model/cell isn't representative; cap, let weight fall
 RATIO_BINS = [(10, 25), (25, 50), (50, 1e9)]  # forecast storm size, mm liquid per 72 h
 WET = 10.0                          # mm/72 h: only real storms feed the error distribution
+STORM_MM = 2.5                      # gauge mm/day: a "storm day" for the temperature bias
 QS = ("0.1", "0.25", "0.5", "0.75", "0.9")
 
 
@@ -119,26 +120,24 @@ def std_tz(tz):
 
 
 def hindcast(r, model, start, end):
-    """{lead day: {date: mm}} of as-issued forecasts at the gauge (cached; empty if no history)."""
+    """As-issued forecasts at the gauge (cached; empty if no history): ({lead: {date: mm}}, {date: C})."""
     def fetch():
         try:
-            j = src.previous_runs(r.gauge.lat, r.gauge.lon, model, start, end, std_tz(r.tz))
+            j = src.previous_runs(r.gauge.lat, r.gauge.lon, r.gauge.ft, model, start, end, std_tz(r.tz))
         except RuntimeError as e:
             if "HTTP 4" not in str(e):
                 raise
             j = {}  # no history for this model/winter here: skip it, don't fail the resort
         time.sleep(4)  # stay well inside the free-tier per-minute limit
         return j
-    h = src.cached(f"hind_{r.key}_{model}_{start}.json", fetch).get("hourly")
-    out = {1: {}, 2: {}, 3: {}}
-    if not h:
-        return out
-    for n in out:
+    h = src.cached(f"hind2_{r.key}_{model}_{start}.json", fetch).get("hourly") or {}
+    def daily(var, agg):
         per = {}
-        for t, v in zip(h["time"], h.get(f"precipitation_previous_day{n}", [])):
+        for t, v in zip(h.get("time", []), h.get(var, [])):
             per.setdefault(date.fromisoformat(t[:10]), []).append(v)
-        out[n] = {d: sum(vs) for d, vs in per.items() if len(vs) == 24 and None not in vs}
-    return out
+        return {d: agg(vs) for d, vs in per.items() if len(vs) == 24 and None not in vs}
+    precip = {n: daily(f"precipitation_previous_day{n}", sum) for n in range(1, 8)}
+    return precip, daily("temperature_2m_previous_day1", lambda vs: sum(vs) / len(vs))
 
 
 def windows72(fc, obs):
@@ -162,15 +161,20 @@ def quantile(xs, q):
 
 
 def calibrate_one(r):
-    obs = {}
+    obs, obs_t = {}, {}  # gauge precip (mm) and mean temperature (C) by day
     for s, e in SEASONS:
         st = src.StationSeries.fetch(r.gauge, s, (date.fromisoformat(e) + timedelta(3)).isoformat())
         obs.update({date.fromisoformat(k): v for k, v in st.precip_mm().items()})
-    cal, pairs_by = {}, {}
+        obs_t.update({date.fromisoformat(d.date): (d.temp_f - 32) / 1.8 for d in st.days if d.temp_f is not None})
+    cal, pairs_by, ext, temps = {}, {}, {}, {}
     for m in r.models:
-        pairs = {}
+        pairs, lead_pairs = {}, []
         for s, e in SEASONS:
-            pairs.update(windows72(hindcast(r, m, s, e), obs))
+            fc, t = hindcast(r, m, s, e)
+            pairs.update(windows72(fc, obs))
+            lead_pairs += [(v, obs[d]) for n in range(4, 8) for d, v in fc[n].items() if d in obs]
+            for d, v in t.items():
+                temps.setdefault(d, []).append(v)
         if len(pairs) < 60:
             continue
         f = sum(p[0] for p in pairs.values()); o = sum(p[1] for p in pairs.values())
@@ -178,9 +182,14 @@ def calibrate_one(r):
         mae = lambda k: sum(abs(p[0] * k - p[1]) for p in pairs.values()) / len(pairs)
         cal[m] = ModelCal(round(factor, 3), 0.0, round(mae(factor), 2), round(mae(1.0), 2), len(pairs))
         pairs_by[m] = pairs
+        if len(lead_pairs) >= 60:  # daily skill at lead days 4-7 (short-range models don't get here)
+            ext[m] = sum(abs(v * factor - o) for v, o in lead_pairs) / len(lead_pairs)
     w = {m: 1 / c.mae72 ** 2 for m, c in cal.items()}  # inverse-MSE-ish weights
+    w_ext = {m: 1 / max(v, 0.1) ** 2 for m, v in ext.items()}
     for m in cal:
         cal[m].weight = round(w[m] / sum(w.values()), 3)
+        cal[m].weight_ext = round(w_ext[m] / sum(w_ext.values()), 3) if m in w_ext else 0.0
+        cal[m].mae_ext = round(ext[m], 2) if m in ext else None
     blend = []  # renormalised over models with data that day
     for d in set().union(*pairs_by.values()):
         num = sum(w[m] * p[d][0] * cal[m].factor for m, p in pairs_by.items() if d in p)
@@ -192,9 +201,17 @@ def calibrate_one(r):
         rb = [o / f for f, o in blend if lo <= f < hi]
         if len(rb) >= 15:
             bins.append(dict(lo_mm=lo, hi_mm=hi, n=len(rb), q={q: round(quantile(rb, float(q)), 3) for q in QS}))
+    # temperature: station minus the models' mean daily temperature at the gauge (lead 1)
+    diffs = [(obs_t[d] - sum(v) / len(v), obs.get(d, 0) >= STORM_MM) for d, v in temps.items() if d in obs_t]
+    wet = [x for x, storm in diffs if storm]
+    bias = sum(x for x, _ in diffs) / len(diffs) if diffs else None
     return Calibration(cal, station=r.gauge.name, n_windows=len(blend),
                        blend_mae72=round(sum(abs(a - b) for a, b in blend) / len(blend), 2),
-                       ratio_q={q: round(quantile(ratios, float(q)), 3) for q in QS}, ratio_bins=bins, n_wet=len(ratios))
+                       ratio_q={q: round(quantile(ratios, float(q)), 3) for q in QS}, ratio_bins=bins, n_wet=len(ratios),
+                       version=CAL_VERSION, temp_bias_c=round(bias, 2) if bias is not None else None,
+                       temp_bias_wet_c=round(sum(wet) / len(wet), 2) if len(wet) >= 15 else None, temp_n_wet=len(wet),
+                       temp_mae_c=[round(sum(abs(x) for x, _ in diffs) / len(diffs), 2),
+                                   round(sum(abs(x - bias) for x, _ in diffs) / len(diffs), 2)] if diffs else None)
 
 
 def regional_default(cal, r, resorts):
@@ -231,7 +248,7 @@ def run(group=None, out=None):
                     print(f"  locate failed {k}: {e}", file=sys.stderr)
                 save(resorts, cal)
             r = resorts.get(k)
-            if r and r.gauge and (k not in cal or not cal[k].calibrated):
+            if r and r.gauge and (k not in cal or not cal[k].current):
                 try:
                     cal[k] = calibrate_one(r)
                     print(k, "blend MAE72", cal[k].blend_mae72, {m: c.factor for m, c in cal[k].models.items()})

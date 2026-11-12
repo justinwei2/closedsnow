@@ -1,40 +1,67 @@
-# opensnow (unofficial)
+# opensnow
 
-An open-source, personal take on OpenSnow-style mountain forecasts. **Not affiliated with or
-endorsed by OpenSnow.** Live: https://justinwei2.github.io/opensnow/ ·
-[how it works](https://justinwei2.github.io/opensnow/methodology.html) (formulas, thresholds, labels).
+Snow forecasts for ~35 western North America ski resorts, built from free weather data.
+Unofficial; not affiliated with OpenSnow.
 
-On-mountain base / mid / summit forecasts for ~35 western North America resorts: a
-bias-corrected multi-model blend with 25–75% ranges, snow quality, snow level vs lift heights, a
-daily weather report (wind holds, powder mornings, rain line), NWS alerts and discussions.
-Python stdlib only; the site is static (`web/`).
+Site: https://justinwei2.github.io/opensnow/ · Methodology: https://justinwei2.github.io/opensnow/methodology.html
 
-## How it runs (all on GitHub)
-| Workflow | When | What |
+Each resort has base, mid and summit points. For each point the site shows:
+
+- snowfall for the past 7 days and next 10 days (6am–6am days, split into morning / afternoon / night)
+- a likely range (25–75%) from ensembles plus the resort's historical forecast error
+- snow quality and snow ratio, rain/snow line, freezing level
+- cumulative snow and rain with forecast spread
+- a daily weather report: wind holds, powder mornings, rain line, visibility, wind chill
+- NWS alerts and forecast discussion (US)
+
+## How it works
+
+1. **Setup (once per resort, `calibrate.py`).** Snap the catalog coordinates to a 90 m DEM. Pick
+   the nearest SNOTEL/CDEC gauge and the models that have data there. Compare two winters of
+   as-issued forecasts (lead days 1–7) against the gauge to get, per model: a precipitation bias
+   factor, blend weights for lead days 1–3 and 4+, and the resort's temperature bias on storm days.
+2. **Refresh (`update.py`).** Pull 7–8 deterministic models, pressure-level profiles, 5 ensembles
+   (~190 members), NWS grids/alerts and station data. Blend precipitation with the calibrated
+   weights. Derive rain/snow, snow ratio and snow level from the bias-corrected profile.
+3. **Publish.** Write one JSON file per resort; the static page in `web/` renders it.
+
+Stdlib Python only. No server: everything runs in GitHub Actions and is served by GitHub Pages.
+
+## Workflows
+
+| Workflow | Schedule | Purpose |
 |---|---|---|
-| `refresh` | every 3 h | 4 parallel region jobs refresh resorts whose data is > 7.5 h old, save JSON to the single-commit `data` branch, run `update.py --check`, trigger `pages` |
-| `pages` | after refresh, or on `web/` changes | deploy `web/` + data to GitHub Pages (3 attempts) |
-| `backfill` | nightly / manual | locate + calibrate new catalog resorts per region; commits `data/` and [CALIBRATION.md](CALIBRATION.md) |
-| `watchdog` | daily | checks the live site is fresh |
-| `autoretry` | after a failure | re-runs failed jobs once (not health-check failures) |
+| `refresh` | every 3 h | refresh resorts with data > 7.5 h old (4 parallel region jobs), save to the `data` branch, freshness check, trigger `pages` |
+| `pages` | after refresh / on `web/` changes | deploy the site |
+| `backfill` | nightly | set up or recalibrate resorts (no-op when everything is current) |
+| `watchdog` | daily | check the live site is fresh |
+| `autoretry` | on failure | re-run failed jobs once |
 
-A failed run emails the repo owner (github.com/settings/notifications → Actions). Open-Meteo's
-free tier (10k calls/day) is the budget: a refresh is ~65–80 calls per resort; calibration
-~200 per US resort, once.
+Failed runs email the repo owner. Open-Meteo's free tier (10k calls/day) is the budget: a
+refresh costs ~65–80 calls per resort; calibration ~200 per resort.
 
 ## Files
-| File | What |
-|---|---|
-| `resorts.py` | catalog, constants, typed records (`Resort`, `Point`, `Gauge`, `Calibration`) |
-| `sources.py` | HTTP (retries, quota, replay) and source adapters → `ModelGrid`, `StationSeries`, `NwsGrid`, `Alert` |
-| `conditions.py` | rain/snow, snow level, snow ratio, quality labels, weather-report notes |
-| `calibrate.py` | one-time setup: locate points/gauge/models, calibrate bias factors, merge regions |
-| `update.py` | live forecast → JSON, index, `--check` freshness alarm |
 
-Add a resort: one line in `CATALOG` (`resorts.py`); the next nightly setup run handles it.
-Local preview: `python3 update.py alta && python3 -m http.server -d web 8000`.
-Regression testing: set `SKISITE_REPLAY=dir` to record API responses once and replay them.
+| File | Contents |
+|---|---|
+| `resorts.py` | catalog, constants, `Resort` / `Point` / `Gauge` / `Calibration` records |
+| `sources.py` | HTTP (retries, quota handling, record/replay) and adapters: `ModelGrid`, `StationSeries`, `NwsGrid`, `Alert` |
+| `conditions.py` | wet-bulb, snow fraction, snow level, Kuchera snow ratio, quality labels, weather report |
+| `calibrate.py` | locate + calibrate + merge region results |
+| `update.py` | forecast pipeline, index, `--check` |
+
+## Usage
+
+```
+python3 calibrate.py                # set up / recalibrate resorts that need it
+python3 update.py alta              # refresh one resort -> web/data/alta.json
+python3 -m http.server -d web 8000  # preview
+SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, replay on later runs
+```
+
+To add a resort, add a line to `CATALOG` in `resorts.py`; the next `backfill` run sets it up.
 
 ## Data
-Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC, DWD models), api.weather.gov, NRCS SNOTEL, California
-CDEC, all via documented APIs. Limitations are listed on the methodology page.
+
+Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC and DWD models), api.weather.gov, NRCS SNOTEL, California
+CDEC. Documented APIs only. Known limitations are listed on the methodology page.

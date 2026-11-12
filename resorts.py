@@ -22,6 +22,8 @@ LEVELS = [1000, 925, 850, 800, 750, 700, 650, 600, 550, 500]
 ENSEMBLES = {"ecmwf_ifs025": "ecmwf_ifs025", "ecmwf_aifs025": "ecmwf_aifs025_single",
              "gfs05": "gfs_seamless", "gem_global": "gem_seamless", "icon_seamless": "icon_seamless"}
 SEASONS = [("2024-11-01", "2025-04-30"), ("2025-11-01", "2026-04-30")]  # calibration winters
+CAL_VERSION = 2  # bump to recalibrate every resort (2: lead-time weights + temperature bias)
+EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weights
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
 # Regions refresh/calibrate as separate parallel CI jobs (own runner each).
@@ -139,10 +141,12 @@ class Resort:
 @dataclass
 class ModelCal:
     factor: float
-    weight: float
+    weight: float                    # blend weight for lead days 1-3
     mae72: float | None = None
     raw_mae72: float | None = None
     n: int = 0
+    weight_ext: float | None = None  # blend weight for lead days 4+ (0: model doesn't reach that far)
+    mae_ext: float | None = None     # daily MAE (mm) at lead days 4-7, after the bias factor
 
 
 @dataclass
@@ -158,10 +162,28 @@ class Calibration:
     ratio_bins: list = field(default_factory=list)  # [{lo_mm, hi_mm, n, q}] by forecast storm size
     peers: int | None = None
     peers_scope: str | None = None
+    version: int = 1
+    temp_bias_c: float | None = None      # station minus model daily mean temperature, all days
+    temp_bias_wet_c: float | None = None  # same on storm days: shifts the profile (phase, snow level, ratio)
+    temp_n_wet: int = 0
+    temp_mae_c: list | None = None        # [raw, corrected] daily-mean temperature MAE at the gauge
 
     @property
     def calibrated(self):
         return not self.uncalibrated
+
+    @property
+    def current(self):
+        return self.calibrated and self.version >= CAL_VERSION
+
+    def weight(self, model, lead_days):
+        m = self.models[model]
+        return m.weight_ext if lead_days > EXT_LEAD_DAYS and m.weight_ext is not None else m.weight
+
+    @property
+    def profile_shift_c(self):
+        """Temperature correction applied to the model profile, capped (station siting adds its own bias)."""
+        return max(-1.5, min(1.5, self.temp_bias_wet_c)) if self.temp_bias_wet_c is not None else 0.0
 
     def error_quantiles(self, liq72_mm, qs):
         """obs/forecast ratio quantiles for a 72 h storm of this size (falls back to all storms)."""

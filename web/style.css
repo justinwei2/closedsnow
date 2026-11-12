@@ -14,6 +14,8 @@
   --seq-100: #cde2fb; --seq-200: #9ec5f4; --seq-300: #6da7ec; --seq-400: #3987e5;
   --seq-500: #256abf; --seq-600: #184f95; --seq-700: #0d366b;
   --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
+  /* powder quality: one ordinal blue ramp, more contrast = drier snow */
+  --q-blower: #104281; --q-light: #256abf; --q-medium: #3987e5; --q-dense: #6da7ec; --q-heavy: #86b6ef;
 }
 /* dark: OS setting unless the toggle says light; toggle wins both ways */
 @media (prefers-color-scheme: dark) {
@@ -22,6 +24,7 @@
     --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+    --q-blower: #cde2fb; --q-light: #9ec5f4; --q-medium: #6da7ec; --q-dense: #3987e5; --q-heavy: #256abf;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -29,6 +32,7 @@
   --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+  --q-blower: #cde2fb; --q-light: #9ec5f4; --q-medium: #6da7ec; --q-dense: #3987e5; --q-heavy: #256abf;
 }
 
 /* ---- base */
@@ -122,6 +126,37 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
   font-size: 11px; color: #fff; font-weight: 700; transform: translateY(3px); }
 .note .ic.warning { color: #0b0b0b; }
 @media (max-width: 700px) { .rday { grid-template-columns: 1fr; } }
+
+/* ---- snow summary strip + powder quality */
+.summary { display: flex; gap: 14px; align-items: stretch; }
+.sgroup { display: flex; flex-direction: column; min-width: 0; }
+.slabel { font-size: 12px; color: var(--text-secondary); text-align: center; font-weight: 600; }
+.stotal { font-size: 26px; font-weight: 650; text-align: center; line-height: 1.2; border-top: 1px solid var(--axis); margin-top: 6px; padding-top: 2px; }
+.stotal.past { color: var(--text-secondary); }
+.srange { font-size: 12px; text-align: center; margin-bottom: 6px; }
+.sdays { display: flex; gap: 4px; flex: 1; }
+.sday { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; outline: none; }
+.sday:hover .sbar, .sday:focus .sbar { filter: brightness(1.12); }
+.sval { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sbar-wrap { height: 90px; width: 100%; display: flex; align-items: flex-end; justify-content: center; border-bottom: 1px solid var(--axis); }
+.sbar { width: min(22px, 70%); background: var(--series-1); border-radius: 4px 4px 0 0; }
+.sbar.past { background: var(--muted); }
+.sday-l { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.25; }
+.sday-l.wk { color: var(--text-primary); font-weight: 600; }
+.sday-l.today { color: var(--text-primary); font-weight: 700; }
+.scenter { flex: 0 0 150px; background: var(--page); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12px; }
+.sbig { font-size: 44px; font-weight: 650; line-height: 1.1; margin: 4px 0; }
+.pq-head { display: flex; gap: 10px; align-items: baseline; margin: 18px 0 8px; }
+.pq .sday { justify-content: flex-end; }
+.pq-bars { height: 44px; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 2px; border-bottom: 1px solid var(--grid); }
+.pq-bar { width: min(7px, 26%); border-radius: 2px 2px 0 0; }
+.legend-col { align-items: flex-start; gap: 3px; justify-content: flex-start; padding: 6px 10px; }
+.qkey { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+.qkey .sw, .chip .sw { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+@media (max-width: 900px) { .summary { overflow-x: auto; } .sgroup { min-width: 220px; } }
+.sub-h { font-size: 13px; margin: 18px 0 6px; color: var(--text-secondary); }
+.plume-head { margin-top: 20px; }
+.key-band.light { opacity: .12; }
 
 /* ---- charts */
 .chart { width: 100%; height: 240px; position: relative; }

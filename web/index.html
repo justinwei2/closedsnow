@@ -39,34 +39,29 @@
       <section id="alerts"></section>
 
       <section class="card">
-        <div class="totals">
-          <div class="tgroup"><div class="tg-label">Past</div><div id="past" class="tiles"></div></div>
-          <div class="tgroup grow"><div class="tg-label">Forecast <span class="muted">· likely range = middle 50% of outcomes</span></div><div id="next" class="tiles"></div></div>
-        </div>
+        <div class="card-head"><h2>Snow summary</h2><span class="muted" id="summary-sub"></span></div>
+        <div id="summary" class="summary"></div>
+        <div class="pq-head"><h2>Powder quality</h2><span class="muted">each day: morning · afternoon · night</span></div>
+        <div id="pq" class="summary pq"></div>
       </section>
 
       <section class="card">
-        <div class="card-head"><h2>Weather report</h2><span class="muted" id="report-sub"></span></div>
+        <div class="card-head"><h2>Daily overview</h2><span class="muted" id="daily-sub"></span></div>
+        <div class="table-wrap"><table id="daily-table" class="grid"></table></div>
+        <h3 class="sub-h">Weather report</h3>
         <div id="report" class="report"></div>
       </section>
 
       <section class="card">
-        <div class="card-head"><h2>Snowfall</h2><span class="muted" id="snow-sub"></span></div>
-        <div id="daily-chart" class="chart"></div>
-        <div class="legend" id="daily-legend"></div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><h2>Daily forecast</h2><span class="muted" id="daily-sub"></span></div>
-        <div class="table-wrap"><table id="daily-table" class="grid"></table></div>
-      </section>
-
-      <section class="card">
-        <div class="card-head"><h2>Snow level &amp; freezing level</h2><span class="muted">next 7 days, hourly</span></div>
+        <div class="card-head"><h2>Snow level &amp; freezing level</h2><span class="muted">next 10 days, hourly</span></div>
         <div id="level-chart" class="chart"></div>
         <div class="legend" id="level-legend"></div>
-        <div id="precip-chart" class="chart short"></div>
-        <div class="legend" id="precip-legend"></div>
+        <div class="card-head plume-head"><h2>Snow: forecast &amp; spread</h2><span class="muted" id="snow-plume-sub"></span></div>
+        <div id="snow-plume" class="chart"></div>
+        <div class="legend" id="snow-plume-legend"></div>
+        <div class="card-head plume-head"><h2>Rain: forecast &amp; spread</h2><span class="muted" id="rain-plume-sub"></span></div>
+        <div id="rain-plume" class="chart short"></div>
+        <div class="legend" id="rain-plume-legend"></div>
       </section>
 
       <section class="appendix">

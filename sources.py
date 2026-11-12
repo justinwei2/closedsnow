@@ -151,10 +151,12 @@ def ensemble(pt, tz, model):
     return ModelGrid.from_json(j, [model])
 
 
-def previous_runs(lat, lon, model, start, end, tz):
-    """As-issued forecasts at lead days 1-3 for a past period (calibration)."""
-    q = dict(latitude=lat, longitude=lon, models=model, start_date=start, end_date=end, timezone=tz,
-             cell_selection="nearest", hourly=",".join(f"precipitation_previous_day{n}" for n in (1, 2, 3)))
+def previous_runs(lat, lon, elev_ft, model, start, end, tz):
+    """As-issued forecasts for a past period (calibration): precip at lead days 1-7 and 2 m
+    temperature at lead day 1, at the gauge's elevation. 8 variables: one call's worth of quota."""
+    hourly = [f"precipitation_previous_day{n}" for n in range(1, 8)] + ["temperature_2m_previous_day1"]
+    q = dict(latitude=lat, longitude=lon, elevation=round(elev_ft * FT), models=model, start_date=start, end_date=end,
+             timezone=tz, cell_selection="nearest", hourly=",".join(hourly))
     return get_json("https://previous-runs-api.open-meteo.com/v1/forecast", q)
 
 
@@ -179,11 +181,13 @@ def has_model(lat, lon, model):
 
 @dataclass
 class StationDay:
-    """Start-of-day readings, inches: cumulative gauge precip, snow water equivalent, snow depth."""
+    """Start-of-day readings (in): cumulative gauge precip, snow water equivalent, snow depth;
+    plus the day's mean air temperature (F)."""
     date: str
     precip: float | None = None
     swe: float | None = None
     depth: float | None = None
+    temp_f: float | None = None
 
 
 class StationSeries:
@@ -208,7 +212,7 @@ class StationSeries:
                 raw.setdefault({2: "PREC", 3: "WTEQ", 18: "SNWD", 30: "TAVG"}[r["SENSOR_NUM"]], []).append(
                     (datetime.strptime(r["date"], "%Y-%m-%d %H:%M").strftime("%Y-%m-%d"), None if v is None or v <= -9000 else v))
         by = {}
-        for el, attr in (("PREC", "precip"), ("WTEQ", "swe"), ("SNWD", "depth")):
+        for el, attr in (("PREC", "precip"), ("WTEQ", "swe"), ("SNWD", "depth"), ("TAVG", "temp_f")):
             for d, v in raw.get(el, []):
                 if v is not None:
                     setattr(by.setdefault(d, StationDay(d)), attr, v)

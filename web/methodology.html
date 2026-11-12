@@ -24,7 +24,7 @@
     <nav class="toc card">
       <a href="#points">1. Forecast points</a><a href="#blend">2. Precipitation blend</a><a href="#calibration">3. Calibration</a>
       <a href="#ranges">4. Likely range</a><a href="#phase">5. Rain vs snow &amp; snow level</a><a href="#slr">6. Snow ratio</a>
-      <a href="#quality">7. Snow-quality labels</a><a href="#report">8. Weather report</a><a href="#past">9. Past snowfall</a>
+      <a href="#quality">7. Snow-quality labels</a><a href="#report">8. Weather report</a><a href="#past">9. Days &amp; spread charts</a>
       <a href="#refresh">10. Refresh &amp; reliability</a><a href="#limits">11. Limitations</a><a href="#data">12. Data sources</a>
     </nav>
 
@@ -42,7 +42,7 @@
       <h2>2. Precipitation blend</h2>
       <p>Up to eight models: ECMWF IFS 9 km and 0.25°, ECMWF AIFS, GFS + HRRR, NBM 2.5 km, GEM, ICON, plus HRDPS 2.5 km in Canada and the northern US. For each hour <i>t</i>:</p>
       <div class="eq">P<sub>blend</sub>(t) = Σ<sub>m</sub> w<sub>m</sub> · f<sub>m</sub> · P<sub>m</sub>(t) &nbsp;/&nbsp; Σ<sub>m</sub> w<sub>m</sub></div>
-      <p><b>f<sub>m</sub></b> = the model's bias factor and <b>w<sub>m</sub></b> = its weight (§3). The sum covers only models with data at that hour, so the blend renormalises as short-range models drop out: HRDPS after 2 days, ICON after 7, GEM after 10, NBM after 11.</p>
+      <p><b>f<sub>m</sub></b> = the model's bias factor and <b>w<sub>m</sub></b> = its weight (§3). The weight depends on lead time: one set for the next 3.5 days, another (fit on lead days 4–7) beyond that. The sum covers only models with data at that hour, so the blend renormalises as short-range models drop out: HRDPS after 2 days, ICON after 7, GEM after 10, NBM after 11.</p>
     </section>
 
     <section class="card" id="calibration">
@@ -50,7 +50,9 @@
       <p>One-time, per resort, against a nearby automated gauge (NRCS SNOTEL or California CDEC). It uses forecasts <b>as they were actually issued</b> (Open-Meteo Previous Runs API) over winters 2024–25 and 2025–26, so there's no look-ahead.</p>
       <div class="eq">72 h forecast window starting day D = lead-1 day D + lead-2 day D+1 + lead-3 day D+2</div>
       <div class="eq">f<sub>m</sub> = Σ observed / Σ forecast<sub>m</sub> &nbsp; (clamped to 0.4–2.0)</div>
-      <div class="eq">w<sub>m</sub> ∝ 1 / MAE<sub>m</sub>², &nbsp; MAE<sub>m</sub> = mean |f<sub>m</sub>·forecast − observed| over 72 h windows</div>
+      <div class="eq">w<sub>m</sub> ∝ 1 / MAE<sub>m</sub>², &nbsp; MAE<sub>m</sub> = mean |f<sub>m</sub>·forecast − observed| over 72 h windows (lead days 1–3)</div>
+      <div class="eq">w<sub>m</sub><sup>4+</sup> ∝ 1 / MAE<sub>m,daily</sub>², &nbsp; daily totals at lead days 4–7 (models that don't reach that far get 0)</div>
+      <div class="eq">temperature bias = mean(station − model daily mean temperature) at the gauge, lead day 1: all days (displayed temperatures) and storm days ≥ 2.5 mm (profile correction, §5)</div>
       <ul>
         <li><b>Observed precipitation</b> is the daily gauge increment. When the gauge clearly missed a storm (snow water gain &gt; 0.3" and gauge &lt; half of it), the snowpack's water gain is used instead. Storage gauges cap and freeze; Mammoth Pass caught 12" vs 31" of snow-water gain in 2024–25.</li>
         <li><b>Resorts without a gauge</b> (Canada): f<sub>m</sub> = the median of calibrated resorts in the same region (else all US resorts), with equal weights.</li>
@@ -73,7 +75,7 @@
 
     <section class="card" id="phase">
       <h2>5. Rain vs snow, snow level, freezing level</h2>
-      <p>An hourly consensus profile averages temperature, humidity, height and wind from ECMWF IFS 0.25°, GFS, GEM and ICON at 10 pressure levels (1000–500 hPa), interpolated linearly in height.</p>
+      <p>An hourly consensus profile averages temperature, humidity, height and wind from ECMWF IFS 0.25°, GFS, GEM and ICON at 10 pressure levels (1000–500 hPa), interpolated linearly in height. Every level's temperature is shifted by the resort's storm-day temperature bias (§3), capped at ±1.5 °C because station siting adds its own bias. This moves the rain/snow split, snow level, freezing level and snow ratio together.</p>
       <div class="eq">T<sub>w</sub> = Stull (2011) wet-bulb from T and RH</div>
       <div class="eq">snow fraction = 1 / (1 + e<sup>(T<sub>w</sub> − 0.5 °C) / 0.35</sup>) &nbsp; → 90% at −0.3 °C, 50% at +0.5 °C, 10% at +1.3 °C</div>
       <ul>
@@ -129,8 +131,11 @@
     </section>
 
     <section class="card" id="past">
-      <h2>9. Past snowfall</h2>
+      <h2>9. Days, past snowfall &amp; spread charts</h2>
       <ul>
+        <li><b>Ski day</b> = 6am to 6am the next morning, split into morning (6–12), afternoon (12–6pm) and night (6pm–6am). Each part's powder-quality bar uses the same quality rules (§7) on that part's hours.</li>
+        <li><b>Summary</b>: last 7 ski days, last 24 hours, next 1–5 days (the rest of today plus 4 days) and next 6–10 days.</li>
+        <li><b>Snow and rain spread charts</b>: cumulative amounts from now for 10 days. Each ensemble member's precipitation is split into snow and rain with the forecast's hourly phase and snow ratio. The 25–75% and 10–90% bands are the members' weighted percentiles, centred on the forecast line. Members drop out past their horizon (ICON EPS after ~7.5 days).</li>
         <li><b>Model estimate</b>: the same blend and phase/ratio maths applied to the last 7 days of the models' short-range forecasts. An estimate, not a measurement.</li>
         <li><b>Station measured</b>: the gauge's daily snow-depth gain. Settling makes this under-read new snow, and the station sits at one elevation (shown).</li>
       </ul>
@@ -152,6 +157,7 @@
         <li>Precipitation is at model-grid resolution. Orographic peaks between grid cells aren't resolved.</li>
         <li>At high resorts the lowest pressure levels lie below the model terrain, so the snow level may read "below base".</li>
         <li>Calibration is fit and scored on the same two winters, so the error shown is optimistic. ECMWF IFS 9 km and AIFS have one winter of history.</li>
+        <li>The temperature correction assumes the gauge's storm-day bias holds across the resort's elevations.</li>
         <li>SNOTEL gauges under-catch snow in wind, so calibrated totals may run low. Canadian factors are borrowed from US resorts.</li>
         <li>Models historically under-forecast the biggest storms 1–3 days out. Watch the top of the range.</li>
         <li>Thin warm layers (&lt; ~1,500 ft) are missed by the sleet check.</li>

@@ -36,8 +36,9 @@ def attempt(what, fn, default=None):
         return default
 
 
-def soundings(grid):
-    """Per hour: consensus Profile (mean of the profile models) and each model's Profile."""
+def soundings(grid, shift_c=0.0):
+    """Per hour: consensus Profile (mean of the profile models) and each model's Profile.
+    shift_c: calibrated storm-day temperature correction, applied to every level."""
     cons, per_model = [], {m: [] for m in PROFILE_MODELS}
     for i in range(len(grid.times)):
         stacks = []
@@ -45,6 +46,8 @@ def soundings(grid):
             cols = [[grid.at(f"{v}_{p}hPa", m, i) for p in LEVELS]
                     for v in ("geopotential_height", "temperature", "relative_humidity", "wind_speed")]
             ok = all(None not in c for c in cols)
+            if ok:
+                cols[1] = [t + shift_c for t in cols[1]]
             per_model[m].append(cx.Profile(*cols) if ok else None)
             if ok:
                 stacks.append(cols)
@@ -53,9 +56,9 @@ def soundings(grid):
     return cons, per_model
 
 
-def blend(grid, cal):
-    """Bias-corrected, weighted hourly precip blend (renormalised over models present) and
-    each model's corrected series."""
+def blend(grid, cal, now_i):
+    """Bias-corrected, skill-weighted hourly precip blend (renormalised over models present) and
+    each model's corrected series. Weights depend on lead time (days 1-3 vs 4+)."""
     precip, contrib = [], {m: [] for m in grid.models}
     for i in range(len(grid.times)):
         num = den = 0.0
@@ -63,17 +66,19 @@ def blend(grid, cal):
             v = grid.at("precipitation", m, i)
             c = None if v is None else v * cal.models[m].factor
             contrib[m].append(c)
-            if c is not None:
-                num += cal.models[m].weight * c; den += cal.models[m].weight
+            w = cal.weight(m, (i - now_i) / 24)
+            if c is not None and w:
+                num += w * c; den += w
         precip.append(num / den if den else None)
     return precip, contrib
 
 
-def hours_at(r, e, grid, cons, precip):
+def hours_at(r, e, grid, cons, precip, temp_bias_c):
     z = r.point(e).ft * FT
     out = []
     for i, t in enumerate(grid.times):
         tc, w10, g10 = (grid.mean(v, i) for v in ("temperature_2m", "wind_speed_10m", "wind_gusts_10m"))
+        tc = None if tc is None else tc + temp_bias_c
         h = cx.Hour(t, precip[i], None if tc is None else tc * 9 / 5 + 32, None if w10 is None else w10 * KMH_MPH,
                     None if g10 is None else g10 * KMH_MPH, grid.wind_dir(i), grid.mean("cloud_cover", i))
         p = cons[i]
@@ -116,7 +121,7 @@ def process(r, cal):
     models = [m for m in r.models if m in cal.models]
     grids = {e: src.forecast(r.point(e), r.tz, models, PAST_DAYS) for e in ELEVS}
     times = grids["summit"].times
-    cons, per_model = soundings(src.profiles(r.summit, r.tz, PAST_DAYS))
+    cons, per_model = soundings(src.profiles(r.summit, r.tz, PAST_DAYS), cal.profile_shift_c)
     ens = {m: attempt(f"ensemble {m}", lambda m=m: src.ensemble(r.summit, r.tz, m)) for m in ENSEMBLES}
     nws = {e: attempt("NWS", lambda e=e: src.nws_grid(r.point(e), local)) if r.us else None for e in ELEVS}
     alerts = attempt("alerts", lambda: [asdict(a) for a in src.nws_alerts(r.summit)]) if r.us else []
@@ -138,8 +143,8 @@ def process(r, cal):
     hours, model_snow = {}, {}
     for e in ELEVS:
         assert grids[e].times == times, "time axes differ"
-        precip, contrib = blend(grids[e], cal)
-        hrs = hours[e] = hours_at(r, e, grids[e], cons, precip)
+        precip, contrib = blend(grids[e], cal, now_i)
+        hrs = hours[e] = hours_at(r, e, grids[e], cons, precip, cal.temp_bias_c or 0.0)
         model_snow[e] = {m: [None if c[i] is None or hrs[i].frac is None else c[i] * hrs[i].frac * hrs[i].slr / IN
                              for i in range(len(times))] for m, c in contrib.items()}
     nws_sl = nws["summit"].snow_level if nws["summit"] else {}
@@ -191,25 +196,31 @@ def process(r, cal):
             res[lo], res[hi] = min(res[lo], snow), max(res[hi], snow)
         return res
 
-    # ---- daily
-    today = now[:10]
+    # ---- ski days: 6am to 6am, split into morning (6-12), afternoon (12-6pm) and night (6pm-6am)
+    def quality_of(hrs, min_liq=1.0):
+        wet = [h for h in hrs if (h.precip_mm or 0) > 0.2 and h.frac is not None]
+        liq = sum(h.precip_mm for h in wet)
+        if liq <= 0:
+            return {}
+        snow_liq = sum(h.precip_mm * h.frac for h in wet)
+        slr = sum(h.precip_mm * h.frac * h.slr for h in wet) / snow_liq if snow_liq > 0 else None
+        nose = any(h.warm_nose and h.precip_mm > 0.5 for h in wet)
+        return dict(slr=slr, quality=cx.quality(slr or 10, snow_liq / liq, nose) if liq > min_liq else None)
+
+    today = (datetime.fromisoformat(now) - timedelta(hours=6)).strftime("%Y-%m-%d")  # current ski day
+    starts = {t[:10]: i for i, t in enumerate(times) if t.endswith("T06:00")}
     obs_by_day = {x["date"]: x for x in (obs or {}).get("days", [])}
     daily = []
-    for d in sorted({t[:10] for t in times}):
-        idx = [i for i, t in enumerate(times) if t.startswith(d)]
-        first, i1 = idx[0], idx[-1] + 1
-        i0 = now_i if d == today else first  # today: rest of the day
+    for d, first in sorted(starts.items()):
+        i1 = min(first + 24, len(times))
+        i0 = max(first, now_i) if d == today else first  # today: the rest of the ski day
         entry = dict(date=d, past=d < today)
         for e in ELEVS:
             hrs = hours[e][first:i1]
             b = window(first if d < today else i0, i1, e)
-            wet = [h for h in hrs if (h.precip_mm or 0) > 0.2 and h.frac is not None]
-            liq = sum(h.precip_mm for h in wet)
-            if liq > 0:
-                snow_liq = sum(h.precip_mm * h.frac for h in wet)
-                slr = sum(h.precip_mm * h.frac * h.slr for h in wet) / snow_liq if snow_liq > 0 else None
-                nose = any(h.warm_nose and h.precip_mm > 0.5 for h in wet)
-                b.update(slr=slr, quality=cx.quality(slr or 10, snow_liq / liq, nose) if liq > 1 else None)
+            b.update(quality_of(hrs))
+            b["periods"] = [dict(snow_in=sum(h.snow_in or 0 for h in part), rain_in=sum(h.rain_in or 0 for h in part),
+                                 **quality_of(part, 0.5)) for part in (hrs[:6], hrs[6:12], hrs[12:24])]
             temps = [h.temp_f for h in hrs if h.temp_f is not None]
             lift = cx.lift_hours(hrs, d)
             winds = [h.wind_mph for h in lift if h.wind_mph is not None]
@@ -230,34 +241,71 @@ def process(r, cal):
         fz = [levels[i]["freezing_level_ft"] for i in range(first, i1) if levels[i]["freezing_level_ft"] is not None]
         entry.update(snow_level_ft=mean(sl_wet) if sl_wet else mean(sls), snow_level_max_ft=max(sl_wet, default=None),
                      freezing_level_ft=mean(fz))
-        if d in obs_by_day:
+        if d in obs_by_day:  # station days are calendar days
             o = obs_by_day[d]
             entry["obs"] = dict(new_snow_in=o.get("new_snow_in"), precip_in=o.get("precip_in"), swe_in=o.get("swe_in"))
         if d >= today:
             entry["report"], entry["wind_hold"] = cx.report(d, entry, hours, {e: r.point(e).ft for e in ELEVS})
         daily.append(entry)
 
-    # ---- summary windows (hour-based, from now)
-    nxt = {lbl: {e: window(now_i, now_i + n, e) for e in ELEVS}
-           for lbl, n in (("Next 24 hours", 24), ("Next 3 days", 72), ("Next 5 days", 120), ("Next 10 days", 240))}
-    past = {lbl: {e: window(now_i - n, now_i, e) for e in ELEVS}
-            for lbl, n in (("Last 24 hours", 24), ("Last 3 days", 72), ("Last 7 days", 168))}
+    # ---- summary strip: last 7 days | last 24 hours | next 1-5 | next 6-10 (ski days)
+    day_start = lambda offset: starts.get((datetime.fromisoformat(today) + timedelta(offset)).strftime("%Y-%m-%d"))
+    span = lambda a, b: (day_start(a) or 0, day_start(b) or len(times))
+    summary = {}
+    for e in ELEVS:
+        last24 = window(now_i - 24, now_i, e)
+        summary[e] = dict(past7=window(*span(-7, 0), e), last24=last24,
+                          next1_5=window(now_i, span(5, 5)[0], e), next6_10=window(*span(5, 10), e))
     if obs:
-        done = [x for x in obs["days"] if x["date"] < today]
-        for lbl, n in (("Last 24 hours", 1), ("Last 3 days", 3), ("Last 7 days", 7)):
+        done = [x for x in obs["days"] if x["date"] < now[:10]]
+        for key, n in (("last24", 1), ("past7", 7)):
             vals = [x["new_snow_in"] for x in done[-n:] if x.get("new_snow_in") is not None]
-            past[lbl]["station_in"] = sum(vals) if vals else None
+            for e in ELEVS:
+                summary[e][key]["station_in"] = sum(vals) if vals else None
+
+    # ---- plumes: cumulative snow and rain from now, forecast line + ensemble spread (every 3 h)
+    horizon = range(now_i, min(len(times), now_i + 24 * 10))
+    plume = {}
+    for e in ELEVS:
+        hrs = hours[e]
+        liq = sum(hrs[i].precip_mm or 0 for i in horizon)
+        s_liq = sum(hours["summit"][i].precip_mm or 0 for i in horizon)
+        scale = liq / s_liq if s_liq > 0.5 else 1.0  # ensembles are at the summit point
+        out = {k: {q: [] for q in ("fc", *map(str, QS))} for k in ("snow", "rain")}
+        cum = {"snow": [0.0] * len(members), "rain": [0.0] * len(members)}
+        alive, fc = [True] * len(members), {"snow": 0.0, "rain": 0.0}
+        for n, i in enumerate(horizon):
+            h, t = hrs[i], times[i]
+            fc["snow"] += h.snow_in or 0; fc["rain"] += h.rain_in or 0
+            for j, (w, mm) in enumerate(members):
+                if not alive[j] or t not in mm or h.frac is None:
+                    alive[j] = alive[j] and t in mm  # a member past its horizon stops counting
+                    continue
+                cum["snow"][j] += mm[t] * scale * h.frac * h.slr / IN
+                cum["rain"][j] += mm[t] * scale * (1 - h.frac) / IN
+            if n % 3:
+                continue
+            for k in ("snow", "rain"):
+                vals = [(cum[k][j], members[j][0]) for j in range(len(members)) if alive[j]]
+                q = wquantiles(vals, QS) if vals else {}
+                c = fc[k] / q[0.5] if q and q[0.5] > 0.01 and fc[k] > 0 else 1.0  # centre the spread on the forecast
+                out[k]["fc"].append(round(fc[k], 2))
+                for p in QS:
+                    v = q[p] * c if q else fc[k]
+                    out[k][str(p)].append(round(min(v, fc[k]) if p < 0.5 else max(v, fc[k]) if p > 0.5 else fc[k], 2))
+        plume[e] = dict(t=[times[i] for n, i in enumerate(horizon) if n % 3 == 0], **out)
 
     hourly = [dict(t=t, **{k: rnd(v) for k, v in levels[i].items()},
                    **{e: {k: rnd(getattr(hours[e][i], k)) for k in HOURLY_OUT} for e in ELEVS})
-              for i, t in enumerate(times) if now_i <= i < now_i + 24 * 7]  # charts use the next 7 days
+              for i, t in enumerate(times) if now_i <= i < now_i + 24 * 10]  # charts use the next 10 days
     return dict(
-        key=r.key, name=r.name, region=r.region, now=now,
+        key=r.key, name=r.name, region=r.region, now=now, today=today,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
         points={e: dict(requested=asdict(r.point(e)), grid=dict(lat=grids[e].lat, lon=grids[e].lon)) for e in ELEVS},
         calibration=dict(station=cal.station, uncalibrated=cal.uncalibrated, peers=cal.peers, peers_scope=cal.peers_scope,
+                         temp_bias_c=cal.temp_bias_c, profile_shift_c=cal.profile_shift_c,
                          models={m: asdict(v) for m, v in cal.models.items()}),
-        daily=daily, hourly=hourly, next=nxt, past=past, obs=obs, afd=afd, alerts=alerts,
+        daily=daily, hourly=hourly, summary=summary, plume=plume, obs=obs, afd=afd, alerts=alerts,
     )
 
 
