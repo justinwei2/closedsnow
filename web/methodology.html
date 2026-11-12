@@ -19,7 +19,7 @@
 
   <main class="doc">
     <h1>Formulas &amp; Methodology</h1>
-    <p class="lede">How every number on the forecast page is produced. Constants marked <span class="tag">rule of thumb</span> are judgment calls, not fit to data; <span class="tag ok">sourced</span> ones come from published research. Code: <a href="https://github.com/justinwei2/snowforecast">github.com/justinwei2/snowforecast</a>.</p>
+    <p class="lede">How every number on the forecast page is produced. Constants marked <span class="tag">rule of thumb</span> are judgment calls, not fit to data; <span class="tag ok">sourced</span> ones come from published research. Code: <a href="https://github.com/justinwei2/snowreport">github.com/justinwei2/snowreport</a>.</p>
 
     <nav class="toc card">
       <a href="#points">1. Forecast Points</a><a href="#blend">2. Precipitation Blend</a><a href="#calibration">3. Calibration</a>
@@ -58,7 +58,7 @@
         <li><b>Resorts not calibrated yet</b> (or without a gauge): f<sub>m</sub> = 1 (raw model precipitation), equal weights, ranges from the ensembles only.</li>
         <li><b>Error bins</b> for the range (§4): the observed/forecast ratio for the blend, split by forecast storm size per 72 h: 10–25 mm, 25–50 mm, &gt; 50 mm (each bin needs ≥ 15 windows).</li>
       </ul>
-      <p>Per-resort status, gauge and error: <a href="./#calcov">Calibration coverage</a> (in each resort's Details) and <a href="https://github.com/justinwei2/snowforecast/blob/main/CALIBRATION.md">CALIBRATION.md</a>.</p>
+      <p>Per-resort status, gauge and error: <a href="./#calcov">Calibration coverage</a> (in each resort's Details) and <a href="https://github.com/justinwei2/snowreport/blob/main/CALIBRATION.md">CALIBRATION.md</a>.</p>
     </section>
 
     <section class="card" id="ranges">

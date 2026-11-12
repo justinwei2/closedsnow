@@ -85,7 +85,7 @@ jobs:
         run: |
           tmp=$(mktemp -d); mkdir -p "$tmp/web"; cp -r web/data "$tmp/web/"
           cd "$tmp" && git init -q -b data && git add -A
-          git -c user.name=snowforecast-bot -c user.email=snowforecast-bot@users.noreply.github.com commit -qm "data $(date -u +%Y-%m-%dT%H:%MZ)"
+          git -c user.name=snowreport-bot -c user.email=snowreport-bot@users.noreply.github.com commit -qm "data $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do
             git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data && break
             sleep $((i * 15))

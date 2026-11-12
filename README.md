@@ -1,8 +1,8 @@
-# snowforecast
+# snowreport
 
 Snow forecasts for 21 western North America ski resorts, built from free weather data.
 
-Site: https://justinwei2.github.io/snowforecast/ · Methodology: https://justinwei2.github.io/snowforecast/methodology.html
+Site: https://justinwei2.github.io/snowreport/ · Methodology: https://justinwei2.github.io/snowreport/methodology.html
 
 Each resort has base, mid and summit points. For each point the site shows:
 
