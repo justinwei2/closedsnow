@@ -134,5 +134,96 @@
    "icon_seamless",
    "gem_hrdps_continental"
   ]
+ },
+ "kirkwood": {
+  "name": "Kirkwood",
+  "region": "California",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 38.6847,
+   "lon": -120.0654,
+   "ft": 7800,
+   "label": "Base"
+  },
+  "mid": {
+   "lat": 38.675,
+   "lon": -120.063,
+   "ft": 8300,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 38.665,
+   "lon": -120.061,
+   "ft": 9876,
+   "label": "Thimble Peak ridge"
+  },
+  "dem_ft": {
+   "base": 7795,
+   "mid": 8310,
+   "summit": 9629
+  },
+  "obs": [
+   "snotel",
+   "1067:CA:SNTL",
+   "Carson Pass SNOTEL",
+   8360,
+   38.6927,
+   -120.0022
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ]
+ },
+ "mammoth": {
+  "name": "Mammoth Mountain",
+  "region": "California",
+  "tz": "America/Los_Angeles",
+  "base": {
+   "lat": 37.651,
+   "lon": -119.027,
+   "ft": 8900,
+   "label": "Main Lodge"
+  },
+  "mid": {
+   "lat": 37.6385,
+   "lon": -119.0215,
+   "ft": 9600,
+   "label": "McCoy Station"
+  },
+  "summit": {
+   "lat": 37.628,
+   "lon": -119.0325,
+   "ft": 11053,
+   "label": "Summit"
+  },
+  "dem_ft": {
+   "base": 8780,
+   "mid": 9521,
+   "summit": 10945
+  },
+  "obs": [
+   "cdec",
+   "MHP",
+   "Mammoth Pass (CDEC)",
+   9400,
+   37.61,
+   -119.033
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "ncep_nbm_conus",
+   "gem_seamless",
+   "icon_seamless"
+  ],
+  "afd_office": "REV"
  }
 }

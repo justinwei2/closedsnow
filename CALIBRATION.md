@@ -9,8 +9,8 @@ the median factors of calibrated resorts in their region.
 |---|---|---|---|---|---|---|
 | Palisades Tahoe | California | calibrated | Palisades Tahoe SNOTEL (High Camp area) | 8,010 ft | 356 | 0.49 |
 | Alpine Meadows | California | calibrated | Ward Creek #3 SNOTEL | 6,750 ft | 356 | 0.57 |
-| Kirkwood | California | not located yet | | | | |
-| Mammoth Mountain | California | not located yet | | | | |
+| Kirkwood | California | calibrated | Carson Pass SNOTEL | 8,360 ft | 356 | 0.32 |
+| Mammoth Mountain | California | calibrated | Mammoth Pass (CDEC) | 9,400 ft | 356 | 0.41 |
 | Mt. Bachelor | Pacific Northwest | not located yet | | | | |
 | Alta | Utah | not located yet | | | | |
 | Snowbird | Utah | not located yet | | | | |

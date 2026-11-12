@@ -367,5 +367,251 @@
    1.15,
    0.79
   ]
+ },
+ "kirkwood": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 0.803,
+    "weight": 0.147,
+    "mae72": 8.17,
+    "raw_mae72": 9.85,
+    "n": 155,
+    "weight_ext": 0.151,
+    "mae_ext": 4.67
+   },
+   "ecmwf_ifs025": {
+    "factor": 0.862,
+    "weight": 0.137,
+    "mae72": 8.47,
+    "raw_mae72": 9.38,
+    "n": 356,
+    "weight_ext": 0.132,
+    "mae_ext": 5.0
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 0.851,
+    "weight": 0.156,
+    "mae72": 7.93,
+    "raw_mae72": 8.86,
+    "n": 247,
+    "weight_ext": 0.157,
+    "mae_ext": 4.58
+   },
+   "gfs_seamless": {
+    "factor": 0.632,
+    "weight": 0.122,
+    "mae72": 8.99,
+    "raw_mae72": 13.44,
+    "n": 356,
+    "weight_ext": 0.169,
+    "mae_ext": 4.41
+   },
+   "ncep_nbm_conus": {
+    "factor": 0.637,
+    "weight": 0.119,
+    "mae72": 9.1,
+    "raw_mae72": 13.2,
+    "n": 356,
+    "weight_ext": 0.166,
+    "mae_ext": 4.46
+   },
+   "gem_seamless": {
+    "factor": 0.874,
+    "weight": 0.164,
+    "mae72": 7.75,
+    "raw_mae72": 8.47,
+    "n": 356,
+    "weight_ext": 0.094,
+    "mae_ext": 5.91
+   },
+   "icon_seamless": {
+    "factor": 0.766,
+    "weight": 0.155,
+    "mae72": 7.97,
+    "raw_mae72": 9.89,
+    "n": 351,
+    "weight_ext": 0.131,
+    "mae_ext": 5.01
+   }
+  },
+  "station": "Carson Pass SNOTEL",
+  "blend_mae72": 8.02,
+  "n_windows": 356,
+  "n_wet": 111,
+  "ratio_q": {
+   "0.05": 0.0,
+   "0.25": 0.481,
+   "0.5": 0.806,
+   "0.75": 1.218,
+   "0.95": 2.942
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 46,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.506,
+     "0.5": 0.881,
+     "0.75": 1.374,
+     "0.95": 3.736
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 38,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.492,
+     "0.5": 0.978,
+     "0.75": 1.244,
+     "0.95": 2.422
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 27,
+    "q": {
+     "0.05": 0.218,
+     "0.25": 0.413,
+     "0.5": 0.672,
+     "0.75": 1.008,
+     "0.95": 1.323
+    }
+   }
+  ],
+  "temp_bias_c": -0.27,
+  "temp_bias_wet_c": -0.32,
+  "temp_n_wet": 105,
+  "temp_mae_c": [
+   0.86,
+   0.87
+  ]
+ },
+ "mammoth": {
+  "models": {
+   "ecmwf_ifs": {
+    "factor": 1.464,
+    "weight": 0.079,
+    "mae72": 15.27,
+    "raw_mae72": 11.86,
+    "n": 155,
+    "weight_ext": 0.109,
+    "mae_ext": 6.02
+   },
+   "ecmwf_ifs025": {
+    "factor": 1.46,
+    "weight": 0.153,
+    "mae72": 10.99,
+    "raw_mae72": 9.28,
+    "n": 356,
+    "weight_ext": 0.145,
+    "mae_ext": 5.22
+   },
+   "ecmwf_aifs025_single": {
+    "factor": 1.298,
+    "weight": 0.162,
+    "mae72": 10.68,
+    "raw_mae72": 9.17,
+    "n": 247,
+    "weight_ext": 0.193,
+    "mae_ext": 4.53
+   },
+   "gfs_seamless": {
+    "factor": 0.957,
+    "weight": 0.141,
+    "mae72": 11.43,
+    "raw_mae72": 11.85,
+    "n": 356,
+    "weight_ext": 0.151,
+    "mae_ext": 5.11
+   },
+   "ncep_nbm_conus": {
+    "factor": 1.029,
+    "weight": 0.161,
+    "mae72": 10.71,
+    "raw_mae72": 10.49,
+    "n": 356,
+    "weight_ext": 0.14,
+    "mae_ext": 5.31
+   },
+   "gem_seamless": {
+    "factor": 1.308,
+    "weight": 0.127,
+    "mae72": 12.06,
+    "raw_mae72": 10.66,
+    "n": 356,
+    "weight_ext": 0.141,
+    "mae_ext": 5.3
+   },
+   "icon_seamless": {
+    "factor": 1.207,
+    "weight": 0.177,
+    "mae72": 10.2,
+    "raw_mae72": 9.19,
+    "n": 351,
+    "weight_ext": 0.122,
+    "mae_ext": 5.7
+   }
+  },
+  "station": "Mammoth Pass (CDEC)",
+  "blend_mae72": 10.53,
+  "n_windows": 356,
+  "n_wet": 109,
+  "ratio_q": {
+   "0.05": 0.0,
+   "0.25": 0.406,
+   "0.5": 0.757,
+   "0.75": 1.023,
+   "0.95": 2.661
+  },
+  "ratio_bins": [
+   {
+    "lo_mm": 10,
+    "hi_mm": 25,
+    "n": 33,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.0,
+     "0.5": 0.544,
+     "0.75": 1.019,
+     "0.95": 4.093
+    }
+   },
+   {
+    "lo_mm": 25,
+    "hi_mm": 50,
+    "n": 35,
+    "q": {
+     "0.05": 0.0,
+     "0.25": 0.688,
+     "0.5": 0.914,
+     "0.75": 1.413,
+     "0.95": 2.651
+    }
+   },
+   {
+    "lo_mm": 50,
+    "hi_mm": 1000000000.0,
+    "n": 41,
+    "q": {
+     "0.05": 0.352,
+     "0.25": 0.578,
+     "0.5": 0.709,
+     "0.75": 0.923,
+     "0.95": 1.232
+    }
+   }
+  ],
+  "temp_bias_c": 1.2,
+  "temp_bias_wet_c": 0.34,
+  "temp_n_wet": 68,
+  "temp_mae_c": [
+   1.56,
+   0.88
+  ]
  }
 }
