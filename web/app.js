@@ -248,10 +248,20 @@ function renderDailyTable(d, e) {
   };
   // daytime rows also carry the day's report notes (powder morning, rain line, sleet, flat light);
   // wind-hold / wind-chill notes are already row alerts
-  const rowAlerts = (h, x, k) => [...h.alerts, ...(k ? [] : (x.report || []).filter((n) => NOTE_ALERT[n.kind])
-    .map((n) => ({ kind: NOTE_ALERT[n.kind], text: n.text })))];
+  // alerts are mountain-wide: the same on every elevation view. Union of base / mid / summit for
+  // this 12 h row (labelled by elevation where they differ), deduplicated
+  const rowAlerts = (h, x, k) => {
+    const seen = new Map();
+    for (const el_ of ELEVS) {
+      for (const a of x[el_].halves[k]?.alerts || []) {
+        const key = a.kind === "warn" ? a.text : `${a.kind}:${el_}`;
+        if (!seen.has(key)) seen.set(key, { kind: a.kind, text: a.kind === "warn" ? a.text : `${ELEV_NAME[el_].replace("-mountain", "")}: ${a.text}` });
+      }
+    }
+    const notes = k ? [] : (x.report || []).filter((n) => NOTE_ALERT[n.kind]).map((n) => ({ kind: NOTE_ALERT[n.kind], text: n.text }));
+    return [...seen.values(), ...notes];
+  };
   const cols = [  // [header, cell(h, x, k), class, header group]
-    ["Temp", (h) => fmtF(h.temp_f)],
     ["Alerts", (h, x, k) => {
       const al = rowAlerts(h, x, k);
       if (!al.length) return "";
@@ -260,6 +270,7 @@ function renderDailyTable(d, e) {
       hover(s, (ev) => showTip(ev, ALERT_NAME_HEAD(h), al.map((a) => ({ name: ALERT_NAME[a.kind], value: a.text, color: `var(${ALERT[a.kind]})` }))));
       return s;
     }],
+    ["Temp", (h) => fmtF(h.temp_f)],
     ["Snow Ratio", (h) => (h.liquid_in > 0.02 ? snowRatio(h.quality, h.slr) : "–")],
     ["12-Hr Snowfall", snowCell],
     ["Snow Level (ft)", (h) => el("span", { title: h.nws_snow_level_ft != null ? `NWS ${fmtFt(h.nws_snow_level_ft)}` : "" }, fmtFt(h.snow_level_ft))],
