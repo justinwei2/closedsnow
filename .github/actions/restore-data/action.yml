@@ -1,0 +1,10 @@
+name: restore-data
+description: Restore web/data from the single-commit `data` branch (no-op before it exists)
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        if ! git ls-remote --exit-code --heads origin data >/dev/null; then echo "no data branch yet"; exit 0; fi
+        for i in 1 2 3; do git fetch --depth 1 origin data && git checkout FETCH_HEAD -- web/data && exit 0; sleep $((i * 10)); done
+        echo "::error::could not restore previous data"; exit 1

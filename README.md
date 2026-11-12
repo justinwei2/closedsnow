@@ -1,72 +1,36 @@
 # opensnow (unofficial)
 
 An open-source, personal take on OpenSnow-style mountain forecasts. **Not affiliated with or
-endorsed by OpenSnow.** Live: https://justinwei2.github.io/opensnow/
+endorsed by OpenSnow.** Live: https://justinwei2.github.io/opensnow/ ·
+[how it works](https://justinwei2.github.io/opensnow/methodology.html) (formulas, thresholds, labels).
 
-## Snow Report: personal resort forecast
+On-mountain base / mid / summit forecasts for ~35 western North America resorts: a
+bias-corrected multi-model blend with 25–75% ranges, snow quality, snow level vs lift heights, a
+daily weather report (wind holds, powder mornings, rain line), NWS alerts and discussions.
+Python stdlib only; the site is static (`web/`).
 
-On-mountain (base / mid / summit) snow forecasts for ~35 expert-worthy resorts in
-western North America. Shows a bias-corrected multi-model blend with 25–75% ranges, a weather
-report (wind holds, powder mornings, rain line), snow level vs.
-lift elevations, snow quality (blower → Sierra cement, mixed, sleet, rain), a per-model comparison,
-recent station observations, and the NWS Area Forecast Discussion.
+## How it runs (all on GitHub)
+| Workflow | When | What |
+|---|---|---|
+| `refresh` | every 3 h | 4 parallel region jobs refresh resorts whose data is > 7.5 h old, save JSON to the single-commit `data` branch, run `update.py --check`, trigger `pages` |
+| `pages` | after refresh, or on `web/` changes | deploy `web/` + data to GitHub Pages (3 attempts) |
+| `backfill` | nightly / manual | locate + calibrate new catalog resorts per region; commits `data/` and [CALIBRATION.md](CALIBRATION.md) |
+| `watchdog` | daily | checks the live site is fresh |
+| `autoretry` | after a failure | re-runs failed jobs once (not health-check failures) |
 
-    python3 backfill.py    # one-time: locate new catalog resorts + calibrate (sleeps through rate limits)
-    python3 update.py alta # refresh resorts -> web/data/*.json   (--scheduled: only stale ones, as in CI)
-    python3 -m http.server -d web 8000   # preview locally
-
-## Hosted (GitHub Pages + Actions)
-`.github/workflows/refresh.yml` runs every 3 h on GitHub as four parallel, staggered region jobs
-(sierra / west / rockies / north; own runner each, so a rate limit in one region doesn't stall the
-others), then one publish job. Each resort refreshes when its data is older than 7.5 h (~every 9 h;
-~7.5k of Open-Meteo's free 10k calls/day). Requests retry with exponential backoff; on a hard quota limit a
-region stops and keeps its previous data. Calibration is one-time (~200 calls per US resort); a
-refresh costs ~65-80 calls per resort. Forecast JSON lives on a single-commit
-`data` branch (force-pushed each run, so the repo doesn't grow); each run restores it, refreshes,
-saves it and deploys `web/` to Pages. `backfill.yml` (manual) runs
-locate + calibrate in CI. Optional repo secret `SKISITE_CONTACT` (email) goes in the NWS User-Agent.
-Repo must be public for free Pages.
-
-No dependencies beyond Python 3.11+ stdlib. Open-Meteo free tier (non-commercial, 10k calls/day);
-one full refresh is ~40 requests.
-
-## Adding a resort
-Add a line to `catalog.py` (approximate base/summit coordinates + published elevations + pass),
-then run `python3 backfill.py`: it snaps the points to the DEM, picks the nearest SNOTEL gauge,
-probes which models have data there, and calibrates. Canadian resorts have no SNOTEL, so they use
-regional default factors (the page says so).
+A failed run emails the repo owner (github.com/settings/notifications → Actions). Open-Meteo's
+free tier (10k calls/day) is the budget: a refresh is ~65–80 calls per resort; calibration
+~200 per US resort, once.
 
 ## Files
-- `config.py`: resorts, models, levels
-- `calibrate.py`: per-resort/model precip factors + weights + error quantiles from as-issued forecasts
-- `physics.py`: wet-bulb, snow fraction, snow level, Kuchera SLR, warm-nose sleet flag, quality labels
-- `update.py`: live fetch + blend + ranges → JSON
-- `sources.py`: HTTP, SNOTEL, CDEC helpers
-- `web/`: static site (no build step)
+`catalog.py` resorts · `locate.py` snap points to terrain, pick gauge and models · `calibrate.py`
+bias factors from as-issued forecasts · `update.py` live forecast → JSON, `--check` freshness alarm · `physics.py` rain/snow,
+snow level, snow ratio, labels · `report.py` weather-report notes ·
+`backfill.py` locate + calibrate orchestration · `sources.py` HTTP/retries and station data.
 
-## Failures, retries & alerts
-- HTTP: 6 attempts, exponential backoff with jitter (permanent 4xx not retried); Open-Meteo hourly/daily quota stops a region cleanly
-  (previous data kept). Resorts that error get a second pass after 60 s. Data restore/push
-  retry 3x, the Pages deploy up to 3x, and `autoretry.yml` re-runs any failed refresh/backfill
-  job once automatically (not for health-check failures).
-- `health.py` runs at the end of every refresh and fails the run when a forecast is missing or 3+ resorts are > 20 h old
-  (one missed refresh doesn't trip it). A failed run
-  makes GitHub email you.
-- `watchdog.yml` checks the live site daily from the outside (catches a schedule that silently
-  stopped). `backfill.yml` runs nightly and is a no-op once every resort is calibrated.
-- Emails go to the account that last changed the workflow schedules (justinwei2). Check
-  github.com/settings/notifications → System → Actions → Email, "only failed workflows".
+Add a resort: one line in `catalog.py`; the next backfill sets it up.
+Local preview: `python3 update.py alta && python3 -m http.server -d web 8000`.
 
-## Known limitations
-- Snow level / phase come from pressure-level profiles (1000-500 hPa). At high resorts (Colorado,
-  Utah, Taos) the lowest levels sit below the model terrain and are extrapolated by the model; the
-  reported snow level can then read "below base". Interpolation at lift heights uses levels above.
-- Calibration factors and the error shown are fit and scored on the same two winters (in-sample,
-  so slightly optimistic); ECMWF IFS 9 km and AIFS have one winter of history.
-- Canadian resorts have no SNOTEL gauge: factors are borrowed medians from US resorts.
-- Wind-hold, snow-density and powder-morning thresholds are rules of thumb, not fit to history.
-
-## Data & attribution
-Open-Meteo free API (non-commercial use; data CC BY 4.0, attribution in the site footer),
-api.weather.gov (US public domain; contact in User-Agent), NRCS AWDB / SNOTEL and California CDEC
-(public). All via documented APIs: no HTML scraping.
+## Data
+Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC, DWD models), api.weather.gov, NRCS SNOTEL, California
+CDEC, all via documented APIs. Limitations are listed on the methodology page.

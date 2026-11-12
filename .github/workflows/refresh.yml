@@ -1,19 +1,15 @@
-# Refresh forecasts on GitHub's machines and publish web/ to GitHub Pages.
-#
-# Each region is its own parallel job (own runner), staggered a few minutes apart, so an
-# Open-Meteo rate limit in one region doesn't stall the others. Each resort refreshes when its
-# data is older than 7.5 h (~every 9 h; update.py --scheduled): ~7.5k of the free 10k calls/day.
+# Refresh forecasts on GitHub's machines every 3 h, then hand off to pages.yml to deploy.
+# Each region is its own parallel job (own runner), staggered, so an Open-Meteo rate limit in
+# one region doesn't stall the others. A resort refreshes when its data is > 7.5 h old.
 # Forecast JSON lives on a single-commit `data` branch so the repo doesn't grow.
 name: refresh
 on:
   schedule:
-    - cron: "17 */3 * * *"   # every 3 h, off the hour (GitHub may delay scheduled runs)
+    - cron: "17 */3 * * *"
   workflow_dispatch:
 permissions:
   contents: write
-  pages: write
-  id-token: write
-  actions: write   # keepalive: re-enable this schedule (GitHub disables it after 60 idle days)
+  actions: write   # trigger pages.yml; keep this schedule enabled (GitHub disables idle ones after 60 days)
 concurrency:
   group: refresh
   cancel-in-progress: false
@@ -32,95 +28,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Restore previous data
-        run: |
-          if ! git ls-remote --exit-code --heads origin data >/dev/null; then echo "no data branch yet"; exit 0; fi
-          for i in 1 2 3; do git fetch --depth 1 origin data && git checkout FETCH_HEAD -- web/data && exit 0; sleep $((i * 10)); done
-          echo "::error::could not restore previous data"; exit 1
-      - name: Stagger start
-        run: sleep ${{ matrix.delay }}
+        with: { python-version: "3.12" }
+      - uses: ./.github/actions/restore-data
+      - run: sleep ${{ matrix.delay }}
       - name: Update ${{ matrix.group }}
         env:
           SKISITE_CONTACT: ${{ secrets.SKISITE_CONTACT }}
         run: |
           touch /tmp/stamp
           python -u update.py --scheduled --group ${{ matrix.group }} --no-index || echo "::warning::update exited non-zero"
-          mkdir -p out
-          find web/data -name '*.json' -newer /tmp/stamp -exec cp {} out/ \;
-          ls out
+          mkdir -p out && find web/data -name '*.json' -newer /tmp/stamp -exec cp {} out/ \;
       - uses: actions/upload-artifact@v4
         if: always()   # each resort file is written atomically, so partial progress is valid
-        with:
-          name: data-${{ matrix.group }}
-          path: out/
-          if-no-files-found: ignore
-          retention-days: 1
+        with: { name: "data-${{ matrix.group }}", path: out/, if-no-files-found: ignore, retention-days: 1 }
 
   publish:
     needs: fetch
     if: always()
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Restore previous data
+        with: { python-version: "3.12" }
+      - uses: ./.github/actions/restore-data
+      - uses: actions/download-artifact@v4
+        continue-on-error: true   # a run where everything was fresh uploads nothing
+        with: { pattern: data-*, path: web/data, merge-multiple: true }
+      - name: Rebuild index (refuse if resorts disappeared)
         run: |
-          if ! git ls-remote --exit-code --heads origin data >/dev/null; then echo "no data branch yet"; exit 0; fi
-          for i in 1 2 3; do git fetch --depth 1 origin data && git checkout FETCH_HEAD -- web/data && exit 0; sleep $((i * 10)); done
-          echo "::error::could not restore previous data"; exit 1
-      - name: Merge fresh region data
-        uses: actions/download-artifact@v4
-        continue-on-error: true   # a run where every region was already fresh uploads nothing
-        with:
-          pattern: data-*
-          path: web/data
-          merge-multiple: true
-      - name: Rebuild index
-        run: |
-          before=$(git show FETCH_HEAD:web/data/index.json 2>/dev/null | python -c "import json,sys; print(sum(1 for r in json.load(sys.stdin)['resorts'] if r.get('updated')))" 2>/dev/null || echo 0)
+          count() { python -c "import json,sys; print(sum(1 for r in json.load(open(sys.argv[1]))['resorts'] if r.get('updated')))" "$1" 2>/dev/null || echo 0; }
+          before=$(count web/data/index.json)
           python -c "import update; update.write_index()"
-          after=$(python -c "import json; print(sum(1 for r in json.load(open('web/data/index.json'))['resorts'] if r.get('updated')))")
-          echo "resorts with data: before=$before after=$after"
-          if [ "$after" -lt "$before" ]; then echo "::error::resort count dropped ($before -> $after); not publishing"; exit 1; fi
+          after=$(count web/data/index.json)
+          echo "resorts with data: $before -> $after"
+          [ "$after" -ge "$before" ] || { echo "::error::resort count dropped; not publishing"; exit 1; }
       - name: Save data   # force-push one commit: the repo doesn't grow with every refresh
-        env:
-          TOKEN: ${{ github.token }}
         run: |
           tmp=$(mktemp -d); mkdir -p "$tmp/web"; cp -r web/data "$tmp/web/"
           cd "$tmp" && git init -q -b data && git add -A
           git -c user.name=opensnow-bot -c user.email=opensnow-bot@users.noreply.github.com commit -qm "data $(date -u +%Y-%m-%dT%H:%MZ)"
           for i in 1 2 3; do
-            git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data && break
-            echo "push failed, retry $i"; sleep $((i * 15))
+            git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data && break
+            sleep $((i * 15))
           done
+      - name: Deploy (pages.yml)
+        run: gh workflow run pages.yml -R "$GITHUB_REPOSITORY"
       - name: Keep schedule alive
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: gh workflow enable refresh.yml -R "$GITHUB_REPOSITORY" || true
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: web
-      - id: deploy
-        uses: actions/deploy-pages@v4
-        continue-on-error: true   # GitHub's Pages API flakes now and then; up to 3 attempts
-      - if: steps.deploy.outcome == 'failure'
-        run: sleep 60
-      - id: deploy2
-        if: steps.deploy.outcome == 'failure'
-        uses: actions/deploy-pages@v4
-        continue-on-error: true
-      - if: steps.deploy.outcome == 'failure' && steps.deploy2.outcome == 'failure'
-        run: sleep 120
-      - id: deploy3
-        if: steps.deploy.outcome == 'failure' && steps.deploy2.outcome == 'failure'
-        uses: actions/deploy-pages@v4
-      - name: Health check   # last, so the site still deploys; fails the run (-> GitHub email) on stale data
-        run: python health.py
+      - name: Health check   # fails the run (-> GitHub email) on missing/stale data
+        run: python update.py --check

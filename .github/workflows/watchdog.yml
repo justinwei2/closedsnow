@@ -17,7 +17,7 @@ jobs:
       - name: Check live site
         run: |
           for i in 1 2 3; do
-            python health.py --url "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" && exit 0
+            python update.py --check --url "https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/" && exit 0
             echo "attempt $i failed; retrying in 2 min"; sleep 120
           done
           exit 1

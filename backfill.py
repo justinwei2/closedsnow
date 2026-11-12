@@ -50,7 +50,8 @@ def merge(d):
     for part in sorted(glob.glob(os.path.join(d, "*", ""))):
         resorts.update(load(os.path.join(part, "resorts.json")))
         cal.update(load(os.path.join(part, "calibration.json")))
-    resorts = {k: v for k, v in resorts.items() if k in CATALOG}
+    keep = ("name", "region", "tz", "base", "mid", "summit", "dem_ft", "obs", "models", "afd_office")
+    resorts = {k: {f: v[f] for f in keep if f in v} for k, v in resorts.items() if k in CATALOG}
     write_json(RES_PATH, resorts, indent=1)
     config.RESORTS.clear(); config.RESORTS.update(resorts)
     cal = {k: v for k, v in cal.items() if k in resorts}

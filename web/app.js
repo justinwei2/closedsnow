@@ -376,8 +376,7 @@ function timeChart(container, hours, opts) {
 }
 
 function levelCharts(d, e) {
-  const start = d.hourly.findIndex((h) => !h.past);
-  const hours = d.hourly.slice(Math.max(0, start), Math.max(0, start) + 24 * 7);
+  const hours = d.hourly;  // already the next 7 days
   const p = d.points;
   const vals = hours.flatMap((h) => [h.snow_level_ft, h.freezing_level_ft, h.snow_level_hi_ft, h.snow_level_lo_ft]).filter((v) => v != null);
   const lo = Math.max(0, Math.floor((Math.min(p.base.requested.ft, ...vals) - 500) / 2000) * 2000);

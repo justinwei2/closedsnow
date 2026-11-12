@@ -22,6 +22,7 @@ OM = "https://api.open-meteo.com/v1/forecast"
 ENS = "https://ensemble-api.open-meteo.com/v1/ensemble"
 DAYS = 16
 PAST = 7
+HOURLY_OUT = ("temp_f", "wind_mph", "frac", "slr", "snow_in", "rain_in")  # fields the charts read
 NON_US = {"British Columbia", "Alberta"}  # no NWS products there
 # Regions refresh as separate parallel CI jobs (own runner each), so a rate limit in one
 # doesn't stall the rest.
@@ -105,7 +106,6 @@ def fetch_nws(pt):
         p = get_json(f"https://api.weather.gov/gridpoints/{g['office']}/{g['x']},{g['y']}")["properties"]
         return dict(office=g["office"], elev_m=p["elevation"]["value"],
                     snow=nws_hourly(p["snowfallAmount"]["values"], True),
-                    qpf=nws_hourly(p["quantitativePrecipitation"]["values"], True),
                     snow_level=nws_hourly(p["snowLevel"]["values"], False))
     except Exception as e:
         print("  NWS failed", e, file=sys.stderr)
@@ -154,8 +154,6 @@ def fetch_obs(obs):
             row["swe_in"] = round(B["WTEQ"] - A["WTEQ"], 2)
         if "PREC" in A and "PREC" in B and 0 <= B["PREC"] - A["PREC"] < 10:
             row["precip_in"] = round(B["PREC"] - A["PREC"], 2)
-        if "TAVG" in A:
-            row["tavg_f"] = A["TAVG"]
         rows.append(row)
     latest = lambda el: next((by[d][el] for d in reversed(days) if el in by[d]), None)
     return dict(station=obs[2], elev_ft=obs[3], days=rows,
@@ -369,7 +367,6 @@ def process(key, r, cal):
             # quantile averaging (Vincentization) of ensemble and historical-error distributions
             res[qkey(q)] = (ensq[q] * ratio + emp) / 2 if ensq else emp
         res["p50"] = snow
-        res["n_members"] = len(vals)
         return res
 
     # ---- daily
@@ -394,8 +391,7 @@ def process(key, r, cal):
                 frac = snow_liq / liq
                 slr = sum(x["precip_mm"] * x["frac"] * x["slr"] for x in wet) / snow_liq if snow_liq > 0 else None
                 nose = any(x.get("warm_nose") and x["precip_mm"] > 0.5 for x in wet)
-                b.update(snow_frac=frac, slr=slr, density_pct=100 / slr if slr else None,
-                         quality=ph.quality(slr or 10, frac, nose) if liq > 1 else None)
+                b.update(slr=slr, quality=ph.quality(slr or 10, frac, nose) if liq > 1 else None)
             temps = [x["temp_f"] for x in rows if x.get("temp_f") is not None]
             lift = report.lift_hours(rows, d)
             winds = [x["wind_mph"] for x in lift if x.get("wind_mph") is not None]
@@ -438,20 +434,17 @@ def process(key, r, cal):
             vals = [x.get("new_snow_in") for x in done[-n:]]
             past[lbl]["station_in"] = sum(v for v in vals if v is not None) if any(v is not None for v in vals) else None
 
-    hourly = []
-    for i, t in enumerate(times):
-        if not (now_i <= i < now_i + 24 * 7):  # charts only use the next 7 days hourly
-            continue
-        hourly.append(dict(t=t, past=i < now_i, **{k: rnd(v) for k, v in levels[i].items()},
-                           **{e: {k: rnd(v) for k, v in elev[e]["rows"][i].items() if k != "t"} for e in ELEVS}))
+    hourly = [dict(t=t, **{k: rnd(v) for k, v in levels[i].items()},
+                   **{e: {k: rnd(elev[e]["rows"][i].get(k)) for k in HOURLY_OUT} for e in ELEVS})
+              for i, t in enumerate(times) if now_i <= i < now_i + 24 * 7]  # charts use the next 7 days
     return dict(
-        key=key, name=r["name"], region=r["region"], tz=r["tz"], now=now,
+        key=key, name=r["name"], region=r["region"], now=now,
         updated=datetime.now(timezone.utc).isoformat(timespec="minutes"),
-        points={e: dict(requested=r[e], grid=elev[e]["grid"],
-                        nws_elev_ft=nws[e]["elev_m"] / FT if nws[e] else None) for e in ELEVS},
-        calibration=cal, daily=daily, hourly=hourly, next=nxt, past=past, obs=obs, afd=afd,
-        alerts=alerts, ensembles={m: bool(j and "hourly" in j) for m, j in ens.items()},
+        points={e: dict(requested=r[e], grid=elev[e]["grid"]) for e in ELEVS},
+        calibration={k: cal.get(k) for k in ("station", "uncalibrated", "peers", "peers_scope", "models")},
+        daily=daily, hourly=hourly, next=nxt, past=past, obs=obs, afd=afd, alerts=alerts,
     )
+
 
 def _updated(path):
     try:
@@ -492,7 +485,7 @@ def update_one(key):
         raise KeyError(f"{key}: not located/calibrated (run locate.py, calibrate.py)")
     data = process(key, RESORTS[key], cal_all[key])
     nxt = [h for h in data["hourly"][:72]]
-    ok = sum(1 for h in nxt if h["summit"].get("precip_mm") is not None and h["summit"].get("temp_f") is not None)
+    ok = sum(1 for h in nxt if h["summit"].get("snow_in") is not None and h["summit"].get("temp_f") is not None)
     if len(nxt) < 48 or ok < 0.8 * len(nxt):  # mostly-blank forecast: keep the old file (health flags staleness)
         raise RuntimeError(f"{key}: forecast mostly empty ({ok}/{len(nxt)} hours); not publishing")
     tmp = os.path.join(OUT, f".{key}.json")
@@ -544,9 +537,46 @@ def main(keys=None, scheduled=False, group=None, index=True):
     if index:
         write_index()
 
+MAX_AGE_H = 20  # resorts refresh ~every 9 h: about 2 missed refreshes
+
+
+def check(url=None):
+    """Freshness check; exits 1 so the GitHub Actions run fails and GitHub emails the owner.
+    Alarms on a missing forecast or 3+ stale resorts; a single straggler is only a warning.
+    url: check the live site (watchdog) using its own published index."""
+    import urllib.request
+    if url:
+        with urllib.request.urlopen(url.rstrip("/") + "/data/index.json", timeout=30) as f:
+            resorts = json.load(f)["resorts"]
+    else:
+        resorts = json.load(open(os.path.join(OUT, "index.json")))["resorts"]
+    now = datetime.now(timezone.utc)
+    rows, stale, missing = [], [], []
+    for r in resorts:
+        if r.get("calibration") in (None, "not set up yet"):
+            rows.append(f"| {r['name']} | setting up | |"); continue
+        if not r.get("updated"):
+            missing.append(r["name"]); rows.append(f"| {r['name']} | MISSING | |"); continue
+        age = (now - datetime.fromisoformat(r["updated"])).total_seconds() / 3600
+        if age > MAX_AGE_H:
+            stale.append(r["name"])
+        rows.append(f"| {r['name']} | {'ok' if age <= MAX_AGE_H else 'STALE'} | {age:.1f} h |")
+    alarm = missing + (stale if len(stale) >= 3 else [])
+    report_md = (f"### Forecast health: {'❌' if alarm else '⚠️' if stale else '✅'} "
+                 f"{len(missing)} missing, {len(stale)} stale\n\n| Resort | Status | Age |\n|---|---|---|\n" + "\n".join(rows))
+    print(report_md)
+    if os.environ.get("GITHUB_STEP_SUMMARY"):
+        open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(report_md + "\n")
+    if alarm:
+        print(f"::error::missing or stale forecasts: {', '.join(alarm)}")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    grp = args[args.index("--group") + 1] if "--group" in args else None
-    pos = [a for a in args if not a.startswith("--") and a != grp]
-    main(pos or None, scheduled="--scheduled" in args, group=grp, index="--no-index" not in args)
+    opt = lambda name: args[args.index(name) + 1] if name in args else None
+    if "--check" in args:
+        check(opt("--url"))
+    else:
+        pos = [a for a in args if not a.startswith("--") and a not in (opt("--group"),)]
+        main(pos or None, scheduled="--scheduled" in args, group=opt("--group"), index="--no-index" not in args)

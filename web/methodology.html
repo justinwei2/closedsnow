@@ -141,7 +141,7 @@
         <li>GitHub Actions every 3 h, as four parallel region jobs, each on its own runner and staggered 2 min apart. A resort refreshes when its data is &gt; 7.5 h old (≈ every 9 h), about 7.5k of Open-Meteo's free 10k calls/day.</li>
         <li>HTTP: 6 attempts with exponential backoff and jitter. Permanent 4xx errors aren't retried. On a rate limit, the region stops and keeps its previous data. Failed resorts get a second pass after 60 s. Mostly-empty forecasts are never published.</li>
         <li>Publishing: data restore/push 3 attempts, Pages deploy 3 attempts, and failed jobs re-run once automatically. Publishing is refused if the resort count drops.</li>
-        <li>Health check after every refresh, plus a daily outside-in watchdog. Either one failing emails the repo owner.</li>
+        <li>Freshness check (<code>update.py --check</code>) after every refresh, plus a daily outside-in watchdog: a missing forecast or 3+ stale resorts fails the run, which emails the repo owner.</li>
       </ul>
     </section>
 
