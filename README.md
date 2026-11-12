@@ -1,6 +1,6 @@
 # snowreport
 
-Snow forecasts for 21 western North America ski resorts, built from free weather data.
+Snow forecasts for 23 ski resorts in western North America and Japan, built from free weather data.
 
 Site: https://justinwei2.github.io/snowreport/ · Methodology: https://justinwei2.github.io/snowreport/methodology.html
 
@@ -61,13 +61,13 @@ SKISITE_REPLAY=/tmp/replay python3 update.py alta   # record API responses, repl
 To add a resort, add a line to `CATALOG` in `resorts.py`; the next `backfill` run sets it up.
 
 A resort outside the covered gauge networks (SNOTEL/CDEC in the US, BC snow pillows, Alberta
-Rivers) also needs a gauge source: an adapter in `sources.py` mapping its data onto `StationSeries`,
+Rivers, JMA) also needs a gauge source: an adapter in `sources.py` mapping its data onto `StationSeries`,
 plus the station search in `calibrate.py` (or a hand-picked gauge in `MANUAL`). Until then the
 resort runs on the raw models with equal weights, and the page says it isn't calibrated.
 
 ## Data
 
 Open-Meteo (CC BY 4.0; ECMWF, NOAA, ECCC and DWD models), api.weather.gov, NRCS SNOTEL, California
-CDEC, BC River Forecast Centre automated snow weather stations (public data files) and Alberta
-Rivers (AEP). The Alberta endpoints are the ones the rivers.alberta.ca site itself uses: not a
+CDEC, BC River Forecast Centre automated snow weather stations (public data files), Alberta
+Rivers (AEP) and the Japan Meteorological Agency (daily AMeDAS tables). The Alberta endpoints are the ones the rivers.alberta.ca site itself uses: not a
 published API, and the data are provisional. Known limitations are listed on the methodology page.

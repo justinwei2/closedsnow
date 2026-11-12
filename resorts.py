@@ -14,7 +14,7 @@ ELEVS = ("base", "mid", "summit")
 
 # Deterministic models blended for the central forecast; each resort keeps those with data there.
 BASE_MODELS = ["ecmwf_ifs", "ecmwf_ifs025", "ecmwf_aifs025_single", "gfs_seamless",
-               "ncep_nbm_conus", "gem_seamless", "icon_seamless"]
+               "ncep_nbm_conus", "gem_seamless", "icon_seamless", "jma_seamless"]
 PROFILE_MODELS = ["ecmwf_ifs025", "gfs_seamless", "gem_seamless", "icon_seamless"]  # pressure levels
 LEVELS = [1000, 925, 850, 800, 750, 700, 650, 600, 550, 500]
 # Ensemble -> deterministic sibling whose calibration factor applies to its members.
@@ -24,7 +24,7 @@ SEASONS = [("2024-11-01", "2025-04-30"), ("2025-11-01", "2026-04-30")]  # calibr
 EXT_LEAD_DAYS = 3.5  # forecasts further out than this use the lead 4-7 day weights
 # NWS asks for a contact in the User-Agent; set SKISITE_CONTACT (e.g. an email) when hosted.
 USER_AGENT = f"skisite-personal ({os.environ.get('SKISITE_CONTACT', 'local use')})"
-COUNTRIES = {"US": "United States", "CA": "Canada"}  # display order for lists grouped by country
+COUNTRIES = {"US": "United States", "CA": "Canada", "JP": "Japan"}  # display order for lists grouped by country
 
 
 def by_country(keys):
@@ -32,10 +32,11 @@ def by_country(keys):
     return [(c, sorted((k for k in keys if CATALOG[k][1] == c), key=lambda k: CATALOG[k][0])) for c in COUNTRIES]
 
 
-PT, MT = "America/Los_Angeles", "America/Denver"
+PT, MT, JST = "America/Los_Angeles", "America/Denver", "Asia/Tokyo"
 VAN, EDM = "America/Vancouver", "America/Edmonton"
 # key: (name, country, tz, (base lat, lon, ft, label), (summit lat, lon, ft, label)); rough coordinates.
-# Country picks the gauge network (US: SNOTEL/CDEC, CA: BC snow pillows) and NWS products (US only).
+# Country picks the gauge network (US: SNOTEL/CDEC, CA: BC snow pillows, JP: hand-picked JMA stations)
+# and NWS products (US only).
 CATALOG = {
     "palisades": ("Palisades Tahoe", "US", PT, (39.1969, -120.2354, 6200, "Village"), (39.1985, -120.2936, 9006, "Granite Chief")),
     "alpine": ("Alpine Meadows", "US", PT, (39.1645, -120.2386, 6835, "Base lodge"), (39.1489, -120.2476, 8637, "Ward Peak")),
@@ -58,9 +59,11 @@ CATALOG = {
     "revelstoke": ("Revelstoke", "CA", VAN, (50.9580, -118.1636, 1680, "Base"), (50.9390, -118.2310, 7300, "Summit")),
     "kickinghorse": ("Kicking Horse", "CA", EDM, (51.2975, -117.0480, 3900, "Base"), (51.2830, -117.0920, 8033, "Terminator Peak")),
     "lakelouise": ("Lake Louise", "CA", EDM, (51.4420, -116.1620, 5400, "Base"), (51.4615, -116.1290, 8650, "Top of the World")),
+    "hakuba": ("Hakuba Happo-One", "JP", JST, (36.6980, 137.8420, 2493, "Happo base"), (36.7020, 137.8070, 6007, "Grat top")),
+    "niseko": ("Niseko Grand Hirafu", "JP", JST, (42.8595, 140.7020, 984, "Hirafu base"), (42.8720, 140.6700, 3937, "Peak lift top")),
 }
 # Hand-verified mid points and gauges for the original four (kept as-is by locate), and gauges for
-# places without a searchable station catalog (Alberta: id "station:precip-TSID").
+# places without a searchable station catalog (Alberta: id "station:precip-TSID"; JMA: "type:prec_no:block_no").
 MANUAL = {
     "palisades": dict(mid=(39.1899, -120.2658, 8000, "High Camp"),
                       gauge=("snotel", "784:CA:SNTL", "Palisades Tahoe SNOTEL (High Camp area)", 8010, 39.18986, -120.26576)),
@@ -71,6 +74,8 @@ MANUAL = {
     "mammoth": dict(mid=(37.6385, -119.0215, 9600, "McCoy Station"),
                     gauge=("cdec", "MHP", "Mammoth Pass (CDEC)", 9400, 37.61, -119.033), afd_office="REV"),
     "lakelouise": dict(gauge=("abrivers", "05BA815:158817042", "Pika Run (Alberta Rivers)", 7382, 51.462944, -116.117833)),
+    "hakuba": dict(gauge=("amedas", "a:48:0396", "Hakuba (JMA AMeDAS)", 2306, 36.6983, 137.8617)),
+    "niseko": dict(gauge=("amedas", "s:16:47433", "Kutchan (JMA)", 578, 42.9, 140.7567)),
 }
 
 
@@ -84,7 +89,7 @@ class Point:
 
 @dataclass
 class Gauge:
-    kind: str  # "snotel" | "cdec" | "bcasws" | "abrivers"
+    kind: str  # "snotel" | "cdec" | "bcasws" | "abrivers" | "amedas"
     id: str
     name: str
     ft: int

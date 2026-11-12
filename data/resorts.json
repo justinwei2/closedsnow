@@ -949,5 +949,95 @@
    "gem_seamless",
    "icon_seamless"
   ]
+ },
+ "hakuba": {
+  "name": "Hakuba Happo-One",
+  "country": "JP",
+  "tz": "Asia/Tokyo",
+  "base": {
+   "lat": 36.695,
+   "lon": 137.842,
+   "ft": 2493,
+   "label": "Happo base"
+  },
+  "mid": {
+   "lat": 36.6917,
+   "lon": 137.8087,
+   "ft": 4400,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 36.69,
+   "lon": 137.792,
+   "ft": 6007,
+   "label": "Grat top"
+  },
+  "dem_ft": {
+   "base": 2493,
+   "mid": 4373,
+   "summit": 5997
+  },
+  "obs": [
+   "amedas",
+   "a:48:0396",
+   "Hakuba (JMA AMeDAS)",
+   2306,
+   36.6983,
+   137.8617
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "gem_seamless",
+   "icon_seamless",
+   "jma_seamless"
+  ]
+ },
+ "niseko": {
+  "name": "Niseko Grand Hirafu",
+  "country": "JP",
+  "tz": "Asia/Tokyo",
+  "base": {
+   "lat": 42.8625,
+   "lon": 140.702,
+   "ft": 984,
+   "label": "Hirafu base"
+  },
+  "mid": {
+   "lat": 42.8676,
+   "lon": 140.6802,
+   "ft": 2600,
+   "label": "Mid-mountain"
+  },
+  "summit": {
+   "lat": 42.872,
+   "lon": 140.6618,
+   "ft": 3937,
+   "label": "Peak lift top"
+  },
+  "dem_ft": {
+   "base": 961,
+   "mid": 2648,
+   "summit": 3947
+  },
+  "obs": [
+   "amedas",
+   "s:16:47433",
+   "Kutchan (JMA)",
+   578,
+   42.9,
+   140.7567
+  ],
+  "models": [
+   "ecmwf_ifs",
+   "ecmwf_ifs025",
+   "ecmwf_aifs025_single",
+   "gfs_seamless",
+   "gem_seamless",
+   "icon_seamless",
+   "jma_seamless"
+  ]
  }
 }

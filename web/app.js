@@ -7,14 +7,14 @@ const state = { index: [], key: null, data: null, elev: localStorage.getItem("el
 
 const MODEL_NAMES = {
   ecmwf_ifs: "ECMWF IFS 9 km", ecmwf_ifs025: "ECMWF IFS 0.25°", ecmwf_aifs025_single: "ECMWF AIFS",
-  gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)",
+  gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)", jma_seamless: "JMA (Japan)",
 };
 const QUALITY = {  // one colour per label everywhere: orange = snow, purple = mixed / sleet, blue = rain
   "snow": { sw: "--q-snow", text: "Snow" },
   "mixed": { sw: "--q-mixed", text: "Mixed / sleet" },
   "rain": { sw: "--q-rain", text: "Rain" },
 };
-const COUNTRY = { US: "United States", CA: "Canada" };  // lists group by country, alphabetical within
+const COUNTRY = { US: "United States", CA: "Canada", JP: "Japan" };  // lists group by country, alphabetical within
 const byCountry = (rs) => [...rs].sort((a, b) => Object.keys(COUNTRY).indexOf(a.country) - Object.keys(COUNTRY).indexOf(b.country) || a.name.localeCompare(b.name));
 // snow shaded by snow ratio, same cutoffs as the density classes: >= 12.5:1 dry, < 8.3:1 dense / wet
 const snowShade = (slr) => slr >= 12.5 ? "--q-snow-dry" : slr && slr < 8.3 ? "--q-snow-wet" : "--q-snow";
@@ -596,7 +596,7 @@ function renderAfd(d) {
   box.replaceChildren();
   if (!d.afd) {
     $("#afd-meta").textContent = "";
-    box.textContent = d.country === "CA" ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
+    box.textContent = d.country !== "US" ? "NWS discussions only cover the US." : "NWS discussion unavailable this refresh.";
     return;
   }
   $("#afd-meta").textContent = `· NWS ${d.afd.office} · ${new Date(d.afd.issued).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;

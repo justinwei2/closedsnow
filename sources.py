@@ -1,13 +1,13 @@
 """Data sources, each mapped onto a small typed record:
 
 - Open-Meteo forecast / ensemble / previous-runs  -> ModelGrid (hourly series per model)
-- NRCS SNOTEL, California CDEC, BC snow pillows (ASWS)
-  and Alberta Rivers stations                      -> StationSeries of StationDay
+- NRCS SNOTEL, California CDEC, BC snow pillows (ASWS),
+  Alberta Rivers and JMA AMeDAS stations           -> StationSeries of StationDay
 - NWS alerts and forecast discussions            -> Alert, Discussion
 
 HTTP goes through get_json: retries with backoff, Open-Meteo quota handling, optional replay.
 """
-import csv, hashlib, http.client, io, json, math, os, random, sys, time, urllib.error, urllib.parse, urllib.request
+import csv, hashlib, http.client, io, json, math, os, random, re, sys, time, urllib.error, urllib.parse, urllib.request
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -317,6 +317,41 @@ class StationDay:
     temp_f: float | None = None
 
 
+JMA = "https://www.data.jma.go.jp/stats/etrn/view/"
+# daily page per station type -> (precip mm, mean temp C, max snow depth cm) cell positions
+JMA_COLS = {"a": ("daily_a1.php", 1, 4, 17), "s": ("daily_s1.php", 3, 6, 18)}
+
+
+def _jma_month(kind, prec, block, y, m):
+    """One month of a JMA daily table: [(date, precip, temp, depth)]; '--' = none (0), '///' etc. = missing."""
+    page, ip, it, idp = JMA_COLS[kind]
+    def num(c):
+        c = c.strip().rstrip(")]").strip()
+        return 0.0 if c == "--" else float(c) if c.replace(".", "", 1).lstrip("-").isdigit() else None
+    def parse(fh):
+        rows = []
+        for tr in re.findall(r'<tr class="mtx"[^>]*>(.*?)</tr>', fh.read().decode("utf-8"), re.S):
+            c = [re.sub("<[^>]+>", "", x) for x in re.findall(r"<td[^>]*>(.*?)</td>", tr)]
+            if len(c) > idp and c[0].strip().isdigit():
+                rows.append((date(y, m, int(c[0])).isoformat(), num(c[ip]), num(c[it]), num(c[idp])))
+        return rows
+    fetch = lambda: get_json(JMA + page, dict(prec_no=prec, block_no=block, year=y, month=m, day="", view=""), parse=parse)
+    done = date(y, m, 1) < date.today().replace(day=1)  # past months never change: cache them
+    return cached(f"jma_{kind}{prec}_{block}_{y}-{m:02d}.json", fetch) if done else fetch()
+
+
+def _amedas(gauge, start, end):
+    """JMA station, id 'type:prec_no:block_no' (type a = AMeDAS, s = weather station); daily, JST."""
+    kind, prec, block = gauge.id.split(":")
+    rows, d = [], date.fromisoformat(start).replace(day=1)
+    while d.isoformat() <= end:
+        rows += [r for r in _jma_month(kind, prec, block, d.year, d.month) if start <= r[0] <= end]
+        d = (d + timedelta(32)).replace(day=1)
+    return {"PREC": _cumulative({r[0]: r[1] for r in rows if r[1] is not None}, start, end),
+            "TAVG": [(r[0], r[2] * 1.8 + 32) for r in rows if r[2] is not None],
+            "SNWD": [(r[0], r[3] / 2.54) for r in rows if r[3] is not None]}
+
+
 class StationSeries:
     """Daily readings from a gauge (SNOTEL, CDEC, BC ASWS, Alberta Rivers), plus the daily amounts derived from them."""
 
@@ -328,6 +363,8 @@ class StationSeries:
         """Readings from start to end; tz: the resort's zone, for gauges that report hourly in UTC."""
         if gauge.kind == "bcasws":
             raw = _bc(gauge, start, end, tz)
+        elif gauge.kind == "amedas":
+            raw = _amedas(gauge, start, end)
         elif gauge.kind == "abrivers":
             raw = _alberta(gauge, start, end, tz)
         elif gauge.kind == "snotel":

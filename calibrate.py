@@ -127,7 +127,7 @@ def locate(key):
         dem = dict(base=bb[2], mid=mp[2], summit=sb[2])
     pt = lambda p, label: Point(round(p[0], 4), round(p[1], 4), p[2], label)
     gauge = (Gauge(*man["gauge"]) if man.get("gauge") else
-             nearest_snotel(mid[0], mid[1], b[2], s[2]) if country == "US" else nearest_bcasws(mid[0], mid[1], b[2], s[2]))
+             {"US": nearest_snotel, "CA": nearest_bcasws}[country](mid[0], mid[1], b[2], s[2]) if country in ("US", "CA") else None)
     r = Resort(key, name, country, tz, pt(base, b[3]), pt(mid, mlabel), pt(summit, s[3]), gauge,
                usable_models(summit[0], summit[1]), {k: round(v) for k, v in dem.items()}, man.get("afd_office"))
     warn = [f"{e} DEM {r.dem_ft[e]} vs {r.point(e).ft}" for e in ("base", "summit") if abs(r.dem_ft[e] - r.point(e).ft) > 600]

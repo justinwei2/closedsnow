@@ -35,3 +35,10 @@ the raw models with equal weights.
 | Lake Louise | calibrated | Pika Run (Alberta Rivers) | 7,382 ft | 356 | 0.12 |
 | Revelstoke | calibrated | Mount Revelstoke (BC snow pillow) | 6,070 ft | 356 | 0.27 |
 | Whistler | calibrated | Callaghan Creek (BC snow pillow) | 3,337 ft | 343 | 0.40 |
+
+## Japan
+
+| Resort | Status | Gauge | Gauge elev | 72 h windows | Blend error (in liquid / 72 h) |
+|---|---|---|---|---|---|
+| Hakuba Happo-One | calibrated | Hakuba (JMA AMeDAS) | 2,306 ft | 356 | 0.21 |
+| Niseko Grand Hirafu | calibrated | Kutchan (JMA) | 578 ft | 356 | 0.19 |
