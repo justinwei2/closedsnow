@@ -241,5 +241,4 @@ table.days tr.past td { opacity: .5; }
 .alerts { cursor: default; outline: none; padding: 2px; border-radius: 4px; }
 .alerts:hover, .alerts:focus { background: var(--grid); }
 .tip .t-row b { max-width: 340px; white-space: normal; text-align: right; }
-.snowcell { display: inline-flex; flex-direction: column; line-height: 1.2; }
-.snowcell .muted { font-size: 11px; }
+table.days td.extra, table.days th.extra { border-left: 1px solid var(--grid); color: var(--text-secondary); }

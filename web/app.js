@@ -23,7 +23,7 @@ const QUALITY = {  // one colour per label everywhere: orange = good snow, purpl
 const ALERT = { powder: "--q-light", wet: "--q-sleet", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
 const NOTE_ALERT = { powder: "powder", rain: "wet", sleet: "wet", vis: "info" };  // weather-report note -> alert
-const ALERT_NAME_HEAD = (h) => h.name === "day" ? "Daytime 6a–6p alerts" : "Nighttime 6p–6a alerts";
+const ALERT_NAME_HEAD = (h) => `Alerts · ${h.name === "day" ? "6am–6pm" : "6pm–6am"}`;
 // weather-report note styling: status colours always ship with an icon + text
 
 // ---------------------------------------------------------------- formatting
@@ -238,14 +238,7 @@ function renderDailyTable(d, e) {
   tb.replaceChildren();
   tb.className = "grid days";
   const days = window17(d);
-  $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft`;
-  const snowCell = (h) => {
-    const c = el("span", { class: "snowcell" });
-    c.append(el("b", {}, fmtIn(h.snow_in)));
-    const r = fmtRange(h.p25, h.p75);
-    if (r) c.append(el("span", { class: "muted" }, r));
-    return c;
-  };
+  $("#daily-sub").textContent = `${ELEV_NAME[e]} · ${d.points[e].requested.ft.toLocaleString()} ft · rows: 6am–6pm, 6pm–6am`;
   // daytime rows also carry the day's report notes (powder morning, rain line, sleet, flat light);
   // wind-hold / wind-chill notes are already row alerts
   // alerts are mountain-wide: the same on every elevation view. Union of base / mid / summit for
@@ -262,6 +255,7 @@ function renderDailyTable(d, e) {
     return [...seen.values(), ...notes];
   };
   const cols = [  // [header, cell(h, x, k), class, header group]
+    ["Temp", (h) => fmtF(h.temp_f)],
     ["Alerts", (h, x, k) => {
       const al = rowAlerts(h, x, k);
       if (!al.length) return "";
@@ -270,18 +264,18 @@ function renderDailyTable(d, e) {
       hover(s, (ev) => showTip(ev, ALERT_NAME_HEAD(h), al.map((a) => ({ name: ALERT_NAME[a.kind], value: a.text, color: `var(${ALERT[a.kind]})` }))));
       return s;
     }],
-    ["Temp", (h) => fmtF(h.temp_f)],
     ["Snow Ratio", (h) => (h.liquid_in > 0.02 ? snowRatio(h.quality, h.slr) : "–")],
-    ["12-Hr Snowfall", snowCell],
+    ["12-Hr Snowfall", (h) => fmtIn(h.snow_in), "strong"],
     ["Snow Level (ft)", (h) => el("span", { title: h.nws_snow_level_ft != null ? `NWS ${fmtFt(h.nws_snow_level_ft)}` : "" }, fmtFt(h.snow_level_ft))],
     ["Precip Chance", (h) => h.precip_chance == null ? "–" : `${h.precip_chance}%`],
     ["Precip Amount", (h) => h.liquid_in >= 0.005 ? `${h.liquid_in.toFixed(2)}"` : "0\""],
     ["Speed", (h) => `${h.wind_dir || ""} ${fmtMph(h.wind_mph)}`, "", "Wind (mph)"],
     ["Gust", (h) => fmtMph(h.gust_mph), "", "Wind (mph)"],
-    ["NWS Snowfall", (h) => h.nws_snow_in != null ? fmtIn(h.nws_snow_in) : "–"],
+    ["Middle 50%", (h) => fmtRange(h.p25, h.p75) || "–", "extra"],  // ours, not in OpenSnow
+    ["NWS Snowfall", (h) => h.nws_snow_in != null ? fmtIn(h.nws_snow_in) : "–", "extra"],
   ];
   const head1 = el("tr"), head2 = el("tr");
-  head1.append(el("th", { class: "rowh", rowspan: 2 }, ""), el("th", { rowspan: 2 }, ""));
+  head1.append(el("th", { class: "rowh", rowspan: 2 }, ""));
   cols.forEach(([name, , , grp], k) => {
     if (!grp) return head1.append(el("th", { rowspan: 2 }, name));
     if (cols[k - 1]?.[3] !== grp) head1.append(el("th", { colspan: cols.filter((c) => c[3] === grp).length, class: "grp" }, grp));
@@ -297,7 +291,6 @@ function renderDailyTable(d, e) {
         td.append(document.createTextNode(x.date === today() ? "Today" : dl.dow), el("span", {}, `${dl.mon} ${dl.dom}`));
         tr.append(td);
       }
-      tr.append(el("td", { class: "muted" }, h.name === "day" ? "Daytime 6a–6p" : "Nighttime 6p–6a"));
       for (const [, fn, cls] of cols) {
         const td = el("td", { class: cls || "" });
         const v = fn(h, x, k);
@@ -445,7 +438,7 @@ function plumeChart(d, e) {  // snow + rain per 12 h period (daytime 6a-6p, nigh
     }
     const hit = svgEl("rect", { class: "hit", x: cx - band / 2, y: f.m.t, width: band, height: f.ih + 30 });
     const dl = dayLabel(t.slice(0, 10)), night = t.endsWith("T18:00");
-    hover(hit, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${night ? "Nighttime 6p–6a" : "Daytime 6a–6p"}`, kinds.flatMap(([k, color, name, dp]) => [
+    hover(hit, (ev) => showTip(ev, `${dl.dow} ${dl.mon} ${dl.dom} · ${night ? "6pm–6am" : "6am–6pm"}`, kinds.flatMap(([k, color, name, dp]) => [
       { name, value: `${p[k].fc[i].toFixed(dp)}"`, color },
       ...(past ? [] : [{ name: "  middle 50% · 90%", value: `${p[k]["0.25"][i].toFixed(dp)}–${p[k]["0.75"][i].toFixed(dp)} · ${p[k]["0.05"][i].toFixed(dp)}–${p[k]["0.95"][i].toFixed(dp)}"` }]),
     ])));
