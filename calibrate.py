@@ -186,6 +186,7 @@ def calibrate_one(r):
     obs, obs_t = {}, {}  # gauge precip (mm) and mean temperature (C) by day
     for s, e in SEASONS:
         st = src.StationSeries.fetch(r.gauge, s, (date.fromisoformat(e) + timedelta(3)).isoformat(), r.tz)
+        print(f"    gauge {s[:4]}-{e[2:4]}: {len(st.days)} days", flush=True)
         obs.update({date.fromisoformat(k): v for k, v in st.precip_mm().items()})
         obs_t.update({date.fromisoformat(d.date): (d.temp_f - 32) / 1.8 for d in st.days if d.temp_f is not None})
     cal, pairs_by, ext, temps = {}, {}, {}, {}
@@ -197,6 +198,7 @@ def calibrate_one(r):
             lead_pairs += [(v, obs[d]) for n in range(4, 8) for d, v in fc[n].items() if d in obs]
             for d, v in t.items():
                 temps.setdefault(d, []).append(v)
+        print(f"    {m}: {len(pairs)} 72 h windows{'' if len(pairs) >= 60 else ' (too few: skipped)'}", flush=True)
         if len(pairs) < 60:
             continue
         f = sum(p[0] for p in pairs.values()); o = sum(p[1] for p in pairs.values())
@@ -260,9 +262,12 @@ def run(group=None, out=None, force=False, only=None):
     progress. only: specific resort keys; group: a region group. Gauge-less resorts are located again."""
     keys = only or [k for k, c in CATALOG.items() if not group or c[1] in GROUPS[group]]
     resorts, cal = load_resorts(), load_calibration()
+    t0 = time.time()
+    log = lambda i, k, msg: print(f"[{i}/{len(keys)} {time.time() - t0:5.0f}s] {k}: {msg}", flush=True)
     try:
-        for k in keys:
+        for i, k in enumerate(keys, 1):
             if k not in resorts or resorts[k].gauge is None:  # gauge-less: retry (new gauge networks)
+                log(i, k, "locating points, gauge and models")
                 try:
                     resorts[k] = locate(k)
                 except src.QuotaExceeded:
@@ -272,6 +277,7 @@ def run(group=None, out=None, force=False, only=None):
                 save(resorts, cal)
             r = resorts.get(k)
             if r and r.gauge and (force or k not in cal or not cal[k].calibrated):
+                log(i, k, f"calibrating against {r.gauge.name} ({len(r.models)} models x {len(SEASONS)} winters)")
                 try:
                     cal[k] = calibrate_one(r)
                     print(k, "blend MAE72", cal[k].blend_mae72, {m: c.factor for m, c in cal[k].models.items()})
@@ -280,6 +286,8 @@ def run(group=None, out=None, force=False, only=None):
                 except Exception as e:
                     print(f"  calibration failed {k}: {e}", file=sys.stderr)
                 save(resorts, cal)
+            else:
+                log(i, k, "already calibrated" if r and r.gauge else "no gauge: regional defaults")
     finally:  # hand back progress even on a crash or timeout
         if out:
             os.makedirs(out, exist_ok=True)

@@ -432,12 +432,14 @@ def update_one(key):
     cal = load_calibration()
     if key not in RESORTS or key not in cal:
         raise NotSetUp(f"{key}: not set up yet (run calibrate.py)")
+    t0 = time.time()
     data = process(RESORTS[key], cal[key])
     nxt = [h for h in data["hourly"] if h["t"] >= data["now"]][:72]
     ok = sum(1 for h in nxt if h["summit"]["snow_in"] is not None and h["summit"]["temp_f"] is not None)
     if len(nxt) < 48 or ok < 0.8 * len(nxt):  # mostly blank: keep the old file (--check flags staleness)
         raise RuntimeError(f"{key}: forecast mostly empty ({ok}/{len(nxt)} hours); not publishing")
     src.write_json(os.path.join(OUT, f"{key}.json"), data, separators=(",", ":"))
+    print(f"  {key}: published ({time.time() - t0:.0f}s)", flush=True)
 
 
 def main(keys=None, scheduled=False, group=None, index=True):
