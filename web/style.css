@@ -14,10 +14,9 @@
   --seq-100: #cde2fb; --seq-200: #9ec5f4; --seq-300: #6da7ec; --seq-400: #3987e5;
   --seq-500: #256abf; --seq-600: #184f95; --seq-700: #0d366b;
   --good: #0ca30c; --warning: #fab219; --serious: #ec835a; --critical: #d03b3b;
-  /* precipitation quality: orange = good snow (deeper = drier), purple = heavy / mixed / sleet / rain
-     (deeper = wetter or icier); yellow (--warning) is reserved for warnings */
-  --q-blower: #b8461b; --q-light: #eb6834; --q-medium: #f29a6e; --q-dense: #f7c3a6;
-  --q-heavy: #c9c1f7; --q-mixed: #a99cf0; --q-sleet: #8577e6; --q-rain: #6250d6;
+  /* precipitation quality: orange = snow (deeper = drier), purple = mixed / rain;
+     yellow (--warning) is reserved for warnings */
+  --q-powder: #d4561f; --q-medium: #f29a6e; --q-heavy: #f7c3a6; --q-mixed: #a99cf0; --q-rain: #6250d6;
 }
 /* dark: OS setting unless the toggle says light; toggle wins both ways */
 @media (prefers-color-scheme: dark) {
@@ -26,8 +25,7 @@
     --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-    --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #f9cfb6;
-    --q-heavy: #cfc8f8; --q-mixed: #b1a6f2; --q-sleet: #9085e9; --q-rain: #7466e0;
+    --q-powder: #e0622c; --q-medium: #f6a985; --q-heavy: #f9cfb6; --q-mixed: #b1a6f2; --q-rain: #7466e0;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -35,8 +33,7 @@
   --page: #0d0d0d; --surface-1: #1a1a19; --text-primary: #f0efec; --text-secondary: #c3c2b7;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255, 255, 255, 0.10);
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-  --q-blower: #d95926; --q-light: #f07c4c; --q-medium: #f6a985; --q-dense: #f9cfb6;
-  --q-heavy: #cfc8f8; --q-mixed: #b1a6f2; --q-sleet: #9085e9; --q-rain: #7466e0;
+  --q-powder: #e0622c; --q-medium: #f6a985; --q-heavy: #f9cfb6; --q-mixed: #b1a6f2; --q-rain: #7466e0;
 }
 
 /* ---- base */
@@ -181,7 +178,8 @@ main { max-width: 1240px; margin: 0 auto; padding: 20px 24px 60px; }
 table.grid { border-collapse: collapse; width: 100%; font-size: 12px; font-variant-numeric: tabular-nums; }
 table.grid th, table.grid td { padding: 5px 8px; text-align: center; border-bottom: 1px solid var(--grid); white-space: nowrap; }
 table.grid th { color: var(--text-secondary); font-weight: 500; }
-table.grid .rowh { text-align: left; color: var(--text-secondary); position: sticky; left: 0; background: var(--surface-1); }
+/* sticky first column sits above faded (opacity) cells, which otherwise paint over it */
+table.grid .rowh { text-align: left; color: var(--text-secondary); position: sticky; left: 0; z-index: 2; background: var(--surface-1); }
 table.grid .today { background: color-mix(in srgb, var(--series-1) 7%, transparent); }
 table.grid .strong { font-weight: 650; color: var(--text-primary); }
 
@@ -226,10 +224,11 @@ details[open] summary::before { content: "▾ "; }
 table.days td, table.days th { padding: 6px 8px; }
 table.days tr.night td { background: color-mix(in srgb, var(--page) 60%, transparent); }
 table.days tr.dayrow td { border-top: 1px solid var(--axis); }
-table.days td.dlabel { text-align: left; font-weight: 600; color: var(--text-primary); vertical-align: middle; position: sticky; left: 0; background: var(--surface-1); }
+table.days td.dlabel { text-align: left; font-weight: 600; color: var(--text-primary); vertical-align: middle; position: sticky; left: 0; z-index: 2; background: var(--surface-1); }
 table.days td.dlabel span { display: block; font-weight: 400; color: var(--muted); }
 table.days th.grp { border-bottom: 1px solid var(--axis); }
-table.days tr.past td { opacity: .5; }
+table.days tr.past td:not(.dlabel) { opacity: .5; }
+table.days tr.past td.dlabel { color: var(--text-secondary); }
 .asq { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin: 0 2px; vertical-align: middle; }
 .ratio { display: inline-flex; align-items: center; gap: 5px; }
 .ratio .sw { width: 10px; height: 10px; border-radius: 3px; }
@@ -248,7 +247,7 @@ table.hourly th .muted { font-weight: 400; font-size: 11px; }
 table.hourly td.rowh { min-width: 150px; color: var(--muted); font-size: 11px; white-space: nowrap; }
 table.hourly td.rowh b { color: var(--text-primary); font-size: 12px; font-weight: 600; }
 table.hourly .past { opacity: .5; }
-table.hourly .now { background: color-mix(in srgb, var(--q-light) 10%, transparent); }
+table.hourly .now { background: color-mix(in srgb, var(--q-powder) 10%, transparent); }
 .tabs-seg { margin-bottom: 10px; }
 .tabs-seg button { padding: 5px 14px; }
 .asq { cursor: default; outline: none; }

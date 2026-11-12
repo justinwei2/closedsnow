@@ -122,18 +122,14 @@ def slr_at(profile, z):
 
 
 def quality(slr, frac, warm_nose=False):
-    """Skier-facing label for precipitation at an elevation (first match wins)."""
+    """Skier-facing label for precipitation at an elevation (first match wins):
+    rain | mixed (rain/snow or sleet) | powder | medium | heavy (by new-snow density)."""
     if frac < 0.2:
         return "rain"
-    if warm_nose:
-        return "sleet / freezing rain risk"
-    if frac < 0.8:
-        return "mixed rain/snow"
+    if warm_nose or frac < 0.8:
+        return "mixed"
     dens = 100.0 / slr
-    for cut, label in ((6, "blower"), (8, "light & dry"), (11, "medium"), (15, "dense")):
-        if dens < cut:
-            return label
-    return "heavy / wet (Sierra cement)"
+    return "powder" if dens < 8 else "medium" if dens < 12 else "heavy"
 
 
 # ---------------------------------------------------------------- weather report
@@ -178,8 +174,8 @@ def powder_morning(summit, day):
 
 
 POWDER_12H_IN = 4  # powder alert: 12 h snowfall with good quality
-GOOD = {"blower", "light & dry", "medium", "dense"}
-BAD = {"mixed rain/snow", "sleet / freezing rain risk", "rain", "heavy / wet (Sierra cement)"}
+GOOD = {"powder", "medium"}
+BAD = {"mixed", "rain"}
 
 
 def half_alerts(row, hrs, day, name, summit_hrs):
@@ -187,9 +183,9 @@ def half_alerts(row, hrs, day, name, summit_hrs):
     Wind holds are mountain-wide: always judged from the summit ridge wind."""
     out = []
     if row["snow_in"] >= POWDER_12H_IN and row.get("quality") in GOOD:
-        out.append(dict(kind="powder", text=f"Powder: {round(row['snow_in'])}\" of {row['quality']} snow"))
+        out.append(dict(kind="powder", text=f"Powder: {round(row['snow_in'])}\" of {row['quality']} snow" if row["quality"] != "powder" else f"Powder: {round(row['snow_in'])}\""))
     if row["liquid_in"] >= 0.05 and row.get("quality") in BAD:
-        out.append(dict(kind="wet", text=f"{row['quality'].split(' (')[0].capitalize()}"))
+        out.append(dict(kind="wet", text="Sleet / freezing rain risk" if row.get("sleet") else row["quality"].capitalize()))
     w = wind_hold(summit_hrs, day) if name == "day" else None
     if w and w["level"] != "low":
         out.append(dict(kind="warn", text=f"Upper-lift wind holds {w['level']}: ridge {w['sustained_mph']} mph, gusts ~{w['gust_mph']}"))
@@ -220,7 +216,7 @@ def report(day, entry, hours_by_elev, elevs_ft):
         elif sl > elevs_ft["base"]:
             note("rain", "watch", f"Rain/snow line ~{round(sl, -2):,.0f}′, between base ({elevs_ft['base']:,}′) "
                                   f"and summit: wet snow or rain on lower lifts")
-    if any(entry[e].get("quality") == "sleet / freezing rain risk" for e in hours_by_elev):
+    if any(entry[e].get("sleet") for e in hours_by_elev):
         note("sleet", "warn", "Warm layer aloft: sleet / freezing rain possible (icy lifts)")
     hrs = lift_hours(summit, day)
     if sum(1 for h in hrs if (h.precip_mm or 0) > 0.3 and (h.cloud or 0) >= LOW_VIS_CLOUD) >= 4:

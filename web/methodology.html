@@ -105,14 +105,11 @@
       <p>One label per elevation per day, only when there's more than 1 mm of liquid. Checks run top to bottom; the first match wins. Snow fraction is precipitation-weighted.</p>
       <table class="grid"><tr><th>Label</th><th>Rule</th><th>Meaning</th></tr>
         <tr><td>Rain</td><td>snow fraction &lt; 20%</td><td>Mostly rain at this elevation</td></tr>
-        <tr><td>Sleet / ZR</td><td>any wet hour with a warm-nose sounding</td><td>Snow forms aloft (a layer &lt; −5 °C above), melts in a layer &gt; +2 °C, then falls into air with T<sub>w</sub> ≤ 0 °C: ice pellets or freezing rain</td></tr>
-        <tr><td>Mixed</td><td>snow fraction 20–80%</td><td>Snow level near this elevation: wet snow and rain</td></tr>
-        <tr><td>Blower</td><td>density &lt; 6% (SLR &gt; 16.7)</td><td>Cold, dry, deep</td></tr>
-        <tr><td>Light &amp; dry</td><td>6–8% (SLR 12.5–16.7)</td><td>Classic powder</td></tr>
-        <tr><td>Medium</td><td>8–11% (SLR 9–12.5)</td><td>Supportive powder</td></tr>
-        <tr><td>Dense</td><td>11–15% (SLR 6.7–9)</td><td>Rimed, heavy powder</td></tr>
-        <tr><td>Heavy / wet</td><td>&gt; 15% (SLR &lt; 6.7)</td><td>Partly melted "Sierra cement"</td></tr></table>
-      <p>Colours: orange = good snow (deeper = drier), purple = heavy/wet snow, mixed, sleet and rain (deeper = wetter or icier). Yellow is reserved for warnings such as wind holds. <span class="tag">rule of thumb</span> The density cutoffs aren't yet calibrated against measured new-snow density (e.g. Central Sierra Snow Lab). Heavy/wet comes from warmth near the surface, physically closer to rain. Sleet needs warm air <i>above</i> cold air.</p>
+        <tr><td>Mixed / sleet</td><td>snow fraction 20–80%, or any wet hour with a warm-nose sounding</td><td>Snow level near this elevation (wet snow and rain), or sleet / freezing rain: snow forms aloft (a layer &lt; −5 °C above), melts in a layer &gt; +2 °C, then falls into air with T<sub>w</sub> ≤ 0 °C. Sleet raises its own alert.</td></tr>
+        <tr><td>Powder</td><td>density &lt; 8% (SLR &gt; 12.5)</td><td>Light, dry snow</td></tr>
+        <tr><td>Medium</td><td>8–12% (SLR 8.3–12.5)</td><td>Supportive powder</td></tr>
+        <tr><td>Heavy</td><td>≥ 12% (SLR ≤ 8.3)</td><td>Dense to wet "Sierra cement"</td></tr></table>
+      <p>Colours: orange = snow (deeper = drier), purple = mixed / sleet and rain. Yellow is reserved for warnings such as wind holds. <span class="tag">rule of thumb</span> The density cutoffs aren't yet calibrated against measured new-snow density (e.g. Central Sierra Snow Lab). Heavy/wet comes from warmth near the surface, physically closer to rain. Sleet needs warm air <i>above</i> cold air.</p>
     </section>
 
     <section class="card" id="report">
@@ -124,7 +121,7 @@
         <tr><td>Powder morning</td><td>info</td><td>≥ 8" summit snow from 4pm the day before to 9am</td></tr>
         <tr><td>Rain to the summit</td><td>warn</td><td>snow day and max snow level (wet hours) &gt; summit</td></tr>
         <tr><td>Rain/snow line between base and summit</td><td>watch</td><td>snow day and base &lt; snow level ≤ summit</td></tr>
-        <tr><td>Sleet / freezing rain possible</td><td>warn</td><td>any elevation labelled Sleet / ZR</td></tr>
+        <tr><td>Sleet / freezing rain possible</td><td>warn</td><td>any wet hour at any elevation with a warm-nose sounding</td></tr>
         <tr><td>Low visibility / flat light</td><td>info</td><td>≥ 4 lift hours with precip &gt; 0.3 mm and cloud ≥ 90%</td></tr>
         <tr><td>Wind chill</td><td>watch</td><td>min summit wind chill ≤ −10 °F (lift hours; NWS formula)</td></tr></table>
       <p><b>Alerts</b> are the NWS's own active alerts for the summit point, in their own words (US only). "Unavailable" means the alert fetch failed. It does not mean there are no alerts.</p>

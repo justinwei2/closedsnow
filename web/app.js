@@ -10,17 +10,14 @@ const MODEL_NAMES = {
   gfs_seamless: "GFS + HRRR", ncep_nbm_conus: "NBM 2.5 km", gem_seamless: "GEM (Canada)", icon_seamless: "ICON (DWD)",
   gem_hrdps_continental: "HRDPS 2.5 km",
 };
-const QUALITY = {  // one colour per label everywhere: orange = good snow, purple = heavy / mixed / sleet / rain
-  "blower": { sw: "--q-blower", text: "Blower" },
-  "light & dry": { sw: "--q-light", text: "Light & dry" },
+const QUALITY = {  // one colour per label everywhere: orange = snow (deeper = drier), purple = mixed / rain
+  "powder": { sw: "--q-powder", text: "Powder" },
   "medium": { sw: "--q-medium", text: "Medium" },
-  "dense": { sw: "--q-dense", text: "Dense" },
-  "heavy / wet (Sierra cement)": { sw: "--q-heavy", text: "Heavy / wet" },
-  "mixed rain/snow": { sw: "--q-mixed", text: "Mixed" },
-  "sleet / freezing rain risk": { sw: "--q-sleet", text: "Sleet / ZR" },
+  "heavy": { sw: "--q-heavy", text: "Heavy" },
+  "mixed": { sw: "--q-mixed", text: "Mixed / sleet" },
   "rain": { sw: "--q-rain", text: "Rain" },
 };
-const ALERT = { powder: "--q-light", wet: "--q-sleet", warn: "--warning", info: "--muted" };  // daily-overview alert squares
+const ALERT = { powder: "--q-powder", wet: "--q-mixed", warn: "--warning", info: "--muted" };  // daily-overview alert squares
 const ALERT_NAME = { powder: "Powder", wet: "Wet / icy", warn: "Warning", info: "Note" };
 const NOTE_ALERT = { powder: "powder", rain: "wet", sleet: "wet", vis: "info" };  // weather-report note -> alert
 // weather-report note styling: status colours always ship with an icon + text
@@ -67,13 +64,13 @@ function niceMax(v, steps = 4) {
 }
 
 const ratio = (slr) => slr ? `${slr.toFixed(0)}:1` : null;
-function snowRatio(quality, slr) {  // swatch in the quality colour + ratio; rain/mixed/sleet show the label
+function snowRatio(quality, slr) {  // swatch in the quality colour + ratio; mixed / rain show the label
   const q = QUALITY[quality];
   if (!q) return el("span", { class: "muted" }, "–");
   const c = el("span", { class: "ratio", title: q.text });
   const sw = el("span", { class: "sw" });
   sw.style.background = `var(${q.sw})`;
-  const wet = /rain|sleet|mixed/.test(quality);
+  const wet = quality === "mixed" || quality === "rain";
   c.append(sw, document.createTextNode(wet || !slr ? q.text : ratio(slr)));
   return c;
 }
@@ -477,7 +474,7 @@ function plumeChart(d, e) {  // snow + rain per 12 h period (6a-6p, 6p-6a) with 
   const keep = all.t.map((t, i) => [t, i]).filter(([t, i]) => history ? (all.t[i + 1] || "9") <= d.now : (all.t[i + 1] || "9") > d.now).map(([, i]) => i);
   const pick = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, keep.map((i) => v[i])]));
   const p = { t: keep.map((i) => all.t[i]), snow: pick(all.snow), rain: pick(all.rain) };
-  const kinds = [["snow", "var(--q-light)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
+  const kinds = [["snow", "var(--q-powder)", "Snow", 1], ["rain", "var(--q-rain)", "Rain", 2]];
   const n = p.t.length;
   const c = $("#plume");
   const f = frame(c, { t: 16, r: 12, b: 34, l: 40 });
@@ -521,7 +518,7 @@ function plumeChart(d, e) {  // snow + rain per 12 h period (6a-6p, 6p-6a) with 
   }
   $("#plume-sub").textContent = `${ELEV_NAME[e].toLowerCase()} · per 12 h · ${history ? "last 7 days (model estimate)" : "next 10 days"}`;
   legend("#plume-legend", [
-    { label: "Snow (in)", color: "var(--q-light)", kind: "key-rect" },
+    { label: "Snow (in)", color: "var(--q-powder)", kind: "key-rect" },
     { label: "Rain (in of water)", color: "var(--q-rain)", kind: "key-rect" },
     { label: "Past (model estimate)", color: "var(--muted)", kind: "key-rect" },
     { label: "Middle 50% (thick) · 90% (thin)", glyph: "┃" },

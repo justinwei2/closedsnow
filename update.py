@@ -237,7 +237,8 @@ def process(r, cal):
         snow_liq = sum(h.precip_mm * h.frac for h in wet)
         slr = sum(h.precip_mm * h.frac * h.slr for h in wet) / snow_liq if snow_liq > 0 else None
         nose = any(h.warm_nose and h.precip_mm > 0.5 for h in wet)
-        return dict(slr=slr, quality=cx.quality(slr or 10, snow_liq / liq, nose) if liq > min_liq else None)
+        q = cx.quality(slr or 10, snow_liq / liq, nose) if liq > min_liq else None
+        return dict(slr=slr, quality=q) | ({"sleet": True} if q == "mixed" and nose else {})
 
     def precip_chance(span):
         """Share of ensemble members (weighted) with >= 0.01" liquid in the span, at the summit."""
